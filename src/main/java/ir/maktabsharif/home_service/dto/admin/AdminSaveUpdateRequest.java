@@ -25,6 +25,4 @@ public class AdminSaveUpdateRequest {
     private String email;
     @NotBlank(groups = {ValidationGroup.update.class,ValidationGroup.save.class})
     private String password;
-    @Enumerated(EnumType.STRING)
-    private Role role;
 }
