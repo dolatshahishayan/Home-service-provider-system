@@ -18,4 +18,5 @@ public class Expert extends User {
     @Enumerated(EnumType.STRING)
     private ExpertStatus expertStatus;
     private byte[] profilePicture;
+    private String expertise;
 }

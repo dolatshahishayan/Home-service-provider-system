@@ -10,11 +10,13 @@ public class ExpertSaveUpdateRequest {
     private Integer id;
     private String firstName;
     private String lastName;
-    @NotBlank(groups = {ValidationGroup.update.class,ValidationGroup.save.class})
+    @NotBlank(groups = {ValidationGroup.update.class, ValidationGroup.save.class})
     private String email;
-    @NotBlank(groups = {ValidationGroup.update.class,ValidationGroup.save.class})
+    @NotBlank(groups = {ValidationGroup.update.class, ValidationGroup.save.class})
     private String password;
     private ExpertStatus expertStatus;
     //add annotation
     private byte[] profilePicture;
+    @NotBlank(groups = {ValidationGroup.save.class})
+    private String expertise;
 }
