@@ -13,5 +13,4 @@ public class ExpertFindResponse {
     private String password;
     private ExpertStatus expertStatus;
     private byte[] profilePicture;
-    private String expertise;
 }

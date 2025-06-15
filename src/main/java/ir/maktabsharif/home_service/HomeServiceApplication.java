@@ -14,8 +14,6 @@ public class HomeServiceApplication {
     }
     @Bean
     public EntityManager entityManager() {
-        try (EntityManager em = Persistence.createEntityManagerFactory("default").createEntityManager()) {
-            return em;
-        }
+        return Persistence.createEntityManagerFactory("default").createEntityManager();
     }
 }

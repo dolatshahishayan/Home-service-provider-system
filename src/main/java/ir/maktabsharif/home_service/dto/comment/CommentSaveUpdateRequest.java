@@ -18,7 +18,7 @@ public class CommentSaveUpdateRequest {
     private String context;
     @NotNull
     private Double expertScore;
-    @NotBlank(groups = {ValidationGroup.update.class,ValidationGroup.save.class})
-    private OrderFindResponse order;
+    @NotNull
+    private Integer orderId;
 
 }

@@ -1,6 +1,5 @@
 package ir.maktabsharif.home_service.model.user;
 
-import ir.maktabsharif.home_service.model.subservice.SubService;
 import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -18,5 +17,4 @@ public class Expert extends User {
     @Enumerated(EnumType.STRING)
     private ExpertStatus expertStatus;
     private byte[] profilePicture;
-    private String expertise;
 }

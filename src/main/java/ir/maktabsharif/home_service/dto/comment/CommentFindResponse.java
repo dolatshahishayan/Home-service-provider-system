@@ -9,7 +9,7 @@ public class CommentFindResponse {
     private Integer id;
     private String context;
     private Double expertScore;
-    private OrderFindResponse order;
+    private Integer orderId;
 
 
 }

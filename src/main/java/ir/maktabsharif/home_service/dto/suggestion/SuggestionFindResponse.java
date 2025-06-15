@@ -9,8 +9,8 @@ import jakarta.validation.constraints.NotNull;
 
 public class SuggestionFindResponse {
     private Integer id;
-    private ExpertFindResponse expert;
-    private OrderFindResponse order;
+    private Integer expertId;
+    private Integer orderId;
     private String description;
     private Double price;
     private Double workDuration;

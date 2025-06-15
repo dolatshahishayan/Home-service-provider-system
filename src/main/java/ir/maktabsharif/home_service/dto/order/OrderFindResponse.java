@@ -17,6 +17,6 @@ public class OrderFindResponse {
     private LocalDateTime startDate;
     private String address;
     private OrderStatus orderStatus;
-    private CustomerFindResponse customer;
-    private SubServiceFindResponse subService;
+    private Integer customerId;
+    private Integer subServiceId;
 }

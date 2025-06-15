@@ -1,14 +1,9 @@
 package ir.maktabsharif.home_service.dto.service;
 
 import ir.maktabsharif.home_service.dto.ValidationGroup;
-import ir.maktabsharif.home_service.dto.subservice.SubServiceFindResponse;
-import ir.maktabsharif.home_service.model.subservice.SubService;
-import jakarta.persistence.OneToMany;
-import jakarta.validation.Valid;
+import ir.maktabsharif.home_service.model.service.Service;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-
-import java.util.List;
 
 public class ServiceSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.update.class})
@@ -19,6 +14,5 @@ public class ServiceSaveUpdateRequest {
     private Double basePrice;
     @NotBlank
     private String description;
-    @Valid
-    private List<SubServiceFindResponse> subServices;
+    private Integer parentServiceId;
 }

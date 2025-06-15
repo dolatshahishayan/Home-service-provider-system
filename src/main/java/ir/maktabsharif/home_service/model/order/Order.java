@@ -1,8 +1,8 @@
 package ir.maktabsharif.home_service.model.order;
 
 import ir.maktabsharif.home_service.base.model.BaseEntity;
-import ir.maktabsharif.home_service.model.subservice.SubService;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
+import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.model.user.Customer;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -35,5 +35,5 @@ public class Order extends BaseEntity {
     private Customer customer;
 
     @ManyToOne
-    private SubService subService;
+    private Service service;
 }

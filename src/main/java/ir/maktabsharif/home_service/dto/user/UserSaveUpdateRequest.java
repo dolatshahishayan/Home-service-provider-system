@@ -18,6 +18,6 @@ public class UserSaveUpdateRequest {
     private String email;
     @NotBlank
     private String password;
-    //add annotation
+    @NotNull
     private Role role;
 }

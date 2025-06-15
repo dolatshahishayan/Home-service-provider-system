@@ -1,13 +1,13 @@
-package ir.maktabsharif.home_service.dto.wallet;
+package ir.maktabsharif.home_service.dto.expert_service;
 
 import ir.maktabsharif.home_service.dto.ValidationGroup;
 import jakarta.validation.constraints.NotNull;
 
-public class WalletSaveUpdateRequest {
+public class Expert_ServiceSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.update.class})
     private Integer id;
     @NotNull
-    private Double balance;
     private Integer expertId;
-    private Integer customerId;
+    @NotNull
+    private Integer subServiceId;
 }

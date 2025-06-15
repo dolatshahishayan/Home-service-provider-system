@@ -12,9 +12,9 @@ public class CustomerSaveUpdateRequest {
     private Integer id;
     private String firstName;
     private String lastName;
-    @NotBlank(groups = {ValidationGroup.update.class,ValidationGroup.save.class})
+    @NotBlank
     private String email;
-    @NotBlank(groups = {ValidationGroup.update.class,ValidationGroup.save.class})
+    @NotBlank
     private String password;
-    private List<OrderFindResponse> orders;
+    private List<Integer> orderIds;
 }

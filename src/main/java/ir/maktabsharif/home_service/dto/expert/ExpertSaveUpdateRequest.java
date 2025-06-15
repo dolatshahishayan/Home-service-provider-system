@@ -14,9 +14,7 @@ public class ExpertSaveUpdateRequest {
     private String email;
     @NotBlank(groups = {ValidationGroup.update.class, ValidationGroup.save.class})
     private String password;
+    @NotNull
     private ExpertStatus expertStatus;
-    //add annotation
     private byte[] profilePicture;
-    @NotBlank(groups = {ValidationGroup.save.class})
-    private String expertise;
 }

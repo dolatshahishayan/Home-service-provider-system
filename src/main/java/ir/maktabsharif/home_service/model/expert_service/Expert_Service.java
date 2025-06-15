@@ -1,7 +1,7 @@
-package ir.maktabsharif.home_service.model.expert_subservice;
+package ir.maktabsharif.home_service.model.expert_service;
 
 import ir.maktabsharif.home_service.base.model.BaseEntity;
-import ir.maktabsharif.home_service.model.subservice.SubService;
+import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.model.user.Expert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
@@ -14,9 +14,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Expert_SubService extends BaseEntity {
+public class Expert_Service extends BaseEntity {
     @ManyToOne
     private Expert expert;
     @ManyToOne
-    private SubService subService;
+    private Service service;
 }
