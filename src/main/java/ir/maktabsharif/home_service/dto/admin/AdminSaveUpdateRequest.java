@@ -1,17 +1,12 @@
 package ir.maktabsharif.home_service.dto.admin;
 
 import ir.maktabsharif.home_service.dto.ValidationGroup;
-import ir.maktabsharif.home_service.model.enums.Role;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,8 +16,8 @@ public class AdminSaveUpdateRequest {
     private Integer id;
     private String firstName;
     private String lastName;
-    @NotBlank(groups = {ValidationGroup.update.class,ValidationGroup.save.class})
+    @NotBlank
     private String email;
-    @NotBlank(groups = {ValidationGroup.update.class,ValidationGroup.save.class})
+    @NotBlank
     private String password;
 }

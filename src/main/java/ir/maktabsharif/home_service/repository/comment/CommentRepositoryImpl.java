@@ -3,7 +3,9 @@ package ir.maktabsharif.home_service.repository.comment;
 import ir.maktabsharif.home_service.base.repository.CrudRepositoryImpl;
 import ir.maktabsharif.home_service.model.comment.Comment;
 import jakarta.persistence.EntityManager;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class CommentRepositoryImpl extends CrudRepositoryImpl<Comment> implements CommentRepository {
     public CommentRepositoryImpl(EntityManager em) {
         super(em);

@@ -16,13 +16,14 @@ import lombok.Setter;
 public class ExpertSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.update.class})
     private Integer id;
+    @NotBlank(groups = {ValidationGroup.save.class})
     private String firstName;
+    @NotBlank(groups = {ValidationGroup.save.class})
     private String lastName;
-    @NotBlank(groups = {ValidationGroup.update.class, ValidationGroup.save.class})
+    @NotBlank
     private String email;
-    @NotBlank(groups = {ValidationGroup.update.class, ValidationGroup.save.class})
+    @NotBlank
     private String password;
-    @NotNull
     private ExpertStatus expertStatus;
     private byte[] profilePicture;
 }

@@ -1,5 +1,6 @@
 package ir.maktabsharif.home_service.base.repository;
 
+import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -12,7 +13,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 public abstract class CrudRepositoryImpl<T> implements CrudRepository<T> {
-    private final EntityManager em;
+    public final EntityManager em;
 
     @Override
     public void save(T t) {
@@ -20,8 +21,12 @@ public abstract class CrudRepositoryImpl<T> implements CrudRepository<T> {
     }
 
     @Override
-    public void delete(T t) {
-        em.remove(t);
+    public void delete(Integer id) {
+        Optional<T> byId = findById(id);
+        if (byId.isEmpty()) {
+            throw new NoElementFoundException();
+        }
+        em.remove(byId.get());
     }
 
     @Override

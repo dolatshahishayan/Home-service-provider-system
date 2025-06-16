@@ -3,7 +3,9 @@ package ir.maktabsharif.home_service.repository.suggestion;
 import ir.maktabsharif.home_service.base.repository.CrudRepositoryImpl;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import jakarta.persistence.EntityManager;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class SuggestionRepositoryImpl extends CrudRepositoryImpl<Suggestion> implements SuggestionRepository {
     public SuggestionRepositoryImpl(EntityManager em) {
         super(em);

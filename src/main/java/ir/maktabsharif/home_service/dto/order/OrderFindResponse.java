@@ -20,4 +20,5 @@ public class OrderFindResponse {
     private OrderStatus orderStatus;
     private Integer customerId;
     private Integer subServiceId;
+    private Integer expertId;
 }

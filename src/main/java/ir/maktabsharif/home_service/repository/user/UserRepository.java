@@ -4,4 +4,5 @@ import ir.maktabsharif.home_service.base.repository.CrudRepository;
 import ir.maktabsharif.home_service.model.user.User;
 
 public interface UserRepository extends CrudRepository<User> {
+    boolean existsByEmail(String email);
 }

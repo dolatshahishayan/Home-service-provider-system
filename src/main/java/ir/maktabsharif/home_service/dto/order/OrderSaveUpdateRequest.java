@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,5 +32,6 @@ public class OrderSaveUpdateRequest {
     @NotNull
     private Integer customerId;
     @NotNull
-    private Integer subServiceId;
+    private Integer serviceId;
+    private Integer expertId;
 }

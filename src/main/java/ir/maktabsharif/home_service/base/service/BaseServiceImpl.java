@@ -8,8 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-public abstract class BaseServiceImpl<T,U, R extends CrudRepository<T>> implements BaseService<T,U> {
-    private final R repository;
+public class BaseServiceImpl<T, U, R extends CrudRepository<T>, W> implements BaseService<T, U> {
+    public final R repository;
+    public final W mapper;
 
     @Override
     public void save(T t) {
@@ -26,19 +27,19 @@ public abstract class BaseServiceImpl<T,U, R extends CrudRepository<T>> implemen
     }
 
     @Override
-    public void delete(T t) {
+    public void delete(Integer id) {
         repository.beginTransaction();
-        repository.delete(t);
+        repository.delete(id);
         repository.commitTransaction();
     }
 
     @Override
     public T findById(Integer id) {
         Optional<T> byId = repository.findById(id);
-        if (byId.isPresent()) {
-            return byId.get();
+        if (byId.isEmpty()) {
+            throw new NoElementFoundException();
         }
-        throw new NoElementFoundException();
+        return byId.get();
     }
 
     @Override

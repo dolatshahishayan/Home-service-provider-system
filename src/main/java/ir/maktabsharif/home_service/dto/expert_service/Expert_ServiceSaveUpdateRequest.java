@@ -17,5 +17,5 @@ public class Expert_ServiceSaveUpdateRequest {
     @NotNull
     private Integer expertId;
     @NotNull
-    private Integer subServiceId;
+    private Integer serviceId;
 }
