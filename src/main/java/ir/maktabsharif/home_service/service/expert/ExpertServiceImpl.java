@@ -2,7 +2,10 @@ package ir.maktabsharif.home_service.service.expert;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.expert.ExpertSaveUpdateRequest;
-import ir.maktabsharif.home_service.exception.*;
+import ir.maktabsharif.home_service.exception.ExpertHasAnActiveOrderException;
+import ir.maktabsharif.home_service.exception.ImageFormatException;
+import ir.maktabsharif.home_service.exception.ImageLengthOutOfBoundException;
+import ir.maktabsharif.home_service.exception.UserWithSameEmailExistsException;
 import ir.maktabsharif.home_service.mapper.expert.ExpertMapper;
 import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
@@ -14,9 +17,6 @@ import ir.maktabsharif.home_service.service.wallet.WalletService;
 import ir.maktabsharif.home_service.util.ImageUtil;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 
