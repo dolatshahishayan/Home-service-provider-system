@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class CommentRepositoryImpl extends CrudRepositoryImpl<Comment> implements CommentRepository {
+
     public CommentRepositoryImpl(EntityManager em) {
         super(em);
     }

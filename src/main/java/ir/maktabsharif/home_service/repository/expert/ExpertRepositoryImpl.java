@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class ExpertRepositoryImpl extends CrudRepositoryImpl<Expert> implements ExpertRepository {
+
     public ExpertRepositoryImpl(EntityManager em) {
         super(em);
     }

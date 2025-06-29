@@ -3,6 +3,7 @@ package ir.maktabsharif.home_service.service.user;
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.user.UserSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.NoUserFoundWithGivenCredentialsException;
+import ir.maktabsharif.home_service.exception.NoUserLoggedInException;
 import ir.maktabsharif.home_service.mapper.user.UserMapper;
 import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.repository.user.UserRepository;
@@ -34,6 +35,13 @@ public class UserServiceImpl extends BaseServiceImpl<User, UserSaveUpdateRequest
         }
         Session.setCurrentUser(new UserSessionDTO(byEmailAndPassword.getId(), byEmailAndPassword.getEmail()));
         return byEmailAndPassword;
+    }
+    @Override
+    public void logout(){
+        if (Session.getCurrentUser() == null) {
+            throw new NoUserLoggedInException("No user logged in.");
+        }
+        Session.setCurrentUser(null);
     }
 
 }

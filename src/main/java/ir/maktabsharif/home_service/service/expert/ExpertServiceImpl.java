@@ -11,6 +11,7 @@ import ir.maktabsharif.home_service.repository.expert.ExpertRepository;
 import ir.maktabsharif.home_service.service.order.OrderService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
+import ir.maktabsharif.home_service.util.ImageUtil;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -24,25 +25,20 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, ExpertSaveUpdateR
     protected final UserService userService;
     protected final OrderService orderService;
     protected final WalletService walletService;
+    protected final ImageUtil imageUtil;
 
-    public ExpertServiceImpl(ExpertRepository repository, ExpertMapper mapper, UserService userService, OrderService orderService, WalletService walletService) {
+    public ExpertServiceImpl(ExpertRepository repository, ExpertMapper mapper, UserService userService, OrderService orderService, WalletService walletService, ImageUtil imageUtil) {
         super(repository, mapper);
         this.userService = userService;
         this.orderService = orderService;
         this.walletService = walletService;
+        this.imageUtil = imageUtil;
     }
 
     @Override
     public void updateStatusToVerified(Integer expertId) {
         Expert byId = findById(expertId);
         byId.setExpertStatus(ExpertStatus.VERIFIED);
-        update(byId);
-    }
-
-    @Override
-    public void updateStatusToUnverified(Integer expertId) {
-        Expert byId = findById(expertId);
-        byId.setExpertStatus(ExpertStatus.UNVERIFIED);
         update(byId);
     }
 
@@ -55,26 +51,17 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, ExpertSaveUpdateR
             throw new ImageFormatException("Image format should be jpg");
         }
         Expert expert = mapper.mapToEntity(expertSaveUpdateRequest);
-        expert.setProfilePictureData(getBytesForExpert(imagePath));
-        if (expert.getProfilePictureData().length>300000){
+        expert.setProfilePictureData(imageUtil.getBytesForExpert(imagePath));
+        if (expert.getProfilePictureData().length > 300000) {
             throw new ImageLengthOutOfBoundException("Image size is more than 300kb.");
         }
-        expert.setExpertStatus(ExpertStatus.UNVERIFIED);
+        expert.setExpertStatus(ExpertStatus.NEW);
         expert.setRegistrationDate(LocalDateTime.now());
         save(expert);
 
         walletService.saveWithExpert(expert);
     }
 
-    private byte[] getBytesForExpert(String imagePath) {
-        byte[] imageBytes;
-        try{
-            imageBytes = Files.readAllBytes(Paths.get(imagePath));
-        }catch (IOException e){
-            throw new RuntimeException(e);
-        }
-        return imageBytes;
-    }
     @Override
     public void updateWithDTO(ExpertSaveUpdateRequest expertSaveUpdateRequest) {
         if (userService.existsByEmailAndIdNot(expertSaveUpdateRequest.getEmail(), expertSaveUpdateRequest.getId())) {

@@ -14,6 +14,7 @@ import java.util.List;
 
 @Repository
 public class Expert_ServiceRepositoryImpl extends CrudRepositoryImpl<Expert_Service> implements Expert_ServiceRepository {
+
     public Expert_ServiceRepositoryImpl(EntityManager em) {
         super(em);
     }

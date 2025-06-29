@@ -9,9 +9,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Optional;
-
 @RequiredArgsConstructor
 public abstract class CrudRepositoryImpl<T> implements CrudRepository<T> {
+
     public final EntityManager em;
 
     @Override

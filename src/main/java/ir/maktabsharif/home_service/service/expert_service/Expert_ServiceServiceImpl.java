@@ -26,7 +26,7 @@ public class Expert_ServiceServiceImpl extends BaseServiceImpl<Expert_Service, E
 
     @Override
     public void addExpertToService(Integer expertId, Integer serviceId) {
-        if(!existsByExpertIdAndServiceId(expertId, serviceId)) {
+        if(existsByExpertIdAndServiceId(expertId, serviceId)) {
             throw new ExpertAlreadyInServiceException();
         }
         Expert expert = expertService.findById(expertId);

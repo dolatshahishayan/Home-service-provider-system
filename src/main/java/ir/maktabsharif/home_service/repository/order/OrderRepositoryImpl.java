@@ -15,6 +15,7 @@ import java.util.List;
 
 @Repository
 public class OrderRepositoryImpl extends CrudRepositoryImpl<Order> implements OrderRepository {
+
     public OrderRepositoryImpl(EntityManager em) {
         super(em);
     }

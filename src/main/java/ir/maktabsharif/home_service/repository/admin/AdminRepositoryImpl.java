@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class AdminRepositoryImpl extends CrudRepositoryImpl<Admin> implements AdminRepository {
+
     public AdminRepositoryImpl(EntityManager em) {
         super(em);
     }

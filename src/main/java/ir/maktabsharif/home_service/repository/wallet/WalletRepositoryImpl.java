@@ -12,6 +12,7 @@ import java.util.List;
 
 @Repository
 public class WalletRepositoryImpl extends CrudRepositoryImpl<Wallet> implements WalletRepository {
+
     public WalletRepositoryImpl(EntityManager em) {
         super(em);
     }

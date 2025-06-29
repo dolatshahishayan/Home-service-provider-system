@@ -12,6 +12,7 @@ import java.util.List;
 
 @Repository
 public class SuggestionRepositoryImpl extends CrudRepositoryImpl<Suggestion> implements SuggestionRepository {
+
     public SuggestionRepositoryImpl(EntityManager em) {
         super(em);
     }

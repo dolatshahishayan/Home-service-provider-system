@@ -18,6 +18,7 @@ public class ServiceServiceImpl extends BaseServiceImpl<Service, ServiceSaveUpda
         }
         save(mapper.mapToEntity(serviceSaveUpdateRequest));
     }
+    //Todo write method for service and subservice (find all)
     @Override
     public void updateDescription(Integer id,String description) {
         Service byId = findById(id);

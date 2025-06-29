@@ -14,6 +14,7 @@ import java.util.List;
 
 @Repository
 public class UserRepositoryImpl extends CrudRepositoryImpl<User> implements UserRepository {
+
     public UserRepositoryImpl(EntityManager em) {
         super(em);
     }
