@@ -1,6 +1,5 @@
 package ir.maktabsharif.home_service.mapper.admin;
 
-import ir.maktabsharif.home_service.dto.admin.AdminFindResponse;
 import ir.maktabsharif.home_service.dto.admin.AdminSaveUpdateRequest;
 import ir.maktabsharif.home_service.model.user.Admin;
 import org.mapstruct.Mapper;

@@ -1,6 +1,5 @@
 package ir.maktabsharif.home_service.mapper.wallet;
 
-import ir.maktabsharif.home_service.dto.wallet.WalletFindResponse;
 import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
 import org.mapstruct.Mapper;

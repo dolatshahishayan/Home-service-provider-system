@@ -1,6 +1,5 @@
 package ir.maktabsharif.home_service.mapper.comment;
 
-import ir.maktabsharif.home_service.dto.comment.CommentFindResponse;
 import ir.maktabsharif.home_service.dto.comment.CommentSaveUpdateRequest;
 import ir.maktabsharif.home_service.model.comment.Comment;
 import org.mapstruct.Mapper;

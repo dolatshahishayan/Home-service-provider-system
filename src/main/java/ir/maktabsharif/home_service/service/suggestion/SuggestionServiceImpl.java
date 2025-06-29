@@ -1,7 +1,6 @@
 package ir.maktabsharif.home_service.service.suggestion;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
-import ir.maktabsharif.home_service.dto.service.ServiceSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionFindResponse;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.InvalidRequestException;

@@ -1,7 +1,6 @@
 package ir.maktabsharif.home_service.dto.service;
 
 import ir.maktabsharif.home_service.dto.ValidationGroup;
-import ir.maktabsharif.home_service.model.service.Service;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

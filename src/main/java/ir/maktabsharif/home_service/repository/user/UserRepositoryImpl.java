@@ -1,7 +1,6 @@
 package ir.maktabsharif.home_service.repository.user;
 
 import ir.maktabsharif.home_service.base.repository.CrudRepositoryImpl;
-import ir.maktabsharif.home_service.model.user.Admin;
 import ir.maktabsharif.home_service.model.user.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;

@@ -1,6 +1,5 @@
 package ir.maktabsharif.home_service.mapper.user;
 
-import ir.maktabsharif.home_service.dto.user.UserFindResponse;
 import ir.maktabsharif.home_service.dto.user.UserSaveUpdateRequest;
 import ir.maktabsharif.home_service.model.user.User;
 import org.mapstruct.Mapper;
