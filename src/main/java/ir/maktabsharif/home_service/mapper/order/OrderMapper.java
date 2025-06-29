@@ -9,5 +9,5 @@ import org.mapstruct.MappingConstants;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface OrderMapper {
     Order mapToEntity(OrderSaveUpdateRequest orderSaveUpdateRequest);
-    OrderFindResponse mapToDTO(Order order);
+    OrderFindResponse mapToResponse(Order order);
 }

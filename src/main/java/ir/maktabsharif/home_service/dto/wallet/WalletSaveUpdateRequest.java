@@ -16,6 +16,6 @@ public class WalletSaveUpdateRequest {
     private Integer id;
     @NotNull
     private Double balance;
-    private Integer expertId;
-    private Integer customerId;
+    @NotNull
+    private Integer userId;
 }

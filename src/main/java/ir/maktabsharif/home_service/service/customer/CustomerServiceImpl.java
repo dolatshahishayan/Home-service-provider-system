@@ -2,7 +2,6 @@ package ir.maktabsharif.home_service.service.customer;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.customer.CustomerSaveUpdateRequest;
-import ir.maktabsharif.home_service.exception.NoUserFoundWithGivenCredentialsException;
 import ir.maktabsharif.home_service.exception.UserWithSameEmailExistsException;
 import ir.maktabsharif.home_service.mapper.customer.CustomerMapper;
 import ir.maktabsharif.home_service.model.user.Customer;
@@ -18,12 +17,17 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, CustomerSaveU
         super(repository, mapper);
         this.userService = userService;
     }
-
+    @Override
     public void updateWithDTO(CustomerSaveUpdateRequest customerSaveUpdateRequest) {
-        if (userService.existsByEmail(customerSaveUpdateRequest.getEmail())) {
+        if (userService.existsByEmailAndIdNot(customerSaveUpdateRequest.getEmail(), customerSaveUpdateRequest.getId())) {
             throw new UserWithSameEmailExistsException();
         }
-        update(findById(customerSaveUpdateRequest.getId()));
+        Customer byId = findById(customerSaveUpdateRequest.getId());
+        byId.setFirstName(customerSaveUpdateRequest.getFirstName());
+        byId.setLastName(customerSaveUpdateRequest.getLastName());
+        byId.setEmail(customerSaveUpdateRequest.getEmail());
+        byId.setPassword(customerSaveUpdateRequest.getPassword());
+        update(byId);
     }
 
     @Override

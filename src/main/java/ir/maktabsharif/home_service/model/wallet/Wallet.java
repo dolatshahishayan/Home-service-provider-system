@@ -20,7 +20,5 @@ public class Wallet extends BaseEntity {
     private Double balance;
 
     @OneToOne
-    private Expert expert;
-    @OneToOne
-    private Customer customer;
+    private User user;
 }

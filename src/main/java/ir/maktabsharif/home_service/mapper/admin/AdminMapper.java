@@ -9,5 +9,4 @@ import org.mapstruct.MappingConstants;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface AdminMapper {
     Admin mapToEntity(AdminSaveUpdateRequest adminSaveUpdateRequest);
-    AdminFindResponse mapToDTO(Admin admin);
 }

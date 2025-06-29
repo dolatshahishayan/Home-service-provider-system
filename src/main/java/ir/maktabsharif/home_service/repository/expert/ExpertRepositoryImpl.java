@@ -22,14 +22,4 @@ public class ExpertRepositoryImpl extends CrudRepositoryImpl<Expert> implements 
         return Expert.class;
     }
 
-    @Override
-    public Expert findByEmailAndPassword(String email,String password) {
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Expert> cq = cb.createQuery(Expert.class);
-        Root<Expert> root = cq.from(Expert.class);
-        cq.select(root).where(cb.and(cb.equal(root.get("email"), email)),cb.equal(root.get("password"), password));
-        TypedQuery<Expert> query = em.createQuery(cq);
-        List<Expert> experts = query.getResultList();
-        return experts.isEmpty() ? null : experts.getFirst();
-    }
 }

@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -24,9 +26,13 @@ public class Suggestion extends BaseEntity {
 
     private String description;
 
-    private LocalDate registerDate;
+    private LocalDateTime creationDate;
+
+    private LocalDateTime startDate;
 
     private Double price;
 
     private Double workDuration;
+
+    private Boolean accepted;
 }

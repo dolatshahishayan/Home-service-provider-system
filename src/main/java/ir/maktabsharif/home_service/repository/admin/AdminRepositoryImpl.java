@@ -22,15 +22,4 @@ public class AdminRepositoryImpl extends CrudRepositoryImpl<Admin> implements Ad
         return Admin.class;
     }
 
-    @Override
-    public Admin findByEmailAndPassword(String email,String password) {
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Admin> query = cb.createQuery(Admin.class);
-        Root<Admin> root = query.from(Admin.class);
-        query.select(root).where(cb.and(cb.equal(root.get("email"), email)),cb.equal(root.get("password"), password));
-        TypedQuery<Admin> typedQuery = em.createQuery(query);
-        List<Admin> resultList = typedQuery.getResultList();
-        return resultList.isEmpty() ? null : resultList.getFirst();
-    }
-
 }

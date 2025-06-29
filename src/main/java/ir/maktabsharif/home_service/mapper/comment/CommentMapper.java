@@ -9,5 +9,4 @@ import org.mapstruct.MappingConstants;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface CommentMapper {
     Comment mapToEntity(CommentSaveUpdateRequest commentSaveUpdateRequest);
-    CommentFindResponse mapToDTO(Comment comment);
 }

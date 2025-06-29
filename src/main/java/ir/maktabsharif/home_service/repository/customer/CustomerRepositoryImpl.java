@@ -21,16 +21,4 @@ public class CustomerRepositoryImpl extends CrudRepositoryImpl<Customer> impleme
     public Class<Customer> getEntityClass() {
         return Customer.class;
     }
-
-    @Override
-    public Customer findByEmailAndPassword(String email,String password) {
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Customer> query = cb.createQuery(Customer.class);
-        Root<Customer> root = query.from(Customer.class);
-        query.select(root).where(cb.and(cb.equal(root.get("email"), email)),cb.equal(root.get("password"), password));
-        TypedQuery<Customer> typedQuery = em.createQuery(query);
-        List<Customer> resultList = typedQuery.getResultList();
-        return resultList.isEmpty() ? null : resultList.getFirst();
-    }
-
 }

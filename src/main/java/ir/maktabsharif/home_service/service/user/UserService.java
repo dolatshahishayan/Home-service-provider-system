@@ -6,4 +6,6 @@ import ir.maktabsharif.home_service.model.user.User;
 
 public interface UserService extends BaseService<User, UserSaveUpdateRequest> {
     boolean existsByEmail(String email);
+    boolean existsByEmailAndIdNot(String email,Integer id);
+    User login(String email, String password);
 }

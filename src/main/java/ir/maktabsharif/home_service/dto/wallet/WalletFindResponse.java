@@ -16,5 +16,5 @@ import lombok.Setter;
 public class WalletFindResponse {
     private Integer id;
     private Double balance;
-    private UserFindResponse user;
+    private Integer userId;
 }

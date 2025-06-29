@@ -2,8 +2,7 @@ package ir.maktabsharif.home_service.dto.expert;
 
 import ir.maktabsharif.home_service.dto.ValidationGroup;
 import ir.maktabsharif.home_service.model.enums.ExpertStatus;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +22,11 @@ public class ExpertSaveUpdateRequest {
     @NotBlank
     private String email;
     @NotBlank
+    @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$",
+            message = "Password must be at least 8 characters long and contain both letters and numbers.")
     private String password;
+    @NotNull
     private ExpertStatus expertStatus;
-    private byte[] profilePicture;
+    private Double score;
+    private String imagePath;
 }

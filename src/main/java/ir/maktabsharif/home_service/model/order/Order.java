@@ -41,4 +41,6 @@ public class Order extends BaseEntity {
 
     @ManyToOne
     private Expert expert;
+
+    private LocalDateTime creationDate;
 }

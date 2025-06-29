@@ -9,5 +9,4 @@ import org.mapstruct.MappingConstants;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UserMapper {
     User mapToEntity(UserSaveUpdateRequest userSaveUpdateRequest);
-    UserFindResponse mapToDTO(User user);
 }

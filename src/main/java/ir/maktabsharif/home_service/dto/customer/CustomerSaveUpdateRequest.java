@@ -4,6 +4,7 @@ import ir.maktabsharif.home_service.dto.ValidationGroup;
 import ir.maktabsharif.home_service.dto.order.OrderFindResponse;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +23,7 @@ public class CustomerSaveUpdateRequest {
     @NotBlank
     private String email;
     @NotBlank
+    @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$",
+            message = "Password must be at least 8 characters long and contain both letters and numbers.")
     private String password;
-    private List<Integer> orderIds;
 }

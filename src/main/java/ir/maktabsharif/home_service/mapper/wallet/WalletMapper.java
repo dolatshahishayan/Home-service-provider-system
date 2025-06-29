@@ -9,5 +9,4 @@ import org.mapstruct.MappingConstants;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface WalletMapper {
     Wallet mapToEntity(WalletSaveUpdateRequest walletSaveUpdateRequest);
-    WalletFindResponse mapToDTO(Wallet wallet);
 }

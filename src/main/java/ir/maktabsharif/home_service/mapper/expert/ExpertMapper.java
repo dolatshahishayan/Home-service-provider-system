@@ -9,5 +9,4 @@ import org.mapstruct.MappingConstants;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface ExpertMapper {
     Expert mapToEntity(ExpertSaveUpdateRequest expertSaveUpdateRequest);
-    ExpertFindResponse mapToDTO(Expert expert);
 }

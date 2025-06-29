@@ -15,6 +15,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -32,4 +34,7 @@ public class SuggestionSaveUpdateRequest {
     private Double price;
     @NotNull
     private Double workDuration;
+    @NotNull
+    private LocalDateTime startDate;
+    private Boolean accepted;
 }
