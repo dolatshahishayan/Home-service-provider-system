@@ -14,7 +14,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Expert_Service extends BaseEntity {
+public class ExpertService extends BaseEntity {
     @ManyToOne
     private Expert expert;
     @ManyToOne

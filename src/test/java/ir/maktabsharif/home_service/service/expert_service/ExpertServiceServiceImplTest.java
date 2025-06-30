@@ -2,9 +2,10 @@ package ir.maktabsharif.home_service.service.expert_service;
 
 import ir.maktabsharif.home_service.exception.ExpertAlreadyInServiceException;
 import ir.maktabsharif.home_service.exception.NoExpertFoundWithServiceException;
-import ir.maktabsharif.home_service.model.expert_service.Expert_Service;
+import ir.maktabsharif.home_service.model.expert_service.ExpertService;
 import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.model.user.Expert;
+import ir.maktabsharif.home_service.repository.expert_service.ExpertServiceRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,7 +21,7 @@ import static org.mockito.Mockito.*;
 class ExpertServiceServiceImplTest {
 
     @Mock
-    private ir.maktabsharif.home_service.repository.expert_service.Expert_ServiceRepository repository;
+    private ExpertServiceRepository repository;
 
     @Mock
     private ir.maktabsharif.home_service.service.expert.ExpertService expertService;
@@ -29,7 +30,7 @@ class ExpertServiceServiceImplTest {
     private ir.maktabsharif.home_service.service.service.ServiceService serviceService;
 
     @InjectMocks
-    private Expert_ServiceServiceImpl service;
+    private ExpertServiceServiceImpl service;
 
     @Test
     void addExpertToService_shouldThrow_whenExpertAlreadyExistsInService() {
@@ -58,7 +59,7 @@ class ExpertServiceServiceImplTest {
         service.addExpertToService(expertId, serviceId);
 
         verify(repository).beginTransaction();
-        verify(repository).save(any(Expert_Service.class));
+        verify(repository).save(any(ExpertService.class));
         verify(repository).commitTransaction();
     }
 
@@ -74,7 +75,7 @@ class ExpertServiceServiceImplTest {
 
     @Test
     void removeExpertFromService_shouldDelete_whenExpertServiceExists() {
-        Expert_Service expertService = new Expert_Service();
+        ExpertService expertService = new ExpertService();
         expertService.setId(10);
 
         when(service.findByExpertIdAndServiceId(1, 2)).thenReturn(expertService);
@@ -98,11 +99,11 @@ class ExpertServiceServiceImplTest {
 
     @Test
     void findByExpertId_shouldReturnList_whenExists() {
-        List<Expert_Service> expertServices = List.of(new Expert_Service());
+        List<ExpertService> expertServices = List.of(new ExpertService());
 
         when(repository.findByExpertId(1)).thenReturn(expertServices);
 
-        List<Expert_Service> result = service.findByExpertId(1);
+        List<ExpertService> result = service.findByExpertId(1);
 
         assertEquals(1, result.size());
     }
@@ -110,11 +111,11 @@ class ExpertServiceServiceImplTest {
 
     @Test
     void findByExpertIdAndServiceId_shouldReturnFromRepository() {
-        Expert_Service expertService = new Expert_Service();
+        ExpertService expertService = new ExpertService();
 
         when(repository.findByExpertIdAndServiceId(1, 2)).thenReturn(expertService);
 
-        Expert_Service result = service.findByExpertIdAndServiceId(1, 2);
+        ExpertService result = service.findByExpertIdAndServiceId(1, 2);
 
         assertSame(expertService, result);
     }

@@ -5,13 +5,13 @@ import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
 import ir.maktabsharif.home_service.mapper.order.OrderMapper;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
-import ir.maktabsharif.home_service.model.expert_service.Expert_Service;
+import ir.maktabsharif.home_service.model.expert_service.ExpertService;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.order.OrderRepository;
-import ir.maktabsharif.home_service.service.expert_service.Expert_ServiceService;
+import ir.maktabsharif.home_service.service.expert_service.ExpertServiceService;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,7 +38,7 @@ class OrderServiceImplTest {
     private SuggestionService suggestionService;
 
     @Mock
-    private Expert_ServiceService expertServiceService;
+    private ExpertServiceService expertServiceService;
 
     @InjectMocks
     private OrderServiceImpl service;
@@ -136,7 +136,7 @@ class OrderServiceImplTest {
     void findAllByExpertId_shouldReturnMappedOrders() {
         Integer expertId = 10;
 
-        Expert_Service es = new Expert_Service();
+        ExpertService es = new ExpertService();
         Service serv = new Service();
         serv.setId(100);
         es.setService(serv);

@@ -6,12 +6,12 @@ import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
 import ir.maktabsharif.home_service.mapper.order.OrderMapper;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
-import ir.maktabsharif.home_service.model.expert_service.Expert_Service;
+import ir.maktabsharif.home_service.model.expert_service.ExpertService;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.order.OrderRepository;
-import ir.maktabsharif.home_service.service.expert_service.Expert_ServiceService;
+import ir.maktabsharif.home_service.service.expert_service.ExpertServiceService;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
 import org.springframework.stereotype.Service;
 
@@ -22,9 +22,9 @@ import java.util.List;
 @Service
 public class OrderServiceImpl extends BaseServiceImpl<Order, OrderSaveUpdateRequest, OrderRepository, OrderMapper> implements OrderService {
     protected final SuggestionService suggestionService;
-    protected final Expert_ServiceService expert_ServiceService;
+    protected final ExpertServiceService expert_ServiceService;
 
-    public OrderServiceImpl(OrderRepository repository, OrderMapper mapper, SuggestionService suggestionService, Expert_ServiceService expertServiceService) {
+    public OrderServiceImpl(OrderRepository repository, OrderMapper mapper, SuggestionService suggestionService, ExpertServiceService expertServiceService) {
         super(repository, mapper);
         this.suggestionService = suggestionService;
         expert_ServiceService = expertServiceService;
@@ -64,9 +64,9 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, OrderSaveUpdateRequ
     }
     @Override
     public List<OrderFindResponse> findAllByExpertId(Integer expertId) {
-        List<Expert_Service> expert_services = expert_ServiceService.findByExpertId(expertId);
+        List<ExpertService> expert_services = expert_ServiceService.findByExpertId(expertId);
         List<OrderFindResponse> responses = new ArrayList<>();
-        for (Expert_Service expert_service : expert_services) {
+        for (ExpertService expert_service : expert_services) {
             List<Order> byServiceId = findByServiceId(expert_service.getService().getId());
             for (Order order : byServiceId) {
                 responses.add(mapper.mapToResponse(order));

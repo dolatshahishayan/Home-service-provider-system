@@ -1,5 +1,7 @@
 package ir.maktabsharif.home_service.dto.expert_service;
 
+import ir.maktabsharif.home_service.dto.ValidationGroup;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,8 +11,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Expert_ServiceFindResponse {
+public class ExpertServiceSaveUpdateRequest {
+    @NotNull(groups = {ValidationGroup.update.class})
     private Integer id;
+    @NotNull
     private Integer expertId;
-    private Integer subServiceId;
+    @NotNull
+    private Integer serviceId;
 }

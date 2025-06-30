@@ -1,7 +1,7 @@
 package ir.maktabsharif.home_service.repository.expert_service;
 
 import ir.maktabsharif.home_service.base.repository.CrudRepositoryImpl;
-import ir.maktabsharif.home_service.model.expert_service.Expert_Service;
+import ir.maktabsharif.home_service.model.expert_service.ExpertService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -13,30 +13,30 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public class Expert_ServiceRepositoryImpl extends CrudRepositoryImpl<Expert_Service> implements Expert_ServiceRepository {
+public class ExpertServiceRepositoryImpl extends CrudRepositoryImpl<ExpertService> implements ExpertServiceRepository {
 
-    public Expert_ServiceRepositoryImpl(EntityManager em) {
+    public ExpertServiceRepositoryImpl(EntityManager em) {
         super(em);
     }
 
     @Override
-    public Class<Expert_Service> getEntityClass() {
-        return Expert_Service.class;
+    public Class<ExpertService> getEntityClass() {
+        return ExpertService.class;
     }
 
     @Override
-    public Expert_Service findByExpertIdAndServiceId(Integer expertId, Integer serviceId) {
+    public ExpertService findByExpertIdAndServiceId(Integer expertId, Integer serviceId) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Expert_Service> query = cb.createQuery(Expert_Service.class);
-        Root<Expert_Service> root = query.from(Expert_Service.class);
+        CriteriaQuery<ExpertService> query = cb.createQuery(ExpertService.class);
+        Root<ExpertService> root = query.from(ExpertService.class);
 
         Predicate expertPredicate = cb.equal(root.get("expert").get("id"), expertId);
         Predicate servicePredicate = cb.equal(root.get("service").get("id"), serviceId);
 
         query.select(root).where(cb.and(expertPredicate, servicePredicate));
 
-        TypedQuery<Expert_Service> typedQuery = em.createQuery(query);
-        List<Expert_Service> resultList = typedQuery.getResultList();
+        TypedQuery<ExpertService> typedQuery = em.createQuery(query);
+        List<ExpertService> resultList = typedQuery.getResultList();
 
         return resultList.isEmpty() ? null : resultList.getFirst();
     }
@@ -45,7 +45,7 @@ public class Expert_ServiceRepositoryImpl extends CrudRepositoryImpl<Expert_Serv
     public boolean existsByExpertIdAndServiceId(Integer expertId, Integer serviceId) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
-        Root<Expert_Service> root = query.from(Expert_Service.class);
+        Root<ExpertService> root = query.from(ExpertService.class);
 
         Predicate expertPredicate = cb.equal(root.get("expert").get("id"), expertId);
         Predicate servicePredicate = cb.equal(root.get("service").get("id"), serviceId);
@@ -56,10 +56,10 @@ public class Expert_ServiceRepositoryImpl extends CrudRepositoryImpl<Expert_Serv
     }
 
     @Override
-    public List<Expert_Service> findByExpertId(Integer expertId) {
+    public List<ExpertService> findByExpertId(Integer expertId) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Expert_Service> query = cb.createQuery(Expert_Service.class);
-        Root<Expert_Service> root = query.from(Expert_Service.class);
+        CriteriaQuery<ExpertService> query = cb.createQuery(ExpertService.class);
+        Root<ExpertService> root = query.from(ExpertService.class);
         query.select(root).where(cb.equal(root.get("expert").get("id"), expertId));
         return em.createQuery(query).getResultList();
     }
