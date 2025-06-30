@@ -45,14 +45,14 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, ExpertSaveUpdateR
 
     @Override
     public void register(ExpertSaveUpdateRequest expertSaveUpdateRequest, String imagePath) {
+        Expert expert = mapper.mapToEntity(expertSaveUpdateRequest);
+        expert.setProfilePictureData(imageUtil.getBytesForExpert(imagePath));
         if (userService.existsByEmail(expertSaveUpdateRequest.getEmail())) {
             throw new UserWithSameEmailExistsException();
         }
         if (!imagePath.endsWith(".jpg")) {
             throw new ImageFormatException("Image format should be jpg");
         }
-        Expert expert = mapper.mapToEntity(expertSaveUpdateRequest);
-        expert.setProfilePictureData(imageUtil.getBytesForExpert(imagePath));
         if (expert.getProfilePictureData().length > 300000) {
             throw new ImageLengthOutOfBoundException("Image size is more than 300kb.");
         }
