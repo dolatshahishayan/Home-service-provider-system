@@ -1,14 +1,13 @@
 package ir.maktabsharif.home_service.service.user;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
-import ir.maktabsharif.home_service.dto.user.UserSaveUpdateRequest;
+import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.exception.NoUserFoundWithGivenCredentialsException;
 import ir.maktabsharif.home_service.exception.NoUserLoggedInException;
 import ir.maktabsharif.home_service.mapper.user.UserMapper;
 import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.repository.user.UserRepository;
 import ir.maktabsharif.home_service.util.Session;
-import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import org.springframework.stereotype.Service;
 
 @Service

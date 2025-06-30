@@ -1,7 +1,6 @@
 package ir.maktabsharif.home_service.service.expert_service;
 
 import ir.maktabsharif.home_service.base.service.BaseService;
-import ir.maktabsharif.home_service.dto.expert_service.ExpertServiceSaveUpdateRequest;
 import ir.maktabsharif.home_service.model.expert_service.ExpertService;
 
 import java.util.List;
