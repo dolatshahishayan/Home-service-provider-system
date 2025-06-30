@@ -7,7 +7,7 @@ import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 
 import java.util.List;
 
-public interface SuggestionService extends BaseService<Suggestion, SuggestionSaveUpdateRequest> {
+public interface SuggestionService extends BaseService<Suggestion> {
     void confirmSuggestionAcceptance(Integer suggestionId);
     List<SuggestionFindResponse> findAllByExpertId(Integer expertId);
     void saveWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest);

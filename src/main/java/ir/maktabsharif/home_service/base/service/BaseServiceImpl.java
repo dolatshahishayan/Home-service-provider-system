@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-public class BaseServiceImpl<T, U, R extends CrudRepository<T>, W> implements BaseService<T, U> {
+public class BaseServiceImpl<T, R extends CrudRepository<T>, W> implements BaseService<T> {
     public final R repository;
     public final W mapper;
 

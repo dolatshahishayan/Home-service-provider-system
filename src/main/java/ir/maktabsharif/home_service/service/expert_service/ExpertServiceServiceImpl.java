@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class ExpertServiceServiceImpl extends BaseServiceImpl<ExpertService, ExpertServiceSaveUpdateRequest, ExpertServiceRepository, ExpertServiceMapper> implements ExpertServiceService {
+public class ExpertServiceServiceImpl extends BaseServiceImpl<ExpertService, ExpertServiceRepository, ExpertServiceMapper> implements ExpertServiceService {
     protected final ir.maktabsharif.home_service.service.expert.ExpertService expertService;
     protected final ServiceService serviceService;
     public ExpertServiceServiceImpl(ExpertServiceRepository repository, ExpertServiceMapper mapper, ir.maktabsharif.home_service.service.expert.ExpertService expertService, ServiceService serviceService) {

@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class ExpertServiceImpl extends BaseServiceImpl<Expert, ExpertSaveUpdateRequest, ExpertRepository, ExpertMapper> implements ExpertService {
+public class ExpertServiceImpl extends BaseServiceImpl<Expert, ExpertRepository, ExpertMapper> implements ExpertService {
     protected final UserService userService;
     protected final WalletService walletService;
     protected final ImageUtil imageUtil;

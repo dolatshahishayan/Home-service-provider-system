@@ -7,7 +7,7 @@ import ir.maktabsharif.home_service.mapper.service.ServiceMapper;
 import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.repository.service.ServiceRepository;
 @org.springframework.stereotype.Service
-public class ServiceServiceImpl extends BaseServiceImpl<Service, ServiceSaveUpdateRequest, ServiceRepository, ServiceMapper> implements ServiceService {
+public class ServiceServiceImpl extends BaseServiceImpl<Service, ServiceRepository, ServiceMapper> implements ServiceService {
     public ServiceServiceImpl(ServiceRepository repository, ServiceMapper mapper) {
         super(repository, mapper);
     }

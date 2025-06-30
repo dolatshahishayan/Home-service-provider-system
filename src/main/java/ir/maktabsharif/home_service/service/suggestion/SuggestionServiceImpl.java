@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, SuggestionSaveUpdateRequest, SuggestionRepository, SuggestionMapper> implements SuggestionService {
+public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, SuggestionRepository, SuggestionMapper> implements SuggestionService {
     public SuggestionServiceImpl(SuggestionRepository repository, SuggestionMapper mapper) {
         super(repository, mapper);
     }

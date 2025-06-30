@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class OrderServiceImpl extends BaseServiceImpl<Order, OrderSaveUpdateRequest, OrderRepository, OrderMapper> implements OrderService {
+public class OrderServiceImpl extends BaseServiceImpl<Order, OrderRepository, OrderMapper> implements OrderService {
     protected final SuggestionService suggestionService;
     protected final ExpertServiceService expert_ServiceService;
 

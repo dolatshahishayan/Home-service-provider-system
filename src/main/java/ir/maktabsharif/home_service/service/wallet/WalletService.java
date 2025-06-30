@@ -7,7 +7,7 @@ import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
 
-public interface WalletService extends BaseService<Wallet, WalletSaveUpdateRequest> {
+public interface WalletService extends BaseService<Wallet> {
     void addCreditToWallet(Double credit,Integer userId);
     Wallet findByUserId(Integer userId);
     void saveWithExpert(Expert expert);

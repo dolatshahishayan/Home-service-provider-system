@@ -12,7 +12,7 @@ import ir.maktabsharif.home_service.repository.wallet.WalletRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class WalletServiceImpl extends BaseServiceImpl<Wallet, WalletSaveUpdateRequest, WalletRepository, WalletMapper> implements WalletService {
+public class WalletServiceImpl extends BaseServiceImpl<Wallet, WalletRepository, WalletMapper> implements WalletService {
     public WalletServiceImpl(WalletRepository repository, WalletMapper mapper) {
         super(repository, mapper);
     }

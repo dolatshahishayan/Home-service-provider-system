@@ -12,7 +12,7 @@ import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserServiceImpl extends BaseServiceImpl<User, UserSaveUpdateRequest, UserRepository, UserMapper> implements UserService {
+public class UserServiceImpl extends BaseServiceImpl<User, UserRepository, UserMapper> implements UserService {
     public UserServiceImpl(UserRepository repository, UserMapper mapper) {
         super(repository, mapper);
     }

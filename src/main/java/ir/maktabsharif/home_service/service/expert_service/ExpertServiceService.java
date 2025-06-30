@@ -6,7 +6,7 @@ import ir.maktabsharif.home_service.model.expert_service.ExpertService;
 
 import java.util.List;
 
-public interface ExpertServiceService extends BaseService<ExpertService, ExpertServiceSaveUpdateRequest> {
+public interface ExpertServiceService extends BaseService<ExpertService> {
     ExpertService findByExpertIdAndServiceId(Integer expertId, Integer serviceId);
     boolean existsByExpertIdAndServiceId(Integer expertId, Integer serviceId);
     void addExpertToService(Integer expertId, Integer serviceId);

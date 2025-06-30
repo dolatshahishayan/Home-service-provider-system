@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
 @Service
-public class CommentServiceImpl extends BaseServiceImpl<Comment, CommentSaveUpdateRequest, CommentRepository, CommentMapper> implements CommentService {
+public class CommentServiceImpl extends BaseServiceImpl<Comment, CommentRepository, CommentMapper> implements CommentService {
     protected final OrderService orderService;
     protected final ExpertService expertService;
 

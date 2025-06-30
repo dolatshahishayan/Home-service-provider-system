@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 @Service
-public class CustomerServiceImpl extends BaseServiceImpl<Customer, CustomerSaveUpdateRequest, CustomerRepository, CustomerMapper> implements CustomerService {
+public class CustomerServiceImpl extends BaseServiceImpl<Customer, CustomerRepository, CustomerMapper> implements CustomerService {
     protected final UserService userService;
     public CustomerServiceImpl(CustomerRepository repository, CustomerMapper mapper, UserService userService) {
         super(repository, mapper);

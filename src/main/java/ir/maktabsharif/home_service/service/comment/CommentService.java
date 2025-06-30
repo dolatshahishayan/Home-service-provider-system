@@ -5,7 +5,7 @@ import ir.maktabsharif.home_service.dto.comment.CommentSaveUpdateRequest;
 import ir.maktabsharif.home_service.model.comment.Comment;
 import ir.maktabsharif.home_service.model.order.Order;
 
-public interface CommentService extends BaseService<Comment, CommentSaveUpdateRequest> {
+public interface CommentService extends BaseService<Comment> {
     boolean existsByOrder(Order order);
     Comment findByOrder(Order order);
     double viewExpertScoreByOrder(Integer orderId);

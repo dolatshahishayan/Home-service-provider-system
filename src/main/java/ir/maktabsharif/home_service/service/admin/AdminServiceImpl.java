@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
 @Service
-public class AdminServiceImpl extends BaseServiceImpl<Admin, AdminSaveUpdateRequest, AdminRepository, AdminMapper> implements AdminService {
+public class AdminServiceImpl extends BaseServiceImpl<Admin, AdminRepository, AdminMapper> implements AdminService {
     protected final UserService userService;
 
     public AdminServiceImpl(AdminRepository repository, AdminMapper mapper, UserService userService) {
