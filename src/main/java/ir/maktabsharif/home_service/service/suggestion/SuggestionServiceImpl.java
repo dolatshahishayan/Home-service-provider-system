@@ -11,6 +11,7 @@ import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.repository.suggestion.SuggestionRepository;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.service.order.OrderService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,7 +23,7 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Suggestio
     protected final ExpertService expertService;
     protected final OrderService orderService;
 
-    public SuggestionServiceImpl(SuggestionRepository repository, SuggestionMapper mapper, ExpertService expertService, OrderService orderService) {
+    public SuggestionServiceImpl(SuggestionRepository repository, SuggestionMapper mapper, @Lazy ExpertService expertService,@Lazy OrderService orderService) {
         super(repository, mapper);
         this.expertService = expertService;
         this.orderService = orderService;
