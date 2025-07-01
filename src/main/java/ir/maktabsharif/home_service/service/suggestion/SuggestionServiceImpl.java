@@ -9,6 +9,8 @@ import ir.maktabsharif.home_service.mapper.suggestion.SuggestionMapper;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.repository.suggestion.SuggestionRepository;
+import ir.maktabsharif.home_service.service.expert.ExpertService;
+import ir.maktabsharif.home_service.service.order.OrderService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,14 +19,21 @@ import java.util.List;
 
 @Service
 public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, SuggestionRepository, SuggestionMapper> implements SuggestionService {
-    public SuggestionServiceImpl(SuggestionRepository repository, SuggestionMapper mapper) {
+    protected final ExpertService expertService;
+    protected final OrderService orderService;
+
+    public SuggestionServiceImpl(SuggestionRepository repository, SuggestionMapper mapper, ExpertService expertService, OrderService orderService) {
         super(repository, mapper);
+        this.expertService = expertService;
+        this.orderService = orderService;
     }
 
     @Override
     public void saveWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest) {
         Suggestion suggestion = mapper.mapToEntity(suggestionSaveUpdateRequest);
         suggestion.setCreationDate(LocalDateTime.now());
+        suggestion.setExpert(expertService.findById(suggestionSaveUpdateRequest.getExpertId()));
+        suggestion.setOrder(orderService.findById(suggestionSaveUpdateRequest.getOrderId()));
         if (!suggestion.getOrder().getOrderStatus().equals(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION)) {
             throw new InvalidRequestException("Order is not waiting for any suggestions.");
         }

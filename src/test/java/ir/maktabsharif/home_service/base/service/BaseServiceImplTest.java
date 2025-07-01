@@ -33,7 +33,7 @@ class BaseServiceImplTest {
     @Mock
     Object mapper;
 
-    BaseServiceImpl<TestEntity, Object, CrudRepository<TestEntity>, Object> service;
+    BaseServiceImpl<TestEntity, CrudRepository<TestEntity>, Object> service;
 
     @BeforeEach
     void setUp() {

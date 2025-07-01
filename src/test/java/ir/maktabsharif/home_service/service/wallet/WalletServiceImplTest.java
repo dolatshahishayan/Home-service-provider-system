@@ -7,8 +7,10 @@ import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.model.user.Expert;
+import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
 import ir.maktabsharif.home_service.repository.wallet.WalletRepository;
+import ir.maktabsharif.home_service.service.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,6 +30,9 @@ class WalletServiceImplTest {
     @Mock
     private WalletMapper mapper;
 
+    @Mock
+    private UserService userService;
+
     @InjectMocks
     private WalletServiceImpl service;
 
@@ -36,8 +41,9 @@ class WalletServiceImplTest {
     void saveWithDTO_shouldMapAndSave() {
         WalletSaveUpdateRequest dto = new WalletSaveUpdateRequest();
         Wallet wallet = new Wallet();
-
+        dto.setUserId(1);
         when(mapper.mapToEntity(dto)).thenReturn(wallet);
+        when(userService.findById(anyInt())).thenReturn(new User());
 
         service.saveWithDTO(dto);
 
@@ -76,6 +82,7 @@ class WalletServiceImplTest {
 
         Wallet mappedWallet = new Wallet();
         when(mapper.mapToEntity(any())).thenReturn(mappedWallet);
+        when(userService.findById(anyInt())).thenReturn(new User());
 
         service.saveWithExpert(expert);
 

@@ -11,8 +11,12 @@ import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.order.OrderRepository;
+import ir.maktabsharif.home_service.service.customer.CustomerService;
 import ir.maktabsharif.home_service.service.expert_service.ExpertServiceService;
+import ir.maktabsharif.home_service.service.service.ServiceService;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
+import ir.maktabsharif.home_service.util.Session;
+import org.hibernate.query.sqm.function.SelfRenderingOrderedSetAggregateFunctionSqlAstExpression;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,15 +27,24 @@ import java.util.List;
 public class OrderServiceImpl extends BaseServiceImpl<Order, OrderRepository, OrderMapper> implements OrderService {
     protected final SuggestionService suggestionService;
     protected final ExpertServiceService expert_ServiceService;
+    protected final CustomerService customerService;
+    protected final ir.maktabsharif.home_service.service.expert.ExpertService expertService;
+    protected final ServiceService serviceService;
 
-    public OrderServiceImpl(OrderRepository repository, OrderMapper mapper, SuggestionService suggestionService, ExpertServiceService expertServiceService) {
+    public OrderServiceImpl(OrderRepository repository, OrderMapper mapper, SuggestionService suggestionService, ExpertServiceService expertServiceService, CustomerService customerService, ir.maktabsharif.home_service.service.expert.ExpertService expertService, ServiceService serviceService) {
         super(repository, mapper);
         this.suggestionService = suggestionService;
         expert_ServiceService = expertServiceService;
+        this.customerService = customerService;
+        this.expertService = expertService;
+        this.serviceService = serviceService;
     }
     @Override
     public void saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest) {
         Order order = mapper.mapToEntity(orderSaveUpdateRequest);
+        order.setCustomer(customerService.findById(orderSaveUpdateRequest.getCustomerId()));
+        order.setExpert(expertService.findById(orderSaveUpdateRequest.getExpertId()));
+        order.setService(serviceService.findById(orderSaveUpdateRequest.getServiceId()));
         order.setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION);
         order.setCreationDate(LocalDateTime.now());
         save(order);

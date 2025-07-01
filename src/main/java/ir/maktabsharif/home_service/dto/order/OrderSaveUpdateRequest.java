@@ -30,6 +30,8 @@ public class OrderSaveUpdateRequest {
     @NotNull
     private OrderStatus orderStatus;
     @NotNull
+    private Integer customerId;
+    @NotNull
     private Integer serviceId;
     private Integer expertId;
 }

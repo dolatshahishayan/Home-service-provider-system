@@ -9,9 +9,12 @@ import ir.maktabsharif.home_service.model.expert_service.ExpertService;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
+import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.order.OrderRepository;
+import ir.maktabsharif.home_service.service.customer.CustomerService;
 import ir.maktabsharif.home_service.service.expert_service.ExpertServiceService;
+import ir.maktabsharif.home_service.service.service.ServiceService;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +43,15 @@ class OrderServiceImplTest {
     @Mock
     private ExpertServiceService expertServiceService;
 
+    @Mock
+    private CustomerService customerService;
+
+    @Mock
+    private ir.maktabsharif.home_service.service.expert.ExpertService expertService;
+
+    @Mock
+    private ServiceService serviceService;
+
     @InjectMocks
     private OrderServiceImpl service;
 
@@ -47,20 +59,28 @@ class OrderServiceImplTest {
     @Test
     void saveWithDTO_shouldMapAndSaveOrder() {
         OrderSaveUpdateRequest dto = new OrderSaveUpdateRequest();
-        Order order = new Order();
+        dto.setCustomerId(1);
+        dto.setExpertId(2);
+        dto.setServiceId(3);
 
+        Order order = new Order();
         when(mapper.mapToEntity(dto)).thenReturn(order);
+        when(customerService.findById(dto.getCustomerId())).thenReturn(new Customer());
+        when(expertService.findById(dto.getExpertId())).thenReturn(new Expert());
+        when(serviceService.findById(dto.getServiceId())).thenReturn(new Service());
 
         service.saveWithDTO(dto);
 
         assertEquals(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION, order.getOrderStatus());
         assertNotNull(order.getCreationDate());
+        assertNotNull(order.getCustomer());
+        assertNotNull(order.getExpert());
+        assertNotNull(order.getService());
 
         verify(repository).beginTransaction();
         verify(repository).save(order);
         verify(repository).commitTransaction();
     }
-
 
     @Test
     void updateWithDTO_shouldMapAndUpdateOrder() {
@@ -129,7 +149,6 @@ class OrderServiceImplTest {
 
         verify(suggestionService).confirmSuggestionAcceptance(suggestionId);
     }
-
 
 
     @Test

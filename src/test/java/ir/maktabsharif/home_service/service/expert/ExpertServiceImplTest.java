@@ -74,6 +74,7 @@ class ExpertServiceImplTest {
         ExpertSaveUpdateRequest dto = new ExpertSaveUpdateRequest();
         dto.setEmail("test@example.com");
         String imagePath = "profile.jpg";
+        when(mapper.mapToEntity(any())).thenReturn(new Expert());
 
         when(userService.existsByEmail(dto.getEmail())).thenReturn(true);
 
@@ -137,20 +138,31 @@ class ExpertServiceImplTest {
 
         verify(walletService).saveWithExpert(expert);
     }
-
-
     @Test
     void updateWithDTO_ShouldThrow_WhenEmailUsedByAnother() {
         ExpertSaveUpdateRequest dto = new ExpertSaveUpdateRequest();
-        dto.setEmail("test@example.com");
-        dto.setId(1);
+        dto.setId(42);
+        dto.setEmail("existing@example.com");
+        dto.setPassword("newpass");
+
+        Expert existingExpert = new Expert();
+        existingExpert.setId(42);
+
+        when(expertRepository.findById(dto.getId())).thenReturn(Optional.of(existingExpert));
 
         when(userService.existsByEmailAndIdNot(dto.getEmail(), dto.getId())).thenReturn(true);
 
-        UserWithSameEmailExistsException ex = assertThrows(UserWithSameEmailExistsException.class, () -> expertService.updateWithDTO(dto));
+        UserWithSameEmailExistsException exception = assertThrows(UserWithSameEmailExistsException.class,
+                () -> expertService.updateWithDTO(dto));
 
-        assertNotNull(ex);
+        assertNotNull(exception);
+
+        verify(orderService, never()).existsBySpecialistAndOrderStatusIn(any(), any());
+
+        verify(expertRepository, never()).update(any());
     }
+
+
 
     @Test
     void updateWithDTO_ShouldThrow_WhenExpertHasActiveOrder() {

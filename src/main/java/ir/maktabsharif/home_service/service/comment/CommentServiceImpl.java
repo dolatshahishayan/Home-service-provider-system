@@ -38,6 +38,7 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, CommentReposito
             throw new DuplicateInfoException("You have already registered a comment for this order!");
         }
         Comment comment = mapper.mapToEntity(commentSaveUpdateRequest);
+        comment.setOrder(order);
         comment.setRegistrationDate(LocalDateTime.now());
         save(comment);
 

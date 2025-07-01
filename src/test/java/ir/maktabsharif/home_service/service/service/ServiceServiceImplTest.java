@@ -14,8 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ServiceServiceImplTest {
@@ -25,93 +24,105 @@ class ServiceServiceImplTest {
 
     @Mock
     private ServiceMapper mapper;
-
     @InjectMocks
     private ServiceServiceImpl service;
 
 
     @Test
-    void saveWithDTO_shouldThrow_whenNameAlreadyExists() {
+    void updateWithDTO_shouldThrowException_whenNameExists() {
+        ServiceSaveUpdateRequest dto = new ServiceSaveUpdateRequest();
+        dto.setName("Cleaning");
+
+        when(repository.existsByName("Cleaning")).thenReturn(true);
+
+        assertThrows(DuplicateInfoException.class, () -> service.updateWithDTO(dto));
+        verify(mapper, never()).mapToEntity(any());
+    }
+
+    @Test
+    void updateWithDTO_shouldUpdate_whenNameIsUnique() {
+        ServiceSaveUpdateRequest dto = new ServiceSaveUpdateRequest();
+        dto.setName("Painting");
+        dto.setParentServiceId(1);
+
+        Service mapped = new Service();
+        Service parent = new Service();
+        parent.setId(1);
+
+        when(repository.existsByName("Painting")).thenReturn(false);
+        when(mapper.mapToEntity(dto)).thenReturn(mapped);
+        when(repository.findById(1)).thenReturn(Optional.of(parent));
+
+        service.updateWithDTO(dto);
+
+        verify(mapper).mapToEntity(dto);
+        verify(repository).update(mapped);
+        assertEquals(parent, mapped.getParentService());
+    }
+    @Test
+    void updateDescription_shouldUpdateDescription_whenIdExists() {
+        Service serviceEntity = new Service();
+        serviceEntity.setId(10);
+
+        when(repository.findById(10)).thenReturn(Optional.of(serviceEntity));
+
+        service.updateDescription(10, "New description");
+
+        assertEquals("New description", serviceEntity.getDescription());
+        verify(repository).update(serviceEntity);
+    }
+    @Test
+    void updateBasePrice_shouldUpdatePrice_whenIdExists() {
+        Service serviceEntity = new Service();
+        serviceEntity.setId(12);
+
+        when(repository.findById(12)).thenReturn(Optional.of(serviceEntity));
+
+        service.updateBasePrice(12, 500.0);
+
+        assertEquals(500.0, serviceEntity.getBasePrice());
+        verify(repository).update(serviceEntity);
+    }
+    @Test
+    void existsByName_shouldCallRepository() {
+        when(repository.existsByName("Plumbing")).thenReturn(true);
+        boolean result = service.existsByName("Plumbing");
+        assertTrue(result);
+        verify(repository).existsByName("Plumbing");
+    }
+    @Test
+    void saveWithDTO_shouldThrowException_whenNameExists() {
         ServiceSaveUpdateRequest dto = new ServiceSaveUpdateRequest();
         dto.setName("Cleaning");
 
         when(repository.existsByName("Cleaning")).thenReturn(true);
 
         assertThrows(DuplicateInfoException.class, () -> service.saveWithDTO(dto));
+        verify(mapper, never()).mapToEntity(any());
+        verify(repository, never()).save(any());
     }
 
     @Test
-    void saveWithDTO_shouldSave_whenNameUnique() {
+    void saveWithDTO_shouldSave_whenNameIsUnique() {
         ServiceSaveUpdateRequest dto = new ServiceSaveUpdateRequest();
-        dto.setName("Plumbing");
+        dto.setName("Painting");
+        dto.setParentServiceId(1);
 
-        Service model = new Service();
+        Service mapped = new Service();
+        Service parent = new Service();
+        parent.setId(1);
 
-        when(repository.existsByName("Plumbing")).thenReturn(false);
-        when(mapper.mapToEntity(dto)).thenReturn(model);
+        when(repository.existsByName("Painting")).thenReturn(false);
+        when(mapper.mapToEntity(dto)).thenReturn(mapped);
+        when(repository.findById(1)).thenReturn(Optional.of(parent));
 
         service.saveWithDTO(dto);
 
-        verify(repository).beginTransaction();
-        verify(repository).save(model);
-        verify(repository).commitTransaction();
+        verify(mapper).mapToEntity(dto);
+        verify(repository).save(mapped);
+        assertEquals(parent, mapped.getParentService());
     }
 
 
-    @Test
-    void updateDescription_shouldFindAndUpdateDescription() {
-        Integer id = 1;
-        String newDescription = "Updated service description";
-
-        Service serviceEntity = new Service();
-        serviceEntity.setId(id);
-        serviceEntity.setDescription("Old description");
-
-        when(repository.findById(id)).thenReturn(Optional.of(serviceEntity));
-
-        service.updateDescription(id, newDescription);
-
-        assertEquals(newDescription, serviceEntity.getDescription());
-
-        verify(repository).beginTransaction();
-        verify(repository).update(serviceEntity);
-        verify(repository).commitTransaction();
-    }
-
-
-    @Test
-    void updateBasePrice_shouldFindAndUpdatePrice() {
-        Integer id = 1;
-        Double newPrice = 120.5;
-
-        Service serviceEntity = new Service();
-        serviceEntity.setId(id);
-        serviceEntity.setBasePrice(90.0);
-
-        when(repository.findById(id)).thenReturn(Optional.of(serviceEntity));
-
-        service.updateBasePrice(id, newPrice);
-
-        assertEquals(newPrice, serviceEntity.getBasePrice());
-
-        verify(repository).beginTransaction();
-        verify(repository).update(serviceEntity);
-        verify(repository).commitTransaction();
-    }
-
-
-    @Test
-    void existsByName_shouldReturnRepositoryValue() {
-        when(repository.existsByName("Car Wash")).thenReturn(true);
-
-        boolean result = service.existsByName("Car Wash");
-
-        assertTrue(result);
-
-        when(repository.existsByName("Gardening")).thenReturn(false);
-
-        boolean result2 = service.existsByName("Gardening");
-
-        assertFalse(result2);
-    }
 }
+

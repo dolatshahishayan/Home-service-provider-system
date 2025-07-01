@@ -10,6 +10,8 @@ import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.repository.suggestion.SuggestionRepository;
+import ir.maktabsharif.home_service.service.expert.ExpertService;
+import ir.maktabsharif.home_service.service.order.OrderService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -33,9 +36,14 @@ class SuggestionServiceImplTest {
     @Mock
     private SuggestionMapper mapper;
 
+    @Mock
+    private OrderService orderService;
+
+    @Mock
+    private ExpertService expertService;
+
     @InjectMocks
     private SuggestionServiceImpl service;
-
 
     @Test
     void saveWithDTO_shouldThrow_whenOrderStatusIsInvalid() {
@@ -51,8 +59,12 @@ class SuggestionServiceImplTest {
         Suggestion suggestion = new Suggestion();
         suggestion.setOrder(order);
         suggestion.setPrice(120.0);
-
+        dto.setOrderId(1);
+        dto.setExpertId(1);
         when(mapper.mapToEntity(dto)).thenReturn(suggestion);
+
+        when(orderService.findById(anyInt())).thenReturn(order);
+        when(expertService.findById(anyInt())).thenReturn(new ir.maktabsharif.home_service.model.user.Expert());
 
         assertThrows(InvalidRequestException.class, () -> service.saveWithDTO(dto));
     }
@@ -71,8 +83,12 @@ class SuggestionServiceImplTest {
         Suggestion suggestion = new Suggestion();
         suggestion.setOrder(order);
         suggestion.setPrice(120.0);
-
+        dto.setOrderId(1);
+        dto.setExpertId(1);
         when(mapper.mapToEntity(dto)).thenReturn(suggestion);
+
+        when(orderService.findById(anyInt())).thenReturn(order);
+        when(expertService.findById(anyInt())).thenReturn(new ir.maktabsharif.home_service.model.user.Expert());
 
         assertThrows(InvalidRequestException.class, () -> service.saveWithDTO(dto));
     }
@@ -91,8 +107,12 @@ class SuggestionServiceImplTest {
         Suggestion suggestion = new Suggestion();
         suggestion.setOrder(order);
         suggestion.setPrice(120.0);
-
+        dto.setOrderId(1);
+        dto.setExpertId(1);
         when(mapper.mapToEntity(dto)).thenReturn(suggestion);
+
+        when(orderService.findById(anyInt())).thenReturn(order);
+        when(expertService.findById(anyInt())).thenReturn(new ir.maktabsharif.home_service.model.user.Expert());
 
         service.saveWithDTO(dto);
 

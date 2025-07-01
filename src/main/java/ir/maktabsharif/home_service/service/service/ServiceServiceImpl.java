@@ -16,7 +16,18 @@ public class ServiceServiceImpl extends BaseServiceImpl<Service, ServiceReposito
         if (existsByName(serviceSaveUpdateRequest.getName())) {
             throw new DuplicateInfoException("Service name already exists");
         }
-        save(mapper.mapToEntity(serviceSaveUpdateRequest));
+        Service service = mapper.mapToEntity(serviceSaveUpdateRequest);
+        service.setParentService(findById(serviceSaveUpdateRequest.getParentServiceId()));
+        save(service);
+    }
+    @Override
+    public void updateWithDTO(ServiceSaveUpdateRequest serviceSaveUpdateRequest) {
+        if (existsByName(serviceSaveUpdateRequest.getName())) {
+            throw new DuplicateInfoException("Service name already exists");
+        }
+        Service service = mapper.mapToEntity(serviceSaveUpdateRequest);
+        service.setParentService(findById(serviceSaveUpdateRequest.getParentServiceId()));
+        update(service);
     }
     //Todo write method for service and subservice (find all)
     @Override
