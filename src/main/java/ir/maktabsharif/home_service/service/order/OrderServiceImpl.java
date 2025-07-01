@@ -15,8 +15,6 @@ import ir.maktabsharif.home_service.service.customer.CustomerService;
 import ir.maktabsharif.home_service.service.expert_service.ExpertServiceService;
 import ir.maktabsharif.home_service.service.service.ServiceService;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
-import ir.maktabsharif.home_service.util.Session;
-import org.hibernate.query.sqm.function.SelfRenderingOrderedSetAggregateFunctionSqlAstExpression;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
