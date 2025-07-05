@@ -1,7 +1,6 @@
 package ir.maktabsharif.home_service.base.service;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface BaseService<T,ID> {
     T save(T t);

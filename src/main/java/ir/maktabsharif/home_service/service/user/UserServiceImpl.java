@@ -9,8 +9,6 @@ import ir.maktabsharif.home_service.repository.user.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @Transactional
 public class UserServiceImpl extends BaseServiceImpl<User, Integer, UserRepository, UserMapper> implements UserService {

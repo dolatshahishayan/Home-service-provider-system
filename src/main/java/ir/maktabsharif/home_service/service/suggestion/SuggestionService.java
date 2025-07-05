@@ -3,7 +3,6 @@ package ir.maktabsharif.home_service.service.suggestion;
 import ir.maktabsharif.home_service.base.service.BaseService;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionFindResponse;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionSaveUpdateRequest;
-import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 
 import java.util.List;

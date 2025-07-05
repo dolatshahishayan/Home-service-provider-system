@@ -3,7 +3,6 @@ package ir.maktabsharif.home_service.service.customer;
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.customer.CustomerSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
-import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.exception.NoUserFoundWithGivenCredentialsException;
 import ir.maktabsharif.home_service.exception.UserWithSameEmailExistsException;
 import ir.maktabsharif.home_service.mapper.customer.CustomerMapper;
@@ -15,7 +14,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @Transactional

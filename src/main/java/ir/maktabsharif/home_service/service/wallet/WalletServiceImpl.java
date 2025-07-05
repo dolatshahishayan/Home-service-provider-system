@@ -7,8 +7,6 @@ import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.wallet.WalletMapper;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
-import ir.maktabsharif.home_service.model.user.Customer;
-import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
 import ir.maktabsharif.home_service.repository.wallet.WalletRepository;
 import ir.maktabsharif.home_service.service.user.UserService;

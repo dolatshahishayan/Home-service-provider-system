@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 public class BaseServiceImpl<T,ID, R extends JpaRepository<T, ID>, M> implements BaseService<T,ID> {

@@ -4,7 +4,6 @@ import ir.maktabsharif.home_service.dto.admin.AdminSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.UserWithSameEmailExistsException;
 import ir.maktabsharif.home_service.mapper.admin.AdminMapper;
 import ir.maktabsharif.home_service.model.user.Admin;
-import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.admin.AdminRepository;
 import ir.maktabsharif.home_service.service.user.UserService;
 import org.junit.jupiter.api.Test;
