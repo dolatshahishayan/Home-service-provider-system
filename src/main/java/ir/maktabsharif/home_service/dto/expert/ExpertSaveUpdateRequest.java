@@ -16,8 +16,10 @@ public class ExpertSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.update.class})
     private Integer id;
     @NotBlank(groups = {ValidationGroup.save.class})
+    @Null(groups = {ValidationGroup.update.class})
     private String firstName;
     @NotBlank(groups = {ValidationGroup.save.class})
+    @Null(groups = {ValidationGroup.update.class})
     private String lastName;
     @NotBlank
     private String email;

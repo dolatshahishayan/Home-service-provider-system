@@ -1,8 +1,14 @@
 package ir.maktabsharif.home_service.repository.service;
 
-import ir.maktabsharif.home_service.base.repository.CrudRepository;
 import ir.maktabsharif.home_service.model.service.Service;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface ServiceRepository extends CrudRepository<Service> {
+import java.util.List;
+import java.util.Optional;
+
+public interface ServiceRepository extends JpaRepository<Service,Integer>, JpaSpecificationExecutor<Service> {
     boolean existsByName(String name);
+    Optional<List<Service>> findAllAndParentServiceIsNull();
+    Optional<List<Service>> findAllAndParentServiceIsNotNullByParentService(Service parent);
 }

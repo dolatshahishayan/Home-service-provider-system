@@ -2,7 +2,6 @@ package ir.maktabsharif.home_service.service.wallet;
 
 import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
-import ir.maktabsharif.home_service.mapper.wallet.WalletMapper;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.model.user.Customer;
@@ -17,6 +16,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -28,28 +29,35 @@ class WalletServiceImplTest {
     private WalletRepository repository;
 
     @Mock
-    private WalletMapper mapper;
-
-    @Mock
     private UserService userService;
 
     @InjectMocks
     private WalletServiceImpl service;
 
-
     @Test
-    void saveWithDTO_shouldMapAndSave() {
-        WalletSaveUpdateRequest dto = new WalletSaveUpdateRequest();
-        Wallet wallet = new Wallet();
-        dto.setUserId(1);
-        when(mapper.mapToEntity(dto)).thenReturn(wallet);
-        when(userService.findById(anyInt())).thenReturn(new User());
+    void testSaveWithDTO() {
+        Integer userId = 1;
+        User mockUser = new User();
+        mockUser.setId(userId);
 
-        service.saveWithDTO(dto);
+        WalletSaveUpdateRequest request = new WalletSaveUpdateRequest();
+        request.setUserId(userId);
 
-        verify(repository).beginTransaction();
-        verify(repository).save(wallet);
-        verify(repository).commitTransaction();
+        Wallet savedWallet = new Wallet();
+        savedWallet.setUser(mockUser);
+        savedWallet.setBalance(0.0);
+
+        when(userService.findById(userId)).thenReturn(mockUser);
+        when(repository.save(any(Wallet.class))).thenReturn(savedWallet);
+
+        Wallet result = service.saveWithDTO(request);
+
+        assertNotNull(result);
+        assertEquals(mockUser, result.getUser());
+        assertEquals(0.0, result.getBalance());
+
+        verify(userService).findById(userId);
+        verify(repository).save(any(Wallet.class));
     }
 
 
@@ -60,37 +68,13 @@ class WalletServiceImplTest {
         Integer userId = 1;
         Double creditToAdd = 50.0;
 
-        when(repository.findByUserId(userId)).thenReturn(wallet);
+        when(repository.findByUserId(userId)).thenReturn(Optional.of(wallet));
 
         service.addCreditToWallet(creditToAdd, userId);
 
         assertEquals(150.0, wallet.getBalance());
-        verify(repository).beginTransaction();
-        verify(repository).update(wallet);
-        verify(repository).commitTransaction();
+        verify(repository).save(wallet);
     }
-
-
-    @Test
-    void saveWithExpert_shouldCreateWalletForExpert() {
-        Expert expert = new Expert();
-        expert.setId(10);
-
-        WalletSaveUpdateRequest expectedRequest = new WalletSaveUpdateRequest();
-        expectedRequest.setUserId(10);
-        expectedRequest.setBalance(0.0);
-
-        Wallet mappedWallet = new Wallet();
-        when(mapper.mapToEntity(any())).thenReturn(mappedWallet);
-        when(userService.findById(anyInt())).thenReturn(new User());
-
-        service.saveWithExpert(expert);
-
-        verify(repository).beginTransaction();
-        verify(repository).save(mappedWallet);
-        verify(repository).commitTransaction();
-    }
-
 
     @Test
     void payFromWallet_shouldThrow_whenInsufficientBalance() {
@@ -109,7 +93,7 @@ class WalletServiceImplTest {
         Wallet customerWallet = new Wallet();
         customerWallet.setBalance(100.0);
 
-        when(repository.findByUserId(1)).thenReturn(customerWallet);
+        when(repository.findByUserId(1)).thenReturn(Optional.of(customerWallet));
 
         assertThrows(CouldNotUpdateException.class, () ->
                 service.payFromWallet(order, suggestion));
@@ -135,24 +119,22 @@ class WalletServiceImplTest {
         Wallet expertWallet = new Wallet();
         expertWallet.setBalance(20.0);
 
-        when(repository.findByUserId(1)).thenReturn(customerWallet);
-        when(repository.findByUserId(2)).thenReturn(expertWallet);
+        when(repository.findByUserId(1)).thenReturn(Optional.of(customerWallet));
+        when(repository.findByUserId(2)).thenReturn(Optional.of(expertWallet));
 
         service.payFromWallet(order, suggestion);
 
         assertEquals(20.0, customerWallet.getBalance());
         assertEquals(100.0, expertWallet.getBalance());
 
-        verify(repository, times(2)).beginTransaction();
-        verify(repository, times(2)).update(any(Wallet.class));
-        verify(repository, times(2)).commitTransaction();
+        verify(repository, times(2)).save(any(Wallet.class));
     }
 
 
     @Test
     void findByUserId_shouldReturnWallet() {
         Wallet wallet = new Wallet();
-        when(repository.findByUserId(5)).thenReturn(wallet);
+        when(repository.findByUserId(5)).thenReturn(Optional.of(wallet));
 
         Wallet result = service.findByUserId(5);
 

@@ -1,12 +1,12 @@
 package ir.maktabsharif.home_service.base.service;
 
-import ir.maktabsharif.home_service.base.repository.CrudRepository;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,12 +28,12 @@ class BaseServiceImplTest {
     }
 
     @Mock
-    CrudRepository<TestEntity> repository;
+    JpaRepository<TestEntity,Integer> repository;
 
     @Mock
     Object mapper;
 
-    BaseServiceImpl<TestEntity, CrudRepository<TestEntity>, Object> service;
+    BaseServiceImpl<TestEntity,Integer, JpaRepository<TestEntity,Integer>, Object> service;
 
     @BeforeEach
     void setUp() {
@@ -44,14 +44,9 @@ class BaseServiceImplTest {
     void testSave() {
         TestEntity entity = new TestEntity(1, "Ali");
 
-        doNothing().when(repository).beginTransaction();
-        doNothing().when(repository).commitTransaction();
-
         service.save(entity);
 
-        verify(repository).beginTransaction();
         verify(repository).save(entity);
-        verify(repository).commitTransaction();
     }
 
     @Test
@@ -73,30 +68,11 @@ class BaseServiceImplTest {
 
     @Test
     void testDelete() {
-        doNothing().when(repository).beginTransaction();
-        doNothing().when(repository).delete(1);
-        doNothing().when(repository).commitTransaction();
+        doNothing().when(repository).deleteById(1);
 
         service.delete(1);
 
-        verify(repository).beginTransaction();
-        verify(repository).delete(1);
-        verify(repository).commitTransaction();
-    }
-
-    @Test
-    void testUpdate() {
-        TestEntity entity = new TestEntity(3, "Zahra");
-
-        doNothing().when(repository).beginTransaction();
-        doNothing().when(repository).update(entity);
-        doNothing().when(repository).commitTransaction();
-
-        service.update(entity);
-
-        verify(repository).beginTransaction();
-        verify(repository).update(entity);
-        verify(repository).commitTransaction();
+        verify(repository).deleteById(1);
     }
 
     @Test

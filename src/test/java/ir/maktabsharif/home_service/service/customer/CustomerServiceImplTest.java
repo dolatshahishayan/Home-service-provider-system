@@ -1,11 +1,13 @@
 package ir.maktabsharif.home_service.service.customer;
 
 import ir.maktabsharif.home_service.dto.customer.CustomerSaveUpdateRequest;
+import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.UserWithSameEmailExistsException;
 import ir.maktabsharif.home_service.mapper.customer.CustomerMapper;
 import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.repository.customer.CustomerRepository;
 import ir.maktabsharif.home_service.service.user.UserService;
+import ir.maktabsharif.home_service.service.wallet.WalletService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -29,6 +32,9 @@ class CustomerServiceImplTest {
 
     @Mock
     private CustomerMapper mapper;
+
+    @Mock
+    private WalletService walletService;
 
     @InjectMocks
     private CustomerServiceImpl customerService;
@@ -66,10 +72,9 @@ class CustomerServiceImplTest {
         assertEquals("unique@example.com", existingCustomer.getEmail());
         assertEquals("1234", existingCustomer.getPassword());
 
-        verify(customerRepository).beginTransaction();
-        verify(customerRepository).update(existingCustomer);
-        verify(customerRepository).commitTransaction();
+        verify(customerRepository).save(existingCustomer);
     }
+
     @Test
     void register_ShouldThrowException_WhenEmailExists() {
         CustomerSaveUpdateRequest dto = new CustomerSaveUpdateRequest();
@@ -84,19 +89,27 @@ class CustomerServiceImplTest {
     void register_ShouldSaveCustomer_WhenEmailIsUnique() {
         CustomerSaveUpdateRequest dto = new CustomerSaveUpdateRequest();
         dto.setEmail("unique@example.com");
-
+        WalletSaveUpdateRequest walletSaveUpdateRequest = new WalletSaveUpdateRequest();
         Customer customer = new Customer();
-
+        customer.setEmail(dto.getEmail());
+        customer.setId(1);
+        walletSaveUpdateRequest.setUserId(customer.getId());
         when(userService.existsByEmail(dto.getEmail())).thenReturn(false);
         when(mapper.mapToEntity(dto)).thenReturn(customer);
-
+        when(customerRepository.findByEmail(dto.getEmail())).thenReturn(Optional.of(customer));
         customerService.register(dto);
 
         assertNotNull(customer.getRegistrationDate());
 
-        verify(customerRepository).beginTransaction();
         verify(customerRepository).save(customer);
-        verify(customerRepository).commitTransaction();
+        verify(walletService).saveWithDTO(any(WalletSaveUpdateRequest.class));
     }
 
+    @Test
+    void findByEmail_ShouldFindCustomer_WhenEmailExists() {
+        Customer customer = new Customer();
+        when(customerRepository.findByEmail("exists@example.com")).thenReturn(Optional.of(customer));
+        customerService.findByEmail("exists@example.com");
+        verify(customerRepository).findByEmail("exists@example.com");
+    }
 }

@@ -1,13 +1,15 @@
 package ir.maktabsharif.home_service.repository.order;
 
-import ir.maktabsharif.home_service.base.repository.CrudRepository;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.user.Expert;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface OrderRepository extends CrudRepository<Order> {
-    boolean existsBySpecialistAndOrderStatusIn(Expert expert, List<OrderStatus> statuses);
-    List<Order> findByServiceId(Integer serviceId);
+public interface OrderRepository extends JpaRepository<Order,Integer>, JpaSpecificationExecutor<Order> {
+    boolean existsByExpertAndOrderStatusIn(Expert expert, List<OrderStatus> statuses);
+    Optional<List<Order>> findByServiceId(Integer serviceId);
 }

@@ -8,12 +8,15 @@ import ir.maktabsharif.home_service.model.expert_service.ExpertService;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.expert_service.ExpertServiceRepository;
 import ir.maktabsharif.home_service.service.service.ServiceService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
-public class ExpertServiceServiceImpl extends BaseServiceImpl<ExpertService, ExpertServiceRepository, ExpertServiceMapper> implements ExpertServiceService {
+@Transactional
+public class ExpertServiceServiceImpl extends BaseServiceImpl<ExpertService, Integer, ExpertServiceRepository, ExpertServiceMapper> implements ExpertServiceService {
     protected final ir.maktabsharif.home_service.service.expert.ExpertService expertService;
     protected final ServiceService serviceService;
     public ExpertServiceServiceImpl(ExpertServiceRepository repository, ExpertServiceMapper mapper, ir.maktabsharif.home_service.service.expert.ExpertService expertService, ServiceService serviceService) {
@@ -47,16 +50,14 @@ public class ExpertServiceServiceImpl extends BaseServiceImpl<ExpertService, Exp
 
     @Override
     public List<ExpertService> findByExpertId(Integer expertId) {
-        List<ExpertService> byExpertId = repository.findByExpertId(expertId);
-        if (byExpertId.isEmpty()) {
-            throw new NoExpertFoundWithServiceException();
-        }
-        return byExpertId;
+        return repository.findByExpertId(expertId).orElseThrow(NoExpertFoundWithServiceException::new);
+
     }
 
     @Override
     public ExpertService findByExpertIdAndServiceId(Integer expertId, Integer serviceId) {
-        return repository.findByExpertIdAndServiceId(expertId, serviceId);
+        return repository.findByExpertIdAndServiceId(expertId, serviceId).orElseThrow(NoExpertFoundWithServiceException::new);
+
     }
 
     @Override

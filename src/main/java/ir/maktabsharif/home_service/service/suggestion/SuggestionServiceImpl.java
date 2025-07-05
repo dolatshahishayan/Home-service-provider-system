@@ -7,10 +7,12 @@ import ir.maktabsharif.home_service.exception.InvalidRequestException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.suggestion.SuggestionMapper;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
+import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.repository.suggestion.SuggestionRepository;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.service.order.OrderService;
+import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, SuggestionRepository, SuggestionMapper> implements SuggestionService {
+@Transactional
+public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, SuggestionRepository, SuggestionMapper> implements SuggestionService {
     protected final ExpertService expertService;
     protected final OrderService orderService;
 
@@ -30,7 +33,7 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Suggestio
     }
 
     @Override
-    public void saveWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest) {
+    public Suggestion registerSuggestionForOrder(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest) {
         Suggestion suggestion = mapper.mapToEntity(suggestionSaveUpdateRequest);
         suggestion.setCreationDate(LocalDateTime.now());
         suggestion.setExpert(expertService.findById(suggestionSaveUpdateRequest.getExpertId()));
@@ -41,23 +44,35 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Suggestio
         if (suggestion.getPrice() < suggestion.getOrder().getService().getBasePrice()) {
             throw new InvalidRequestException("Price must be greater than the base price.");
         }
-        save(suggestion);
+        return save(suggestion);
     }
 
     @Override
-    public void updateWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest) {
-        update(mapper.mapToEntity(suggestionSaveUpdateRequest));
+    public Suggestion updateWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest) {
+        Suggestion suggestion = mapper.mapToEntity(suggestionSaveUpdateRequest);
+        suggestion.setExpert(expertService.findById(suggestionSaveUpdateRequest.getExpertId()));
+        suggestion.setOrder(orderService.findById(suggestionSaveUpdateRequest.getOrderId()));
+        return save(suggestion);
+    }
+
+    @Override
+    public List<Suggestion> findAllAndSortByPriceAsc(Integer orderId) {
+        Order byId = orderService.findById(orderId);
+        return repository.findAllByOrderAndSortByPriceAsc(byId).orElseThrow(NoElementFoundException::new);
+    }
+
+    @Override
+    public List<Suggestion> findAllByAndSortByExpertScoreDesc(Integer orderId) {
+        Order byId = orderService.findById(orderId);
+        return repository.findAllByOrderAndSortByExpertScoreDesc(byId).orElseThrow(NoElementFoundException::new);
     }
 
     @Override
     public List<SuggestionFindResponse> findAllByExpertId(Integer expertId) {
-        List<Suggestion> allByExpertId = repository.findAllByExpertId(expertId);
-        if (allByExpertId.isEmpty()) {
-            throw new NoElementFoundException();
-        }
+        List<Suggestion> allByExpertId = repository.findAllByExpertId(expertId).orElseThrow(NoElementFoundException::new);
         List<SuggestionFindResponse> responses = new ArrayList<>();
         for (Suggestion suggestion : allByExpertId) {
-            responses.add(mapper.mapToDTO(suggestion));
+            responses.add(mapper.mapToResponse(suggestion));
         }
         return responses;
     }
@@ -66,6 +81,6 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Suggestio
     public void confirmSuggestionAcceptance(Integer suggestionId) {
         Suggestion suggestion = findById(suggestionId);
         suggestion.setAccepted(true);
-        update(suggestion);
+        save(suggestion);
     }
 }

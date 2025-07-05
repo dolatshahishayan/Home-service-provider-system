@@ -1,7 +1,12 @@
 package ir.maktabsharif.home_service.repository.expert;
 
-import ir.maktabsharif.home_service.base.repository.CrudRepository;
+import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.model.user.Expert;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface ExpertRepository extends CrudRepository<Expert> {
+import java.util.Optional;
+
+public interface ExpertRepository extends JpaRepository<Expert,Integer>, JpaSpecificationExecutor<Expert> {
+    Optional<Expert> findByEmail(String email);
 }

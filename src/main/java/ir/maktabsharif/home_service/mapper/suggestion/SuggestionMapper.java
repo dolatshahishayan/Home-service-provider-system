@@ -9,5 +9,5 @@ import org.mapstruct.MappingConstants;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface SuggestionMapper {
     Suggestion mapToEntity(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest);
-    SuggestionFindResponse mapToDTO(Suggestion suggestion);
+    SuggestionFindResponse mapToResponse(Suggestion suggestion);
 }

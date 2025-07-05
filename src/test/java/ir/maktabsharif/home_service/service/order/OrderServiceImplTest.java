@@ -2,6 +2,7 @@ package ir.maktabsharif.home_service.service.order;
 
 import ir.maktabsharif.home_service.dto.order.OrderFindResponse;
 import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
+import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
 import ir.maktabsharif.home_service.mapper.order.OrderMapper;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
@@ -16,6 +17,7 @@ import ir.maktabsharif.home_service.service.customer.CustomerService;
 import ir.maktabsharif.home_service.service.expert_service.ExpertServiceService;
 import ir.maktabsharif.home_service.service.service.ServiceService;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -55,32 +57,45 @@ class OrderServiceImplTest {
     @InjectMocks
     private OrderServiceImpl service;
 
+    private final Customer test = new Customer();
+
+    @BeforeEach
+    void setUp() {
+        test.setEmail("user@example.com");
+    }
 
     @Test
-    void saveWithDTO_shouldMapAndSaveOrder() {
+    void saveWithDTO_shouldMapAndSaveOrder_whenPriceIsValid() {
         OrderSaveUpdateRequest dto = new OrderSaveUpdateRequest();
         dto.setCustomerId(1);
         dto.setExpertId(2);
         dto.setServiceId(3);
+        dto.setProposedPrice(2000d);
 
-        Order order = new Order();
-        when(mapper.mapToEntity(dto)).thenReturn(order);
-        when(customerService.findById(dto.getCustomerId())).thenReturn(new Customer());
-        when(expertService.findById(dto.getExpertId())).thenReturn(new Expert());
-        when(serviceService.findById(dto.getServiceId())).thenReturn(new Service());
+        Customer customer = new Customer();
+        Expert expert = new Expert();
+        Service service2 = new Service();
+        service2.setBasePrice(1500d);
 
-        service.saveWithDTO(dto);
+        Order mappedOrder = new Order();
+        mappedOrder.setProposedPrice(dto.getProposedPrice());
 
-        assertEquals(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION, order.getOrderStatus());
-        assertNotNull(order.getCreationDate());
-        assertNotNull(order.getCustomer());
-        assertNotNull(order.getExpert());
-        assertNotNull(order.getService());
+        when(mapper.mapToEntity(dto)).thenReturn(mappedOrder);
+        when(customerService.findById(dto.getCustomerId())).thenReturn(customer);
+        when(expertService.findById(dto.getExpertId())).thenReturn(expert);
+        when(serviceService.findById(dto.getServiceId())).thenReturn(service2);
+        when(repository.save(mappedOrder)).thenReturn(mappedOrder);
 
-        verify(repository).beginTransaction();
-        verify(repository).save(order);
-        verify(repository).commitTransaction();
+        Order result = service.saveWithDTO(dto);
+
+        assertEquals(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION, result.getOrderStatus());
+        assertNotNull(result.getCreationDate());
+        assertEquals(customer, result.getCustomer());
+        assertEquals(expert, result.getExpert());
+        assertEquals(service2, result.getService());
+        verify(repository).save(mappedOrder);
     }
+
 
     @Test
     void updateWithDTO_shouldMapAndUpdateOrder() {
@@ -91,9 +106,7 @@ class OrderServiceImplTest {
 
         service.updateWithDTO(dto);
 
-        verify(repository).beginTransaction();
-        verify(repository).update(order);
-        verify(repository).commitTransaction();
+        verify(repository).save(order);
     }
 
 
@@ -118,37 +131,36 @@ class OrderServiceImplTest {
 
         assertThrows(CouldNotUpdateException.class, () -> service.chooseExpert(suggestionId));
     }
-
     @Test
     void chooseExpert_shouldUpdateOrderAndConfirmSuggestion() {
         Integer suggestionId = 1;
         Integer orderId = 10;
 
         Expert expert = new Expert();
+
         Order order = new Order();
         order.setId(orderId);
-        order.setExpert(null);
 
         Suggestion suggestion = new Suggestion();
         suggestion.setExpert(expert);
+
         Order orderRef = new Order();
         orderRef.setId(orderId);
         suggestion.setOrder(orderRef);
 
         when(suggestionService.findById(suggestionId)).thenReturn(suggestion);
         when(repository.findById(orderId)).thenReturn(Optional.of(order));
+        when(repository.save(order)).thenReturn(order);
 
         service.chooseExpert(suggestionId);
 
         assertEquals(expert, order.getExpert());
         assertEquals(OrderStatus.WAITING_FOR_EXPERT_TO_VISIT, order.getOrderStatus());
 
-        verify(repository, times(2)).beginTransaction();
-        verify(repository, times(2)).update(order);
-        verify(repository, times(2)).commitTransaction();
-
+        verify(repository, times(2)).save(order);
         verify(suggestionService).confirmSuggestionAcceptance(suggestionId);
     }
+
 
 
     @Test
@@ -167,7 +179,7 @@ class OrderServiceImplTest {
         OrderFindResponse response2 = new OrderFindResponse();
 
         when(expertServiceService.findByExpertId(expertId)).thenReturn(List.of(es));
-        when(repository.findByServiceId(100)).thenReturn(List.of(order1, order2));
+        when(repository.findByServiceId(100)).thenReturn(Optional.of(List.of(order1, order2)));
         when(mapper.mapToResponse(order1)).thenReturn(response1);
         when(mapper.mapToResponse(order2)).thenReturn(response2);
 
@@ -184,7 +196,7 @@ class OrderServiceImplTest {
         Expert expert = new Expert();
         List<OrderStatus> statuses = List.of(OrderStatus.STARTED);
 
-        when(repository.existsBySpecialistAndOrderStatusIn(expert, statuses)).thenReturn(true);
+        when(repository.existsByExpertAndOrderStatusIn(expert, statuses)).thenReturn(true);
 
         assertTrue(service.existsBySpecialistAndOrderStatusIn(expert, statuses));
     }
@@ -194,7 +206,7 @@ class OrderServiceImplTest {
         Expert expert = new Expert();
         List<OrderStatus> statuses = List.of(OrderStatus.STARTED);
 
-        when(repository.existsBySpecialistAndOrderStatusIn(expert, statuses)).thenReturn(false);
+        when(repository.existsByExpertAndOrderStatusIn(expert, statuses)).thenReturn(false);
 
         assertFalse(service.existsBySpecialistAndOrderStatusIn(expert, statuses));
     }
@@ -205,11 +217,61 @@ class OrderServiceImplTest {
         Integer serviceId = 3;
         Order order = new Order();
 
-        when(repository.findByServiceId(serviceId)).thenReturn(List.of(order));
+        when(repository.findByServiceId(serviceId)).thenReturn(Optional.of(List.of(order)));
 
         List<Order> result = service.findByServiceId(serviceId);
 
         assertEquals(1, result.size());
         assertEquals(order, result.getFirst());
     }
+
+    @Test
+    void updateStatusToStarted_ShouldUpdate_WhenCurrentUserIsCustomer() {
+        Integer orderId = 1;
+
+        UserSessionDTO currentUser = new UserSessionDTO();
+        currentUser.setEmail("user@example.com");
+
+        Customer customer = new Customer();
+        customer.setEmail("user@example.com");
+
+        Order order = new Order();
+        order.setId(orderId);
+        order.setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_TO_VISIT);
+        order.setCustomer(customer);
+
+        when(repository.findById(orderId)).thenReturn(Optional.of(order));
+        when(repository.save(order)).thenReturn(order);
+
+        Order result = service.updateStatusToStarted(orderId, currentUser);
+
+        assertEquals(OrderStatus.STARTED, result.getOrderStatus());
+        verify(repository).save(order);
+    }
+
+    @Test
+    void updateStatusToDone_ShouldUpdate_WhenCurrentUserIsCustomer() {
+        Integer orderId = 1;
+
+        UserSessionDTO currentUser = new UserSessionDTO();
+        currentUser.setEmail("user@example.com");
+
+        Customer customer = new Customer();
+        customer.setEmail("user@example.com");
+
+        Order order = new Order();
+        order.setId(orderId);
+        order.setOrderStatus(OrderStatus.STARTED);
+        order.setCustomer(customer);
+
+        when(repository.findById(orderId)).thenReturn(Optional.of(order));
+        when(repository.save(order)).thenReturn(order);
+
+        Order result = service.updateStatusToDone(orderId, currentUser);
+
+        assertEquals(OrderStatus.DONE, result.getOrderStatus());
+        verify(repository).save(order);
+    }
+
+
 }

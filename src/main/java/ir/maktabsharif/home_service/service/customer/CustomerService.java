@@ -4,7 +4,8 @@ import ir.maktabsharif.home_service.base.service.BaseService;
 import ir.maktabsharif.home_service.dto.customer.CustomerSaveUpdateRequest;
 import ir.maktabsharif.home_service.model.user.Customer;
 
-public interface CustomerService extends BaseService<Customer> {
-    void register(CustomerSaveUpdateRequest customerSaveUpdateRequest);
-    void updateWithDTO(CustomerSaveUpdateRequest customerSaveUpdateRequest);
+public interface CustomerService extends BaseService<Customer,Integer> {
+    Customer register(CustomerSaveUpdateRequest customerSaveUpdateRequest);
+    Customer updateWithDTO(CustomerSaveUpdateRequest customerSaveUpdateRequest);
+    Customer findByEmail(String email);
 }

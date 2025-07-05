@@ -3,17 +3,21 @@ package ir.maktabsharif.home_service.service.wallet;
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
+import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.wallet.WalletMapper;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
+import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
 import ir.maktabsharif.home_service.repository.wallet.WalletRepository;
 import ir.maktabsharif.home_service.service.user.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 @Service
-public class WalletServiceImpl extends BaseServiceImpl<Wallet, WalletRepository, WalletMapper> implements WalletService {
+@Transactional
+public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRepository, WalletMapper> implements WalletService {
     protected final UserService userService;
 
     public WalletServiceImpl(WalletRepository repository, WalletMapper mapper, UserService userService) {
@@ -22,25 +26,18 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, WalletRepository,
     }
 
     @Override
-    public void saveWithDTO(WalletSaveUpdateRequest walletSaveUpdateRequest) {
-        Wallet wallet = mapper.mapToEntity(walletSaveUpdateRequest);
+    public Wallet saveWithDTO(WalletSaveUpdateRequest walletSaveUpdateRequest) {
+        Wallet wallet = new Wallet();
         wallet.setUser(userService.findById(walletSaveUpdateRequest.getUserId()));
-        save(wallet);
+        wallet.setBalance(0.0);
+        return save(wallet);
     }
 
     @Override
     public void addCreditToWallet(Double credit, Integer userId) {
         Wallet wallet = findByUserId(userId);
         wallet.setBalance(wallet.getBalance() + credit);
-        update(wallet);
-    }
-
-    @Override
-    public void saveWithExpert(Expert expert) {
-        WalletSaveUpdateRequest walletSaveUpdateRequest = new WalletSaveUpdateRequest();
-        walletSaveUpdateRequest.setBalance(0.0);
-        walletSaveUpdateRequest.setUserId(expert.getId());
-        saveWithDTO(walletSaveUpdateRequest);
+        save(wallet);
     }
 
     @Override
@@ -52,15 +49,15 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, WalletRepository,
         }
         Double newBalance = wallet.getBalance() - price;
         wallet.setBalance(newBalance);
-        update(wallet);
+        save(wallet);
 
         Wallet expertWallet = findByUserId(order.getExpert().getId());
         expertWallet.setBalance(expertWallet.getBalance() + price);
-        update(expertWallet);
+        save(expertWallet);
     }
 
     @Override
     public Wallet findByUserId(Integer userId) {
-        return repository.findByUserId(userId);
+        return repository.findByUserId(userId).orElseThrow(NoElementFoundException::new);
     }
 }

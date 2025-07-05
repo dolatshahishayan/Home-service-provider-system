@@ -46,7 +46,7 @@ class SuggestionServiceImplTest {
     private SuggestionServiceImpl service;
 
     @Test
-    void saveWithDTO_shouldThrow_whenOrderStatusIsInvalid() {
+    void registerSuggestionForOrder_shouldThrow_whenOrderStatusIsInvalid() {
         SuggestionSaveUpdateRequest dto = new SuggestionSaveUpdateRequest();
 
         Order order = new Order();
@@ -66,11 +66,11 @@ class SuggestionServiceImplTest {
         when(orderService.findById(anyInt())).thenReturn(order);
         when(expertService.findById(anyInt())).thenReturn(new ir.maktabsharif.home_service.model.user.Expert());
 
-        assertThrows(InvalidRequestException.class, () -> service.saveWithDTO(dto));
+        assertThrows(InvalidRequestException.class, () -> service.registerSuggestionForOrder(dto));
     }
 
     @Test
-    void saveWithDTO_shouldThrow_whenPriceBelowBasePrice() {
+    void registerSuggestionForOrder_shouldThrow_whenPriceBelowBasePrice() {
         SuggestionSaveUpdateRequest dto = new SuggestionSaveUpdateRequest();
 
         Order order = new Order();
@@ -90,7 +90,7 @@ class SuggestionServiceImplTest {
         when(orderService.findById(anyInt())).thenReturn(order);
         when(expertService.findById(anyInt())).thenReturn(new ir.maktabsharif.home_service.model.user.Expert());
 
-        assertThrows(InvalidRequestException.class, () -> service.saveWithDTO(dto));
+        assertThrows(InvalidRequestException.class, () -> service.registerSuggestionForOrder(dto));
     }
 
     @Test
@@ -114,12 +114,10 @@ class SuggestionServiceImplTest {
         when(orderService.findById(anyInt())).thenReturn(order);
         when(expertService.findById(anyInt())).thenReturn(new ir.maktabsharif.home_service.model.user.Expert());
 
-        service.saveWithDTO(dto);
+        service.registerSuggestionForOrder(dto);
 
         assertNotNull(suggestion.getCreationDate());
-        verify(repository).beginTransaction();
         verify(repository).save(suggestion);
-        verify(repository).commitTransaction();
     }
 
 
@@ -132,15 +130,13 @@ class SuggestionServiceImplTest {
 
         service.updateWithDTO(dto);
 
-        verify(repository).beginTransaction();
-        verify(repository).update(suggestion);
-        verify(repository).commitTransaction();
+        verify(repository).save(suggestion);
     }
 
 
     @Test
     void findAllByExpertId_shouldThrow_whenNoSuggestionsFound() {
-        when(repository.findAllByExpertId(1)).thenReturn(Collections.emptyList());
+        when(repository.findAllByExpertId(1)).thenReturn(Optional.of(Collections.emptyList()));
 
         assertThrows(NoElementFoundException.class, () -> service.findAllByExpertId(1));
     }
@@ -153,9 +149,9 @@ class SuggestionServiceImplTest {
         SuggestionFindResponse response1 = new SuggestionFindResponse();
         SuggestionFindResponse response2 = new SuggestionFindResponse();
 
-        when(repository.findAllByExpertId(1)).thenReturn(List.of(suggestion1, suggestion2));
-        when(mapper.mapToDTO(suggestion1)).thenReturn(response1);
-        when(mapper.mapToDTO(suggestion2)).thenReturn(response2);
+        when(repository.findAllByExpertId(1)).thenReturn(Optional.of(List.of(suggestion1, suggestion2)));
+        when(mapper.mapToResponse(suggestion1)).thenReturn(response1);
+        when(mapper.mapToResponse(suggestion2)).thenReturn(response2);
 
         List<SuggestionFindResponse> result = service.findAllByExpertId(1);
 
@@ -175,8 +171,42 @@ class SuggestionServiceImplTest {
         service.confirmSuggestionAcceptance(1);
 
         assertTrue(suggestion.getAccepted());
-        verify(repository).beginTransaction();
-        verify(repository).update(suggestion);
-        verify(repository).commitTransaction();
+        verify(repository).save(suggestion);
     }
+    @Test
+    void findAllAndSortByPriceAsc_ShouldReturnSortedSuggestions() {
+        Order order = new Order();
+        order.setId(1);
+
+        List<Suggestion> suggestions = List.of(
+                new Suggestion(), new Suggestion(), new Suggestion()
+        );
+
+        when(orderService.findById(1)).thenReturn(order);
+        when(repository.findAllByOrderAndSortByPriceAsc(order)).thenReturn(Optional.of(suggestions));
+
+        List<Suggestion> result = service.findAllAndSortByPriceAsc(1);
+
+        assertEquals(suggestions, result);
+        verify(repository).findAllByOrderAndSortByPriceAsc(order);
+    }
+
+    @Test
+    void findAllByAndSortByExpertScoreDesc_ShouldReturnSortedSuggestions() {
+        Order order = new Order();
+        order.setId(1);
+
+        List<Suggestion> suggestions = List.of(
+                new Suggestion(), new Suggestion(), new Suggestion()
+        );
+
+        when(orderService.findById(1)).thenReturn(order);
+        when(repository.findAllByOrderAndSortByExpertScoreDesc(order)).thenReturn(Optional.of(suggestions));
+
+        List<Suggestion> result = service.findAllByAndSortByExpertScoreDesc(1);
+
+        assertEquals(suggestions, result);
+        verify(repository).findAllByOrderAndSortByExpertScoreDesc(order);
+    }
+
 }

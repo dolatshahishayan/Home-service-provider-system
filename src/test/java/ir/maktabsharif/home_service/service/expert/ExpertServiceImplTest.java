@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.service.expert;
 
 import ir.maktabsharif.home_service.dto.expert.ExpertSaveUpdateRequest;
+import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.ExpertHasAnActiveOrderException;
 import ir.maktabsharif.home_service.exception.ImageFormatException;
 import ir.maktabsharif.home_service.exception.ImageLengthOutOfBoundException;
@@ -63,9 +64,7 @@ class ExpertServiceImplTest {
 
         assertEquals(ExpertStatus.VERIFIED, expert.getExpertStatus());
 
-        verify(expertRepository).beginTransaction();
-        verify(expertRepository).update(expert);
-        verify(expertRepository).commitTransaction();
+        verify(expertRepository).save(expert);
     }
 
 
@@ -120,24 +119,25 @@ class ExpertServiceImplTest {
         ExpertSaveUpdateRequest dto = new ExpertSaveUpdateRequest();
         dto.setEmail("test@example.com");
         String imagePath = "profile.jpg";
-
+        WalletSaveUpdateRequest walletSaveUpdateRequest= new WalletSaveUpdateRequest();
         Expert expert = new Expert();
-
+        expert.setEmail(dto.getEmail());
+        expert.setId(1);
+        walletSaveUpdateRequest.setUserId(expert.getId());
         when(userService.existsByEmail(dto.getEmail())).thenReturn(false);
         when(imageUtil.getBytesForExpert(imagePath)).thenReturn(new byte[100_000]);
         when(mapper.mapToEntity(dto)).thenReturn(expert);
-
+        when(expertRepository.findByEmail(dto.getEmail())).thenReturn(Optional.of(expert));
         expertService.register(dto, imagePath);
 
         assertEquals(ExpertStatus.NEW, expert.getExpertStatus());
         assertNotNull(expert.getRegistrationDate());
 
-        verify(expertRepository).beginTransaction();
         verify(expertRepository).save(expert);
-        verify(expertRepository).commitTransaction();
 
-        verify(walletService).saveWithExpert(expert);
+        verify(walletService).saveWithDTO(any(WalletSaveUpdateRequest.class));
     }
+
     @Test
     void updateWithDTO_ShouldThrow_WhenEmailUsedByAnother() {
         ExpertSaveUpdateRequest dto = new ExpertSaveUpdateRequest();
@@ -159,9 +159,8 @@ class ExpertServiceImplTest {
 
         verify(orderService, never()).existsBySpecialistAndOrderStatusIn(any(), any());
 
-        verify(expertRepository, never()).update(any());
+        verify(expertRepository, never()).save(any());
     }
-
 
 
     @Test
@@ -208,8 +207,14 @@ class ExpertServiceImplTest {
         assertEquals(dto.getPassword(), expert.getPassword());
         assertEquals(ExpertStatus.WAITING_FOR_VERIFYING, expert.getExpertStatus());
 
-        verify(expertRepository).beginTransaction();
-        verify(expertRepository).update(expert);
-        verify(expertRepository).commitTransaction();
+        verify(expertRepository).save(expert);
+    }
+
+    @Test
+    void findByEmail_ShouldFindExpert_WhenEmailExists() {
+        Expert expert = new Expert();
+        when(expertRepository.findByEmail("exists@example.com")).thenReturn(Optional.of(expert));
+        expertService.findByEmail("exists@example.com");
+        verify(expertRepository).findByEmail("exists@example.com");
     }
 }

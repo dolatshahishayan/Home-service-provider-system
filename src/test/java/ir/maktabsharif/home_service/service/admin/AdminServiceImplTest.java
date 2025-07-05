@@ -4,6 +4,7 @@ import ir.maktabsharif.home_service.dto.admin.AdminSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.UserWithSameEmailExistsException;
 import ir.maktabsharif.home_service.mapper.admin.AdminMapper;
 import ir.maktabsharif.home_service.model.user.Admin;
+import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.admin.AdminRepository;
 import ir.maktabsharif.home_service.service.user.UserService;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -80,6 +83,13 @@ class AdminServiceImplTest {
 
         adminService.updateWithDTO(dto);
 
-        verify(adminRepository).update(admin);
+        verify(adminRepository).save(admin);
+    }
+    @Test
+    void findByEmail_ShouldFindAdmin_WhenEmailExists() {
+        Admin admin = new Admin();
+        when(adminRepository.findByEmail("exists@example.com")).thenReturn(Optional.of(admin));
+        adminService.findByEmail("exists@example.com");
+        verify(adminRepository).findByEmail("exists@example.com");
     }
 }

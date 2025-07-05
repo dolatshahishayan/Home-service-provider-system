@@ -4,10 +4,14 @@ import ir.maktabsharif.home_service.base.service.BaseService;
 import ir.maktabsharif.home_service.dto.service.ServiceSaveUpdateRequest;
 import ir.maktabsharif.home_service.model.service.Service;
 
-public interface ServiceService extends BaseService<Service> {
+import java.util.List;
+
+public interface ServiceService extends BaseService<Service,Integer> {
     boolean existsByName(String name);
-    void saveWithDTO(ServiceSaveUpdateRequest serviceSaveUpdateRequest);
-    void updateWithDTO(ServiceSaveUpdateRequest serviceSaveUpdateRequest);
+    Service saveWithDTO(ServiceSaveUpdateRequest serviceSaveUpdateRequest);
+    Service updateWithDTO(ServiceSaveUpdateRequest serviceSaveUpdateRequest);
     void updateDescription(Integer id,String description);
     void updateBasePrice(Integer id,Double basePrice);
+    List<Service> findAllAndParentServiceIsNull();
+    List<Service> findAllAndParentServiceIsNotNullByParentService(Service parent);
 }

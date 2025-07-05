@@ -2,10 +2,8 @@ package ir.maktabsharif.home_service.service.expert;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.expert.ExpertSaveUpdateRequest;
-import ir.maktabsharif.home_service.exception.ExpertHasAnActiveOrderException;
-import ir.maktabsharif.home_service.exception.ImageFormatException;
-import ir.maktabsharif.home_service.exception.ImageLengthOutOfBoundException;
-import ir.maktabsharif.home_service.exception.UserWithSameEmailExistsException;
+import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
+import ir.maktabsharif.home_service.exception.*;
 import ir.maktabsharif.home_service.mapper.expert.ExpertMapper;
 import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
@@ -15,14 +13,17 @@ import ir.maktabsharif.home_service.service.order.OrderService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
 import ir.maktabsharif.home_service.util.ImageUtil;
+import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
-public class ExpertServiceImpl extends BaseServiceImpl<Expert, ExpertRepository, ExpertMapper> implements ExpertService {
+@Transactional
+public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRepository, ExpertMapper> implements ExpertService {
     protected final UserService userService;
     protected final WalletService walletService;
     protected final ImageUtil imageUtil;
@@ -40,14 +41,14 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, ExpertRepository,
     public void updateStatusToVerified(Integer expertId) {
         Expert byId = findById(expertId);
         byId.setExpertStatus(ExpertStatus.VERIFIED);
-        update(byId);
+        save(byId);
     }
 
     @Override
-    public void register(ExpertSaveUpdateRequest expertSaveUpdateRequest, String imagePath) {
+    public Expert register(ExpertSaveUpdateRequest expertSaveUpdateRequest, String imagePath) {
         Expert expert = mapper.mapToEntity(expertSaveUpdateRequest);
         byte[] bytesForExpert = imageUtil.getBytesForExpert(imagePath);
-        if (userService.existsByEmail(expertSaveUpdateRequest.getEmail())) {
+        if (userService.existsByEmail(expertSaveUpdateRequest.getEmail().toLowerCase())) {
             throw new UserWithSameEmailExistsException();
         }
         if (!imagePath.endsWith(".jpg")) {
@@ -58,14 +59,24 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, ExpertRepository,
         }
         expert.setProfilePictureData(bytesForExpert);
         expert.setExpertStatus(ExpertStatus.NEW);
+        expert.setEmail(expertSaveUpdateRequest.getEmail().toLowerCase());
         expert.setRegistrationDate(LocalDateTime.now());
         save(expert);
-
-        walletService.saveWithExpert(expert);
+        Expert byEmail = findByEmail(expert.getEmail());
+        WalletSaveUpdateRequest walletSaveUpdateRequest = new WalletSaveUpdateRequest();
+        walletSaveUpdateRequest.setUserId(byEmail.getId());
+        walletService.saveWithDTO(walletSaveUpdateRequest);
+        return expert;
     }
 
     @Override
-    public void updateWithDTO(ExpertSaveUpdateRequest expertSaveUpdateRequest) {
+    public Expert findByEmail(String email) {
+        return repository.findByEmail(email).orElseThrow(NoElementFoundException::new);
+
+    }
+
+    @Override
+    public Expert updateWithDTO(ExpertSaveUpdateRequest expertSaveUpdateRequest) {
         Expert expert = findById(expertSaveUpdateRequest.getId());
         if (userService.existsByEmailAndIdNot(expertSaveUpdateRequest.getEmail(), expertSaveUpdateRequest.getId())) {
             throw new UserWithSameEmailExistsException();
@@ -73,9 +84,9 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, ExpertRepository,
         if (orderService.existsBySpecialistAndOrderStatusIn(expert, List.of(OrderStatus.WAITING_FOR_EXPERT_TO_VISIT, OrderStatus.STARTED))) {
             throw new ExpertHasAnActiveOrderException();
         }
-        expert.setEmail(expertSaveUpdateRequest.getEmail());
+        expert.setEmail(expertSaveUpdateRequest.getEmail().toLowerCase());
         expert.setPassword(expertSaveUpdateRequest.getPassword());
         expert.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);
-        update(expert);
+        return save(expert);
     }
 }

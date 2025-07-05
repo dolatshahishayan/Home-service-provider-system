@@ -12,13 +12,13 @@ import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.comment.CommentRepository;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.service.order.OrderService;
-import ir.maktabsharif.home_service.util.Session;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
@@ -40,16 +40,12 @@ class CommentServiceImplTest {
     @InjectMocks
     private CommentServiceImpl commentService;
 
-    @BeforeEach
-    void setup() {
-        Session.setCurrentUser(new UserSessionDTO(1,"test"));
-    }
 
     @Test
     void saveWithDTO_ShouldThrowException_WhenUserIsNotCustomerOfOrder() {
         CommentSaveUpdateRequest dto = new CommentSaveUpdateRequest();
         dto.setOrderId(1);
-
+        UserSessionDTO userSessionDTO = new UserSessionDTO();
         Order order = new Order();
         Customer otherCustomer = new Customer();
         otherCustomer.setEmail("test123");
@@ -57,7 +53,7 @@ class CommentServiceImplTest {
 
         when(orderService.findById(dto.getOrderId())).thenReturn(order);
 
-        assertThrows(CouldNotUpdateException.class, () -> commentService.saveWithDTO(dto));
+        assertThrows(CouldNotUpdateException.class, () -> commentService.saveWithDTO(dto,userSessionDTO));
     }
 
     @Test
@@ -70,10 +66,12 @@ class CommentServiceImplTest {
         customer.setEmail("test");
         order.setCustomer(customer);
 
+        UserSessionDTO userSessionDTO = new UserSessionDTO();
+
         when(orderService.findById(dto.getOrderId())).thenReturn(order);
         when(commentService.existsByOrder(order)).thenReturn(true);
 
-        assertThrows(DuplicateInfoException.class, () -> commentService.saveWithDTO(dto));
+        assertThrows(DuplicateInfoException.class, () -> commentService.saveWithDTO(dto, userSessionDTO));
     }
 
     @Test
@@ -92,16 +90,16 @@ class CommentServiceImplTest {
 
         Comment comment = new Comment();
         comment.setExpertScore(5.0);
-
+        UserSessionDTO userSessionDTO = new UserSessionDTO();
         when(orderService.findById(dto.getOrderId())).thenReturn(order);
         when(commentService.existsByOrder(order)).thenReturn(false);
         when(mapper.mapToEntity(dto)).thenReturn(comment);
 
-        commentService.saveWithDTO(dto);
+        commentService.saveWithDTO(dto,userSessionDTO);
 
         verify(repository).save(comment);
         assertEquals(4.5, expert.getScore());
-        verify(expertService).update(expert);
+        verify(expertService).save(expert);
     }
 
     @Test
@@ -119,7 +117,7 @@ class CommentServiceImplTest {
         Order order = new Order();
         Comment expectedComment = new Comment();
 
-        when(repository.findByOrder(order)).thenReturn(expectedComment);
+        when(repository.findByOrder(order)).thenReturn(Optional.of(expectedComment));
 
         Comment result = commentService.findByOrder(order);
         assertEquals(expectedComment, result);
@@ -133,7 +131,7 @@ class CommentServiceImplTest {
         comment.setExpertScore(4.7);
 
         when(orderService.findById(orderId)).thenReturn(order);
-        when(repository.findByOrder(order)).thenReturn(comment);
+        when(repository.findByOrder(order)).thenReturn(Optional.of(comment));
 
         double result = commentService.viewExpertScoreByOrder(orderId);
         assertEquals(4.7, result);

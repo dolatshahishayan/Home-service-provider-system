@@ -3,44 +3,65 @@ package ir.maktabsharif.home_service.service.service;
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.service.ServiceSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.DuplicateInfoException;
+import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.service.ServiceMapper;
 import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.repository.service.ServiceRepository;
+import jakarta.transaction.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+
 @org.springframework.stereotype.Service
-public class ServiceServiceImpl extends BaseServiceImpl<Service, ServiceRepository, ServiceMapper> implements ServiceService {
+@Transactional
+public class ServiceServiceImpl extends BaseServiceImpl<Service, Integer, ServiceRepository, ServiceMapper> implements ServiceService {
     public ServiceServiceImpl(ServiceRepository repository, ServiceMapper mapper) {
         super(repository, mapper);
     }
     @Override
-    public void saveWithDTO(ServiceSaveUpdateRequest serviceSaveUpdateRequest) {
+    public Service saveWithDTO(ServiceSaveUpdateRequest serviceSaveUpdateRequest) {
         if (existsByName(serviceSaveUpdateRequest.getName())) {
             throw new DuplicateInfoException("Service name already exists");
         }
         Service service = mapper.mapToEntity(serviceSaveUpdateRequest);
-        service.setParentService(findById(serviceSaveUpdateRequest.getParentServiceId()));
-        save(service);
+        if (serviceSaveUpdateRequest.getParentServiceId()!=null) {
+            service.setParentService(findById(serviceSaveUpdateRequest.getParentServiceId()));
+        }
+        return save(service);
     }
     @Override
-    public void updateWithDTO(ServiceSaveUpdateRequest serviceSaveUpdateRequest) {
+    public Service updateWithDTO(ServiceSaveUpdateRequest serviceSaveUpdateRequest) {
         if (existsByName(serviceSaveUpdateRequest.getName())) {
             throw new DuplicateInfoException("Service name already exists");
         }
         Service service = mapper.mapToEntity(serviceSaveUpdateRequest);
-        service.setParentService(findById(serviceSaveUpdateRequest.getParentServiceId()));
-        update(service);
+        if (serviceSaveUpdateRequest.getParentServiceId()!=null) {
+            service.setParentService(findById(serviceSaveUpdateRequest.getParentServiceId()));
+        }
+        return save(service);
     }
-    //Todo write method for service and subservice (find all)
     @Override
     public void updateDescription(Integer id,String description) {
         Service byId = findById(id);
         byId.setDescription(description);
-        update(byId);
+        save(byId);
     }
     @Override
     public void updateBasePrice(Integer id,Double basePrice) {
         Service byId = findById(id);
         byId.setBasePrice(basePrice);
-        update(byId);
+        save(byId);
+    }
+
+    @Override
+    public List<Service> findAllAndParentServiceIsNull() {
+        return repository.findAllAndParentServiceIsNull().orElseThrow(NoElementFoundException::new);
+
+    }
+
+    @Override
+    public List<Service> findAllAndParentServiceIsNotNullByParentService(Service parent) {
+        return repository.findAllAndParentServiceIsNotNullByParentService(parent).orElseThrow(NoElementFoundException::new);
     }
 
     @Override

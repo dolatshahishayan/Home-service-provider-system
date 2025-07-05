@@ -1,10 +1,19 @@
 package ir.maktabsharif.home_service.repository.suggestion;
 
-import ir.maktabsharif.home_service.base.repository.CrudRepository;
+import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface SuggestionRepository extends CrudRepository<Suggestion> {
-    List<Suggestion> findAllByExpertId(Integer expertId);
+public interface SuggestionRepository extends JpaRepository<Suggestion,Integer>, JpaSpecificationExecutor<Suggestion> {
+    Optional<List<Suggestion>> findAllByExpertId(Integer expertId);
+    @Query("select s from Suggestion s where s.order = :order order by s.price asc")
+    Optional<List<Suggestion>> findAllByOrderAndSortByPriceAsc(@Param("order") Order order);
+    @Query("select s from Suggestion s where s.order = :order order by s.expert.score desc")
+    Optional<List<Suggestion>> findAllByOrderAndSortByExpertScoreDesc(@Param("order") Order order);
 }

@@ -2,8 +2,10 @@ package ir.maktabsharif.home_service.service.comment;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.comment.CommentSaveUpdateRequest;
+import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
 import ir.maktabsharif.home_service.exception.DuplicateInfoException;
+import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.comment.CommentMapper;
 import ir.maktabsharif.home_service.model.comment.Comment;
 import ir.maktabsharif.home_service.model.order.Order;
@@ -11,13 +13,15 @@ import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.comment.CommentRepository;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.service.order.OrderService;
-import ir.maktabsharif.home_service.util.Session;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
-public class CommentServiceImpl extends BaseServiceImpl<Comment, CommentRepository, CommentMapper> implements CommentService {
+@Transactional
+public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, CommentRepository, CommentMapper> implements CommentService {
     protected final OrderService orderService;
     protected final ExpertService expertService;
 
@@ -26,10 +30,11 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, CommentReposito
         this.orderService = orderService;
         this.expertService = expertService;
     }
+
     @Override
-    public void saveWithDTO(CommentSaveUpdateRequest commentSaveUpdateRequest) {
+    public Comment saveWithDTO(CommentSaveUpdateRequest commentSaveUpdateRequest, UserSessionDTO currentUser) {
         Order order = orderService.findById(commentSaveUpdateRequest.getOrderId());
-        String currentUserEmail = Session.getCurrentUser().getEmail();
+        String currentUserEmail = currentUser.getEmail();
 
         if (!order.getCustomer().getEmail().equals(currentUserEmail)) {
             throw new CouldNotUpdateException("You can't register any comments for this order!");
@@ -37,17 +42,17 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, CommentReposito
         if (existsByOrder(order)) {
             throw new DuplicateInfoException("You have already registered a comment for this order!");
         }
-        Comment comment = mapper.mapToEntity(commentSaveUpdateRequest);
-        comment.setOrder(order);
-        comment.setRegistrationDate(LocalDateTime.now());
-        save(comment);
 
+        Comment comment = mapper.mapToEntity(commentSaveUpdateRequest);
         Expert expert = order.getExpert();
         Double commentScore = comment.getExpertScore();
         Double expertScore = expert.getScore();
         Double finalScore = (expertScore + commentScore) / 2;
         expert.setScore(finalScore);
-        expertService.update(expert);
+        expertService.save(expert);
+        comment.setOrder(order);
+        comment.setRegistrationDate(LocalDateTime.now());
+        return save(comment);
     }
 
     @Override
@@ -57,7 +62,8 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, CommentReposito
 
     @Override
     public Comment findByOrder(Order order) {
-        return repository.findByOrder(order);
+        return repository.findByOrder(order).orElseThrow(NoElementFoundException::new);
+
     }
 
     @Override

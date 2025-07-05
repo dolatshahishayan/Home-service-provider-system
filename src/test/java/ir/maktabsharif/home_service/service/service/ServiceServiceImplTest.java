@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -56,7 +57,7 @@ class ServiceServiceImplTest {
         service.updateWithDTO(dto);
 
         verify(mapper).mapToEntity(dto);
-        verify(repository).update(mapped);
+        verify(repository).save(mapped);
         assertEquals(parent, mapped.getParentService());
     }
     @Test
@@ -69,7 +70,7 @@ class ServiceServiceImplTest {
         service.updateDescription(10, "New description");
 
         assertEquals("New description", serviceEntity.getDescription());
-        verify(repository).update(serviceEntity);
+        verify(repository).save(serviceEntity);
     }
     @Test
     void updateBasePrice_shouldUpdatePrice_whenIdExists() {
@@ -81,7 +82,7 @@ class ServiceServiceImplTest {
         service.updateBasePrice(12, 500.0);
 
         assertEquals(500.0, serviceEntity.getBasePrice());
-        verify(repository).update(serviceEntity);
+        verify(repository).save(serviceEntity);
     }
     @Test
     void existsByName_shouldCallRepository() {
@@ -122,7 +123,29 @@ class ServiceServiceImplTest {
         verify(repository).save(mapped);
         assertEquals(parent, mapped.getParentService());
     }
+    @Test
+    void findAllAndParentServiceIsNotNullByParentService_ShouldReturnList() {
+        Service parent = new Service();
+        parent.setId(1);
 
+        List<Service> mockSubServices = List.of(new Service(), new Service());
+        when(repository.findAllAndParentServiceIsNotNullByParentService(parent)).thenReturn(Optional.of(mockSubServices));
 
+        List<Service> result = service.findAllAndParentServiceIsNotNullByParentService(parent);
+
+        assertEquals(2, result.size());
+        verify(repository).findAllAndParentServiceIsNotNullByParentService(parent);
+    }
+    @Test
+    void findAllAndParentServiceIsNull_ShouldReturnList() {
+        List<Service> mockServices = List.of(new Service(), new Service());
+        when(repository.findAllAndParentServiceIsNull()).thenReturn(Optional.of(mockServices));
+
+        List<Service> result = service.findAllAndParentServiceIsNull();
+
+        assertEquals(2, result.size());
+        verify(repository).findAllAndParentServiceIsNull();
+    }
 }
+
 

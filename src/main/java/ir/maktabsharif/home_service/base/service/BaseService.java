@@ -1,11 +1,11 @@
 package ir.maktabsharif.home_service.base.service;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface BaseService<T> {
-    void save(T t);
-    void update(T t);
-    void delete(Integer id);
-    T findById(Integer id);
+public interface BaseService<T,ID> {
+    T save(T t);
+    void delete(ID id);
+    T findById(ID id);
     List<T> findAll();
 }
