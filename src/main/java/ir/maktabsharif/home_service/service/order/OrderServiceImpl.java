@@ -98,9 +98,12 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
 
     @Override
     public Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest) {
-        Order order = mapper.mapToEntity(orderSaveUpdateRequest);
+        Order order = findById(orderSaveUpdateRequest.getId());
+        mapper.updateEntityWithDTO(orderSaveUpdateRequest, order);
         order.setCustomer(customerService.findById(orderSaveUpdateRequest.getCustomerId()));
-        order.setExpert(expertService.findById(orderSaveUpdateRequest.getExpertId()));
+        if (orderSaveUpdateRequest.getExpertId() != null) {
+            order.setExpert(expertService.findById(orderSaveUpdateRequest.getExpertId()));
+        }
         order.setService(serviceService.findById(orderSaveUpdateRequest.getServiceId()));
         return save(order);
     }

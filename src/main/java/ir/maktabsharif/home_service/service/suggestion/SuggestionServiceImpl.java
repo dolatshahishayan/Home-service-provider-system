@@ -49,7 +49,8 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
 
     @Override
     public Suggestion updateWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest) {
-        Suggestion suggestion = mapper.mapToEntity(suggestionSaveUpdateRequest);
+        Suggestion suggestion = findById(suggestionSaveUpdateRequest.getId());
+        mapper.updateEntityWithDTO(suggestionSaveUpdateRequest, suggestion);
         suggestion.setExpert(expertService.findById(suggestionSaveUpdateRequest.getExpertId()));
         suggestion.setOrder(orderService.findById(suggestionSaveUpdateRequest.getOrderId()));
         return save(suggestion);

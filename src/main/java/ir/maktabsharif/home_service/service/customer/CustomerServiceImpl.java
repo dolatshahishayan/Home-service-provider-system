@@ -34,10 +34,8 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
             throw new UserWithSameEmailExistsException();
         }
         Customer byId = findById(customerSaveUpdateRequest.getId());
-        byId.setFirstName(customerSaveUpdateRequest.getFirstName());
-        byId.setLastName(customerSaveUpdateRequest.getLastName());
+        mapper.updateEntityWithDTO(customerSaveUpdateRequest, byId);
         byId.setEmail(customerSaveUpdateRequest.getEmail().toLowerCase());
-        byId.setPassword(customerSaveUpdateRequest.getPassword());
         return save(byId);
     }
 

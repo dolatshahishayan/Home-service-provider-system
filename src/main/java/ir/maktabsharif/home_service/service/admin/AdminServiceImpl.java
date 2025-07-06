@@ -40,9 +40,10 @@ public class AdminServiceImpl extends BaseServiceImpl<Admin,Integer, AdminReposi
         if (userService.existsByEmailAndIdNot(adminSaveUpdateRequest.getEmail(), adminSaveUpdateRequest.getId())) {
             throw new UserWithSameEmailExistsException();
         }
-        Admin admin = save(mapper.mapToEntity(adminSaveUpdateRequest));
-        admin.setEmail(adminSaveUpdateRequest.getEmail().toLowerCase());
-        return save(admin);
+        Admin byId = findById(adminSaveUpdateRequest.getId());
+        mapper.updateEntityWithDTO(adminSaveUpdateRequest,byId);
+        byId.setEmail(adminSaveUpdateRequest.getEmail().toLowerCase());
+        return save(byId);
     }
 
     @Override

@@ -85,8 +85,8 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
         if (orderService.existsBySpecialistAndOrderStatusIn(expert, List.of(OrderStatus.WAITING_FOR_EXPERT_TO_VISIT, OrderStatus.STARTED))) {
             throw new ExpertHasAnActiveOrderException();
         }
+        mapper.updateEntityWithDTO(expertSaveUpdateRequest, expert);
         expert.setEmail(expertSaveUpdateRequest.getEmail().toLowerCase());
-        expert.setPassword(expertSaveUpdateRequest.getPassword());
         expert.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);
         return save(expert);
     }
