@@ -2,6 +2,7 @@ package ir.maktabsharif.home_service.controller.service;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import ir.maktabsharif.home_service.dto.ValidationGroup;
 import ir.maktabsharif.home_service.dto.service.ServiceFindResponse;
 import ir.maktabsharif.home_service.dto.service.ServiceSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.service.ServiceMapper;
@@ -9,6 +10,7 @@ import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.service.service.ServiceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -25,14 +27,14 @@ public class ServiceController {
 
     @PostMapping("/save")
     @Operation(summary = "Save service", description = "Method for saving a service")
-    public ResponseEntity<ServiceFindResponse> save(@RequestBody ServiceSaveUpdateRequest serviceSaveUpdateRequest) {
+    public ResponseEntity<ServiceFindResponse> save(@RequestBody @Validated(ValidationGroup.save.class) ServiceSaveUpdateRequest serviceSaveUpdateRequest) {
         Service saved = serviceService.saveWithDTO(serviceSaveUpdateRequest);
         return ResponseEntity.ok(serviceMapper.mapToResponse(saved));
     }
 
     @PutMapping("/update")
     @Operation(summary = "Update service", description = "Method for update a service")
-    public ResponseEntity<ServiceFindResponse> update(@RequestBody ServiceSaveUpdateRequest serviceSaveUpdateRequest) {
+    public ResponseEntity<ServiceFindResponse> update(@RequestBody @Validated(ValidationGroup.update.class)ServiceSaveUpdateRequest serviceSaveUpdateRequest) {
         Service updated = serviceService.updateWithDTO(serviceSaveUpdateRequest);
         return ResponseEntity.ok(serviceMapper.mapToResponse(updated));
     }

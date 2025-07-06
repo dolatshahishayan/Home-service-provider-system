@@ -42,7 +42,7 @@ public class ExpertController {
 
     @PutMapping("/update")
     @Operation(summary = "Update expert", description = "Update method for expert")
-    public ResponseEntity<ExpertFindResponse> update(@RequestBody ExpertSaveUpdateRequest expertSaveUpdateRequest, HttpSession session) {
+    public ResponseEntity<ExpertFindResponse> update(@RequestBody @Validated(ValidationGroup.update.class) ExpertSaveUpdateRequest expertSaveUpdateRequest, HttpSession session) {
         Expert expert = expertService.updateWithDTO(expertSaveUpdateRequest);
         session.setAttribute("currentUser", new UserSessionDTO(expert.getId(), expert.getEmail(), Role.EXPERT));
         return ResponseEntity.ok(expertMapper.mapToResponse(expert));

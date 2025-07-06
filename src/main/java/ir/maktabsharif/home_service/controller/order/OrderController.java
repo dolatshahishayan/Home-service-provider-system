@@ -2,6 +2,7 @@ package ir.maktabsharif.home_service.controller.order;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import ir.maktabsharif.home_service.dto.ValidationGroup;
 import ir.maktabsharif.home_service.dto.order.OrderFindResponse;
 import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
@@ -15,6 +16,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -32,14 +34,14 @@ public class OrderController {
 
     @PostMapping("/save")
     @Operation(summary = "Save order", description = "Method for saving an order")
-    public ResponseEntity<OrderFindResponse> save(@RequestBody OrderSaveUpdateRequest order) {
+    public ResponseEntity<OrderFindResponse> save(@RequestBody @Validated(ValidationGroup.save.class) OrderSaveUpdateRequest order) {
         Order saved = orderService.saveWithDTO(order);
         return ResponseEntity.ok(orderMapper.mapToResponse(saved));
     }
 
     @PutMapping("/update")
     @Operation(summary = "Update order", description = "Method for updating an order")
-    public ResponseEntity<OrderFindResponse> update(@RequestBody OrderSaveUpdateRequest order) {
+    public ResponseEntity<OrderFindResponse> update(@RequestBody @Validated(ValidationGroup.update.class) OrderSaveUpdateRequest order) {
         Order updated = orderService.updateWithDTO(order);
         return ResponseEntity.ok(orderMapper.mapToResponse(updated));
     }
