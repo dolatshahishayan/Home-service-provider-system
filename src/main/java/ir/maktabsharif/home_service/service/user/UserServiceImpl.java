@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class UserServiceImpl extends BaseServiceImpl<User, Integer, UserRepository, UserMapper> implements UserService {
 
-    public UserServiceImpl(UserRepository repository, UserMapper mapper) {
-        super(repository, mapper);
+    public UserServiceImpl(UserRepository repository, UserMapper userMapper) {
+        super(repository, userMapper);
     }
 
     @Override

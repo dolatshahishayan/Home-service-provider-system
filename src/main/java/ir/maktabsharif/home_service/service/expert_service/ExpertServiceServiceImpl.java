@@ -18,8 +18,8 @@ import java.util.List;
 public class ExpertServiceServiceImpl extends BaseServiceImpl<ExpertService, Integer, ExpertServiceRepository, ExpertServiceMapper> implements ExpertServiceService {
     protected final ir.maktabsharif.home_service.service.expert.ExpertService expertService;
     protected final ServiceService serviceService;
-    public ExpertServiceServiceImpl(ExpertServiceRepository repository, ExpertServiceMapper mapper, ir.maktabsharif.home_service.service.expert.ExpertService expertService, ServiceService serviceService) {
-        super(repository, mapper);
+    public ExpertServiceServiceImpl(ExpertServiceRepository repository, ExpertServiceMapper expertServiceMapper, ir.maktabsharif.home_service.service.expert.ExpertService expertService, ServiceService serviceService) {
+        super(repository, expertServiceMapper);
         this.expertService = expertService;
         this.serviceService = serviceService;
     }

@@ -14,8 +14,8 @@ import java.util.List;
 @org.springframework.stereotype.Service
 @Transactional
 public class ServiceServiceImpl extends BaseServiceImpl<Service, Integer, ServiceRepository, ServiceMapper> implements ServiceService {
-    public ServiceServiceImpl(ServiceRepository repository, ServiceMapper mapper) {
-        super(repository, mapper);
+    public ServiceServiceImpl(ServiceRepository repository, ServiceMapper serviceMapper) {
+        super(repository, serviceMapper);
     }
     @Override
     public Service saveWithDTO(ServiceSaveUpdateRequest serviceSaveUpdateRequest) {

@@ -21,8 +21,8 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
     protected final UserService userService;
     protected final WalletService walletService;
 
-    public CustomerServiceImpl(CustomerRepository repository, CustomerMapper mapper, UserService userService, WalletService walletService) {
-        super(repository, mapper);
+    public CustomerServiceImpl(CustomerRepository repository, CustomerMapper customerMapper, UserService userService, WalletService walletService) {
+        super(repository, customerMapper);
         this.userService = userService;
         this.walletService = walletService;
     }

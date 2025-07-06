@@ -2,6 +2,7 @@ package ir.maktabsharif.home_service.controller.customer;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import ir.maktabsharif.home_service.dto.ValidationGroup;
 import ir.maktabsharif.home_service.dto.customer.CustomerFindResponse;
 import ir.maktabsharif.home_service.dto.customer.CustomerSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
@@ -12,6 +13,7 @@ import ir.maktabsharif.home_service.service.customer.CustomerService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,9 +23,9 @@ import org.springframework.web.bind.annotation.*;
 public class CustomerController {
     private final CustomerService customerService;
     private final CustomerMapper customerMapper;
-    @PostMapping("/save-customer")
+    @PostMapping("/save")
     @Operation(summary = "save customer",description = "save method for customer")
-    public ResponseEntity<CustomerFindResponse> saveCustomer(@RequestBody CustomerSaveUpdateRequest customer, HttpSession session) {
+    public ResponseEntity<CustomerFindResponse> saveCustomer(@RequestBody @Validated(ValidationGroup.save.class) CustomerSaveUpdateRequest customer, HttpSession session) {
         Customer register = customerService.register(customer);
         session.setAttribute("currentUser", new UserSessionDTO(register.getId(), register.getEmail(), Role.CUSTOMER));
         return ResponseEntity.ok(customerMapper.mapToResponse(register));
@@ -31,7 +33,7 @@ public class CustomerController {
 
     @PutMapping("/update")
     @Operation(summary = "update customer",description = "update method for customer")
-    public ResponseEntity<CustomerFindResponse> updateCustomer(@RequestBody CustomerSaveUpdateRequest customer, HttpSession session) {
+    public ResponseEntity<CustomerFindResponse> updateCustomer(@RequestBody @Validated(ValidationGroup.update.class) CustomerSaveUpdateRequest customer, HttpSession session) {
         Customer updated = customerService.updateWithDTO(customer);
         session.setAttribute("currentUser", new UserSessionDTO(updated.getId(), updated.getEmail(),Role.CUSTOMER));
         return ResponseEntity.ok(customerMapper.mapToResponse(updated));

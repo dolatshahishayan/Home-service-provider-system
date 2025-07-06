@@ -12,8 +12,4 @@ public class HomeServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(HomeServiceApplication.class, args);
     }
-    @Bean
-    public EntityManager entityManager() {
-        return Persistence.createEntityManagerFactory("default").createEntityManager();
-    }
 }

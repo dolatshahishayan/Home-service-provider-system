@@ -12,5 +12,5 @@ import lombok.Setter;
 public class ExpertServiceFindResponse {
     private Integer id;
     private Integer expertId;
-    private Integer subServiceId;
+    private Integer serviceId;
 }

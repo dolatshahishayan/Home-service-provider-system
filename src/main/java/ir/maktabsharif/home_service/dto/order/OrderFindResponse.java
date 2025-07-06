@@ -19,7 +19,7 @@ public class OrderFindResponse {
     private String address;
     private OrderStatus orderStatus;
     private Integer customerId;
-    private Integer subServiceId;
+    private Integer serviceId;
     private Integer expertId;
     private LocalDateTime creationDate;
 }

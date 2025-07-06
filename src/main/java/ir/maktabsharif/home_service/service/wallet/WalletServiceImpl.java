@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRepository, WalletMapper> implements WalletService {
     protected final UserService userService;
 
-    public WalletServiceImpl(WalletRepository repository, WalletMapper mapper, UserService userService) {
-        super(repository, mapper);
+    public WalletServiceImpl(WalletRepository repository, WalletMapper walletMapper, UserService userService) {
+        super(repository, walletMapper);
         this.userService = userService;
     }
 

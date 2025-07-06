@@ -18,8 +18,8 @@ import java.time.LocalDateTime;
 public class AdminServiceImpl extends BaseServiceImpl<Admin,Integer, AdminRepository, AdminMapper> implements AdminService {
     protected final UserService userService;
 
-    public AdminServiceImpl(AdminRepository repository, AdminMapper mapper, UserService userService) {
-        super(repository, mapper);
+    public AdminServiceImpl(AdminRepository repository, AdminMapper adminMapper, UserService userService) {
+        super(repository, adminMapper);
         this.userService = userService;
     }
 

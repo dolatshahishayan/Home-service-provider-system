@@ -2,6 +2,7 @@ package ir.maktabsharif.home_service.controller.comment;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import ir.maktabsharif.home_service.dto.ValidationGroup;
 import ir.maktabsharif.home_service.dto.comment.CommentFindResponse;
 import ir.maktabsharif.home_service.dto.comment.CommentSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
@@ -13,6 +14,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,9 +27,9 @@ public class CommentController {
     private final CommentMapper commentMapper;
     private final OrderService orderService;
 
-    @PostMapping("/save-comment")
+    @PostMapping("/save")
     @Operation(summary = "save comment", description = "save method for comment")
-    public ResponseEntity<?> save(@RequestBody CommentSaveUpdateRequest commentSaveUpdateRequest, HttpSession session) {
+    public ResponseEntity<?> save(@RequestBody @Validated(ValidationGroup.save.class) CommentSaveUpdateRequest commentSaveUpdateRequest, HttpSession session) {
         UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");

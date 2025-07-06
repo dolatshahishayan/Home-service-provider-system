@@ -34,8 +34,8 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     protected final ir.maktabsharif.home_service.service.expert.ExpertService expertService;
     protected final ServiceService serviceService;
 
-    public OrderServiceImpl(OrderRepository repository, OrderMapper mapper, SuggestionService suggestionService, ExpertServiceService expertServiceService, CustomerService customerService, ir.maktabsharif.home_service.service.expert.ExpertService expertService, ServiceService serviceService) {
-        super(repository, mapper);
+    public OrderServiceImpl(OrderRepository repository, OrderMapper orderMapper, SuggestionService suggestionService, ExpertServiceService expertServiceService, CustomerService customerService, ir.maktabsharif.home_service.service.expert.ExpertService expertService, ServiceService serviceService) {
+        super(repository, orderMapper);
         this.suggestionService = suggestionService;
         expert_ServiceService = expertServiceService;
         this.customerService = customerService;

@@ -2,6 +2,7 @@ package ir.maktabsharif.home_service.controller.admin;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import ir.maktabsharif.home_service.dto.ValidationGroup;
 import ir.maktabsharif.home_service.dto.admin.AdminFindResponse;
 import ir.maktabsharif.home_service.dto.admin.AdminSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
@@ -12,6 +13,7 @@ import ir.maktabsharif.home_service.service.admin.AdminService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,9 +25,9 @@ public class AdminController {
     private final AdminService adminService;
     private final AdminMapper adminMapper;
 
-    @PostMapping("/save-admin")
+    @PostMapping("/save")
     @Operation(summary = "save admin",description = "save method for admin")
-    public ResponseEntity<AdminFindResponse> saveAdmin(@RequestBody AdminSaveUpdateRequest adminSaveUpdateRequest,HttpSession session) {
+    public ResponseEntity<AdminFindResponse> saveAdmin(@RequestBody @Validated(ValidationGroup.save.class) AdminSaveUpdateRequest adminSaveUpdateRequest, HttpSession session) {
         Admin admin = adminService.saveWithDTO(adminSaveUpdateRequest);
         session.setAttribute("currentUser", new UserSessionDTO(admin.getId(), admin.getEmail(), Role.ADMIN));
         return ResponseEntity.ok(adminMapper.mapToResponse(admin));
@@ -33,7 +35,7 @@ public class AdminController {
 
     @PutMapping("/update")
     @Operation(summary = "update admin",description = "update method for admin")
-    public ResponseEntity<AdminFindResponse> update(@RequestBody AdminSaveUpdateRequest adminSaveUpdateRequest, HttpSession session){
+    public ResponseEntity<AdminFindResponse> update(@RequestBody @Validated(ValidationGroup.update.class) AdminSaveUpdateRequest adminSaveUpdateRequest, HttpSession session){
         Admin admin = adminService.updateWithDTO(adminSaveUpdateRequest);
         session.setAttribute("currentUser", new UserSessionDTO(admin.getId(), admin.getEmail(),Role.ADMIN));
         return ResponseEntity.ok(adminMapper.mapToResponse(admin));

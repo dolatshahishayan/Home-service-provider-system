@@ -26,8 +26,8 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
     protected final ExpertService expertService;
     protected final OrderService orderService;
 
-    public SuggestionServiceImpl(SuggestionRepository repository, SuggestionMapper mapper, @Lazy ExpertService expertService,@Lazy OrderService orderService) {
-        super(repository, mapper);
+    public SuggestionServiceImpl(SuggestionRepository repository, SuggestionMapper suggestionMapper, @Lazy ExpertService expertService,@Lazy OrderService orderService) {
+        super(repository, suggestionMapper);
         this.expertService = expertService;
         this.orderService = orderService;
     }

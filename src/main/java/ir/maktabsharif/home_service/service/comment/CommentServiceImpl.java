@@ -24,8 +24,8 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
     protected final OrderService orderService;
     protected final ExpertService expertService;
 
-    public CommentServiceImpl(CommentRepository repository, CommentMapper mapper, OrderService orderService, ExpertService expertService) {
-        super(repository, mapper);
+    public CommentServiceImpl(CommentRepository repository, CommentMapper commentMapper, OrderService orderService, ExpertService expertService) {
+        super(repository, commentMapper);
         this.orderService = orderService;
         this.expertService = expertService;
     }

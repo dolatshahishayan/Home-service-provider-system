@@ -28,8 +28,8 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
     protected final ImageUtil imageUtil;
     protected final OrderService orderService;
 
-    public ExpertServiceImpl(ExpertRepository repository, ExpertMapper mapper, UserService userService, WalletService walletService, ImageUtil imageUtil, @Lazy OrderService orderService) {
-        super(repository, mapper);
+    public ExpertServiceImpl(ExpertRepository repository, ExpertMapper expertMapper, UserService userService, WalletService walletService, ImageUtil imageUtil, @Lazy OrderService orderService) {
+        super(repository, expertMapper);
         this.userService = userService;
         this.walletService = walletService;
         this.imageUtil = imageUtil;
