@@ -1,7 +1,6 @@
 package ir.maktabsharif.home_service.dto.expert;
 
 import ir.maktabsharif.home_service.dto.ValidationGroup;
-import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
