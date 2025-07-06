@@ -15,11 +15,11 @@ import lombok.Setter;
 public class ServiceSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.update.class})
     private Integer id;
-    @NotBlank(groups = {ValidationGroup.update.class, ValidationGroup.save.class})
+    @NotBlank(groups = {ValidationGroup.save.class})
     private String name;
-    @NotNull
+    @NotNull(groups = {ValidationGroup.save.class})
     private Double basePrice;
-    @NotBlank
+    @NotBlank(groups = {ValidationGroup.save.class})
     private String description;
     private Integer parentServiceId;
 }

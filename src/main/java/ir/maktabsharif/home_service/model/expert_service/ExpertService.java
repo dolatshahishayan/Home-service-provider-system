@@ -5,11 +5,13 @@ import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.model.user.Expert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 @Entity
+@Table(name = "expert_service")
 @Getter
 @Setter
 @NoArgsConstructor

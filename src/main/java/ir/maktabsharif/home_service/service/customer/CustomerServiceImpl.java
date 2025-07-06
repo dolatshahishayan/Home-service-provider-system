@@ -6,6 +6,7 @@ import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.NoUserFoundWithGivenCredentialsException;
 import ir.maktabsharif.home_service.exception.UserWithSameEmailExistsException;
 import ir.maktabsharif.home_service.mapper.customer.CustomerMapper;
+import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.repository.customer.CustomerRepository;
 import ir.maktabsharif.home_service.service.user.UserService;
@@ -51,6 +52,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
             throw new UserWithSameEmailExistsException();
         }
         Customer customer = mapper.mapToEntity(customerSaveUpdateRequest);
+        customer.setRole(Role.CUSTOMER);
         customer.setEmail(customerSaveUpdateRequest.getEmail().toLowerCase());
         customer.setRegistrationDate(LocalDateTime.now());
         save(customer);

@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.dto.customer;
 
 import ir.maktabsharif.home_service.dto.ValidationGroup;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -15,11 +16,14 @@ import lombok.Setter;
 public class CustomerSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.update.class})
     private Integer id;
+    @NotBlank(groups = {ValidationGroup.save.class})
     private String firstName;
+    @NotBlank(groups = {ValidationGroup.save.class})
     private String lastName;
-    @NotBlank
+    @NotBlank(groups = {ValidationGroup.save.class})
+    @Email
     private String email;
-    @NotBlank
+    @NotBlank(groups = {ValidationGroup.save.class})
     @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$",
             message = "Password must be at least 8 characters long and contain both letters and numbers.")
     private String password;

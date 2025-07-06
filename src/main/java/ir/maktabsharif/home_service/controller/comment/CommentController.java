@@ -28,7 +28,7 @@ public class CommentController {
     private final OrderService orderService;
 
     @PostMapping("/save")
-    @Operation(summary = "save comment", description = "save method for comment")
+    @Operation(summary = "Save comment", description = "Save method for comment")
     public ResponseEntity<?> save(@RequestBody @Validated(ValidationGroup.save.class) CommentSaveUpdateRequest commentSaveUpdateRequest, HttpSession session) {
         UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
         if (currentUser == null) {
@@ -38,21 +38,21 @@ public class CommentController {
     }
 
     @GetMapping("/exists-by-order")
-    @Operation(summary = "exist by order", description = "checks if order has a registered comment or not")
+    @Operation(summary = "Exist by order", description = "Checks if order has a registered comment or not")
     public ResponseEntity<Boolean> existsByOrder(@RequestParam Integer orderId) {
         Order byId = orderService.findById(orderId);
         return ResponseEntity.ok(commentService.existsByOrder(byId));
     }
 
     @GetMapping("/find-by-order")
-    @Operation(summary = "find by order", description = "find an order's comment")
+    @Operation(summary = "Find by order", description = "Find an order's comment")
     public ResponseEntity<CommentFindResponse> findByOrder(@RequestParam Integer orderId) {
         Order byId = orderService.findById(orderId);
         return ResponseEntity.ok(commentMapper.mapToResponse(commentService.findByOrder(byId)));
     }
 
     @GetMapping("/view-expert-score-by-order")
-    @Operation(summary = "view expert score",description = "view expert score by order")
+    @Operation(summary = "View expert score",description = "View expert score by order")
     public ResponseEntity<Double> viewExpertScoreByOrder(@RequestParam Integer orderId) {
         return ResponseEntity.ok(commentService.viewExpertScoreByOrder(orderId));
     }

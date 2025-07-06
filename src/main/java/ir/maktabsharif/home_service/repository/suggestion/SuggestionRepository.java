@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SuggestionRepository extends JpaRepository<Suggestion,Integer>, JpaSpecificationExecutor<Suggestion> {
-    Optional<List<Suggestion>> findAllByExpertId(Integer expertId);
+    List<Suggestion> findAllByExpertId(Integer expertId);
     @Query("select s from Suggestion s where s.order = :order order by s.price asc")
-    Optional<List<Suggestion>> findAllByOrderAndSortByPriceAsc(@Param("order") Order order);
+    List<Suggestion> findAllByOrderAndSortByPriceAsc(@Param("order") Order order);
     @Query("select s from Suggestion s where s.order = :order order by s.expert.score desc")
-    Optional<List<Suggestion>> findAllByOrderAndSortByExpertScoreDesc(@Param("order") Order order);
+    List<Suggestion> findAllByOrderAndSortByExpertScoreDesc(@Param("order") Order order);
 }

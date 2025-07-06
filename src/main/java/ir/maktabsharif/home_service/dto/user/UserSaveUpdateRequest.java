@@ -15,11 +15,13 @@ import lombok.Setter;
 public class UserSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.update.class})
     private Integer id;
+    @NotBlank(groups = {ValidationGroup.save.class})
     private String firstName;
+    @NotBlank(groups = {ValidationGroup.save.class})
     private String lastName;
-    @NotBlank
+    @NotBlank(groups = {ValidationGroup.save.class})
     private String email;
-    @NotBlank
+    @NotBlank(groups = {ValidationGroup.save.class})
     private String password;
     @NotNull
     private Role role;

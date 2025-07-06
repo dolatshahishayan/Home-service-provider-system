@@ -7,6 +7,7 @@ import ir.maktabsharif.home_service.exception.*;
 import ir.maktabsharif.home_service.mapper.expert.ExpertMapper;
 import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
+import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.expert.ExpertRepository;
 import ir.maktabsharif.home_service.service.order.OrderService;
@@ -58,6 +59,7 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
         }
         expert.setProfilePictureData(bytesForExpert);
         expert.setExpertStatus(ExpertStatus.NEW);
+        expert.setRole(Role.EXPERT);
         expert.setEmail(expertSaveUpdateRequest.getEmail().toLowerCase());
         expert.setRegistrationDate(LocalDateTime.now());
         save(expert);

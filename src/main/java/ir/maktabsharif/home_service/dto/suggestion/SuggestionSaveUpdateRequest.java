@@ -21,13 +21,13 @@ public class SuggestionSaveUpdateRequest {
     private Integer expertId;
     @NotNull
     private Integer orderId;
-    @NotBlank
+    @NotBlank(groups = {ValidationGroup.save.class})
     private String description;
-    @NotNull
+    @NotNull(groups = {ValidationGroup.save.class})
     private Double price;
-    @NotNull
+    @NotNull(groups = {ValidationGroup.save.class})
     private Double workDuration;
-    @NotNull
+    @NotNull(groups = {ValidationGroup.save.class})
     private LocalDateTime startDate;
     private Boolean accepted;
 }

@@ -179,7 +179,7 @@ class OrderServiceImplTest {
         OrderFindResponse response2 = new OrderFindResponse();
 
         when(expertServiceService.findByExpertId(expertId)).thenReturn(List.of(es));
-        when(repository.findByServiceId(100)).thenReturn(Optional.of(List.of(order1, order2)));
+        when(repository.findByServiceId(100)).thenReturn(List.of(order1, order2));
         when(mapper.mapToResponse(order1)).thenReturn(response1);
         when(mapper.mapToResponse(order2)).thenReturn(response2);
 
@@ -217,7 +217,7 @@ class OrderServiceImplTest {
         Integer serviceId = 3;
         Order order = new Order();
 
-        when(repository.findByServiceId(serviceId)).thenReturn(Optional.of(List.of(order)));
+        when(repository.findByServiceId(serviceId)).thenReturn(List.of(order));
 
         List<Order> result = service.findByServiceId(serviceId);
 

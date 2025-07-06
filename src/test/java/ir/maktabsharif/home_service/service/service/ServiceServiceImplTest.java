@@ -129,22 +129,22 @@ class ServiceServiceImplTest {
         parent.setId(1);
 
         List<Service> mockSubServices = List.of(new Service(), new Service());
-        when(repository.findAllAndParentServiceIsNotNullByParentService(parent)).thenReturn(Optional.of(mockSubServices));
+        when(repository.findByParentService(parent)).thenReturn(mockSubServices);
 
         List<Service> result = service.findAllAndParentServiceIsNotNullByParentService(parent);
 
         assertEquals(2, result.size());
-        verify(repository).findAllAndParentServiceIsNotNullByParentService(parent);
+        verify(repository).findByParentService(parent);
     }
     @Test
     void findAllAndParentServiceIsNull_ShouldReturnList() {
         List<Service> mockServices = List.of(new Service(), new Service());
-        when(repository.findAllAndParentServiceIsNull()).thenReturn(Optional.of(mockServices));
+        when(repository.findByParentServiceIsNull()).thenReturn(mockServices);
 
         List<Service> result = service.findAllAndParentServiceIsNull();
 
         assertEquals(2, result.size());
-        verify(repository).findAllAndParentServiceIsNull();
+        verify(repository).findByParentServiceIsNull();
     }
 }
 

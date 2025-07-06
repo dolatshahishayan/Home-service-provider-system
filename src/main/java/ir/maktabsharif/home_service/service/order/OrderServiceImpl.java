@@ -131,7 +131,10 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
 
     @Override
     public List<Order> findByServiceId(Integer serviceId) {
-        return repository.findByServiceId(serviceId).orElseThrow(NoElementFoundException::new);
-
+        List<Order> byServiceId = repository.findByServiceId(serviceId);
+        if (byServiceId.isEmpty()) {
+            throw new NoElementFoundException();
+        }
+        return byServiceId;
     }
 }

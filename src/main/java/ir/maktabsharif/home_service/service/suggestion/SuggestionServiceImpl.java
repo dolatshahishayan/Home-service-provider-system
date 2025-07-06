@@ -58,18 +58,29 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
     @Override
     public List<Suggestion> findAllAndSortByPriceAsc(Integer orderId) {
         Order byId = orderService.findById(orderId);
-        return repository.findAllByOrderAndSortByPriceAsc(byId).orElseThrow(NoElementFoundException::new);
+        List<Suggestion> allByOrderAndSortByPriceAsc = repository.findAllByOrderAndSortByPriceAsc(byId);
+        if (allByOrderAndSortByPriceAsc.isEmpty()) {
+            throw new NoElementFoundException();
+        }
+        return allByOrderAndSortByPriceAsc;
     }
 
     @Override
     public List<Suggestion> findAllByAndSortByExpertScoreDesc(Integer orderId) {
         Order byId = orderService.findById(orderId);
-        return repository.findAllByOrderAndSortByExpertScoreDesc(byId).orElseThrow(NoElementFoundException::new);
+        List<Suggestion> allByOrderAndSortByExpertScoreDesc = repository.findAllByOrderAndSortByExpertScoreDesc(byId);
+        if (allByOrderAndSortByExpertScoreDesc.isEmpty()) {
+            throw new NoElementFoundException();
+        }
+        return allByOrderAndSortByExpertScoreDesc;
     }
 
     @Override
     public List<SuggestionFindResponse> findAllByExpertId(Integer expertId) {
-        List<Suggestion> allByExpertId = repository.findAllByExpertId(expertId).orElseThrow(NoElementFoundException::new);
+        List<Suggestion> allByExpertId = repository.findAllByExpertId(expertId);
+        if (allByExpertId.isEmpty()) {
+            throw new NoElementFoundException();
+        }
         List<SuggestionFindResponse> responses = new ArrayList<>();
         for (Suggestion suggestion : allByExpertId) {
             responses.add(mapper.mapToResponse(suggestion));

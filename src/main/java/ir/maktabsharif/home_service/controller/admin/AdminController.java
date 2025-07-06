@@ -26,7 +26,7 @@ public class AdminController {
     private final AdminMapper adminMapper;
 
     @PostMapping("/save")
-    @Operation(summary = "save admin",description = "save method for admin")
+    @Operation(summary = "Save admin",description = "Save method for admin")
     public ResponseEntity<AdminFindResponse> saveAdmin(@RequestBody @Validated(ValidationGroup.save.class) AdminSaveUpdateRequest adminSaveUpdateRequest, HttpSession session) {
         Admin admin = adminService.saveWithDTO(adminSaveUpdateRequest);
         session.setAttribute("currentUser", new UserSessionDTO(admin.getId(), admin.getEmail(), Role.ADMIN));
@@ -34,7 +34,7 @@ public class AdminController {
     }
 
     @PutMapping("/update")
-    @Operation(summary = "update admin",description = "update method for admin")
+    @Operation(summary = "Update admin",description = "Update method for admin")
     public ResponseEntity<AdminFindResponse> update(@RequestBody @Validated(ValidationGroup.update.class) AdminSaveUpdateRequest adminSaveUpdateRequest, HttpSession session){
         Admin admin = adminService.updateWithDTO(adminSaveUpdateRequest);
         session.setAttribute("currentUser", new UserSessionDTO(admin.getId(), admin.getEmail(),Role.ADMIN));

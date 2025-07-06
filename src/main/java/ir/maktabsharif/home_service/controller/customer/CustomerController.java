@@ -19,12 +19,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/customer")
 @RequiredArgsConstructor
-@Tag(name = "Customer controller", description = "controller class for customer")
+@Tag(name = "Customer controller", description = "Controller class for customer")
 public class CustomerController {
+
     private final CustomerService customerService;
     private final CustomerMapper customerMapper;
+
     @PostMapping("/save")
-    @Operation(summary = "save customer",description = "save method for customer")
+    @Operation(summary = "Save customer", description = "Save method for customer")
     public ResponseEntity<CustomerFindResponse> saveCustomer(@RequestBody @Validated(ValidationGroup.save.class) CustomerSaveUpdateRequest customer, HttpSession session) {
         Customer register = customerService.register(customer);
         session.setAttribute("currentUser", new UserSessionDTO(register.getId(), register.getEmail(), Role.CUSTOMER));
@@ -32,15 +34,15 @@ public class CustomerController {
     }
 
     @PutMapping("/update")
-    @Operation(summary = "update customer",description = "update method for customer")
+    @Operation(summary = "Update customer", description = "Update method for customer")
     public ResponseEntity<CustomerFindResponse> updateCustomer(@RequestBody @Validated(ValidationGroup.update.class) CustomerSaveUpdateRequest customer, HttpSession session) {
         Customer updated = customerService.updateWithDTO(customer);
-        session.setAttribute("currentUser", new UserSessionDTO(updated.getId(), updated.getEmail(),Role.CUSTOMER));
+        session.setAttribute("currentUser", new UserSessionDTO(updated.getId(), updated.getEmail(), Role.CUSTOMER));
         return ResponseEntity.ok(customerMapper.mapToResponse(updated));
     }
 
     @GetMapping("/find-by-email")
-    @Operation(summary = "find by email",description = "find a customer with email")
+    @Operation(summary = "Find by email", description = "Find a customer with email")
     public ResponseEntity<CustomerFindResponse> findByEmail(@RequestParam String email) {
         return ResponseEntity.ok(customerMapper.mapToResponse(customerService.findByEmail(email)));
     }

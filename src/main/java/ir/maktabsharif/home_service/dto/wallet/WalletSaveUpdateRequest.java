@@ -14,8 +14,8 @@ import lombok.Setter;
 public class WalletSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.update.class})
     private Integer id;
-    @NotNull
+    @NotNull(groups = {ValidationGroup.save.class})
     private Double balance;
-    @NotNull
+    @NotNull(groups = {ValidationGroup.save.class})
     private Integer userId;
 }

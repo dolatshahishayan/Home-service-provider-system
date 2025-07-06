@@ -17,18 +17,41 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/expert")
+@RequestMapping("/api/v1/expert")
 @RequiredArgsConstructor
-@Tag(name = "Expert controller", description = "controller class for expert")
+@Tag(name = "Expert controller", description = "Controller class for expert")
 public class ExpertController {
+
     private final ExpertService expertService;
     private final ExpertMapper expertMapper;
 
     @PostMapping("/save")
-    @Operation(summary = "save expert", description = "save method for expert")
+    @Operation(summary = "Save expert", description = "Save method for expert")
     public ResponseEntity<ExpertFindResponse> saveExpert(@RequestBody @Validated(ValidationGroup.save.class) ExpertSaveUpdateRequest expert, @RequestParam String imagePath, HttpSession session) {
         Expert register = expertService.register(expert, imagePath);
         session.setAttribute("currentUser", new UserSessionDTO(register.getId(), register.getEmail(), Role.EXPERT));
         return ResponseEntity.ok(expertMapper.mapToResponse(register));
+    }
+
+    @PutMapping("/verify")
+    @Operation(summary = "Verify expert", description = "Verify method for expert")
+    public ResponseEntity<String> verifyExpert(@RequestParam Integer expertId) {
+        expertService.updateStatusToVerified(expertId);
+        return ResponseEntity.ok("expert verified");
+    }
+
+    @PutMapping("/update")
+    @Operation(summary = "Update expert", description = "Update method for expert")
+    public ResponseEntity<ExpertFindResponse> update(@RequestBody ExpertSaveUpdateRequest expertSaveUpdateRequest, HttpSession session) {
+        Expert expert = expertService.updateWithDTO(expertSaveUpdateRequest);
+        session.setAttribute("currentUser", new UserSessionDTO(expert.getId(), expert.getEmail(), Role.EXPERT));
+        return ResponseEntity.ok(expertMapper.mapToResponse(expert));
+    }
+
+    @GetMapping("/find-by-email")
+    @Operation(summary = "Find by email", description = "Method for finding expert by email")
+    public ResponseEntity<ExpertFindResponse> findExpertByEmail(@RequestParam String email) {
+        Expert expert = expertService.findByEmail(email);
+        return ResponseEntity.ok(expertMapper.mapToResponse(expert));
     }
 }

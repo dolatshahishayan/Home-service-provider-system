@@ -17,36 +17,40 @@ public class ServiceServiceImpl extends BaseServiceImpl<Service, Integer, Servic
     public ServiceServiceImpl(ServiceRepository repository, ServiceMapper serviceMapper) {
         super(repository, serviceMapper);
     }
+
     @Override
     public Service saveWithDTO(ServiceSaveUpdateRequest serviceSaveUpdateRequest) {
         if (existsByName(serviceSaveUpdateRequest.getName())) {
             throw new DuplicateInfoException("Service name already exists");
         }
         Service service = mapper.mapToEntity(serviceSaveUpdateRequest);
-        if (serviceSaveUpdateRequest.getParentServiceId()!=null) {
+        if (serviceSaveUpdateRequest.getParentServiceId() != null) {
             service.setParentService(findById(serviceSaveUpdateRequest.getParentServiceId()));
         }
         return save(service);
     }
+
     @Override
     public Service updateWithDTO(ServiceSaveUpdateRequest serviceSaveUpdateRequest) {
         if (existsByName(serviceSaveUpdateRequest.getName())) {
             throw new DuplicateInfoException("Service name already exists");
         }
         Service service = mapper.mapToEntity(serviceSaveUpdateRequest);
-        if (serviceSaveUpdateRequest.getParentServiceId()!=null) {
+        if (serviceSaveUpdateRequest.getParentServiceId() != null) {
             service.setParentService(findById(serviceSaveUpdateRequest.getParentServiceId()));
         }
         return save(service);
     }
+
     @Override
-    public void updateDescription(Integer id,String description) {
+    public void updateDescription(Integer id, String description) {
         Service byId = findById(id);
         byId.setDescription(description);
         save(byId);
     }
+
     @Override
-    public void updateBasePrice(Integer id,Double basePrice) {
+    public void updateBasePrice(Integer id, Double basePrice) {
         Service byId = findById(id);
         byId.setBasePrice(basePrice);
         save(byId);
@@ -54,13 +58,20 @@ public class ServiceServiceImpl extends BaseServiceImpl<Service, Integer, Servic
 
     @Override
     public List<Service> findAllAndParentServiceIsNull() {
-        return repository.findAllAndParentServiceIsNull().orElseThrow(NoElementFoundException::new);
-
+        List<Service> byParentServiceIsNull = repository.findByParentServiceIsNull();
+        if (byParentServiceIsNull.isEmpty()) {
+            throw new NoElementFoundException();
+        }
+        return byParentServiceIsNull;
     }
 
     @Override
     public List<Service> findAllAndParentServiceIsNotNullByParentService(Service parent) {
-        return repository.findAllAndParentServiceIsNotNullByParentService(parent).orElseThrow(NoElementFoundException::new);
+        List<Service> byParentService = repository.findByParentService(parent);
+        if (byParentService.isEmpty()) {
+            throw new NoElementFoundException();
+        }
+        return byParentService;
     }
 
     @Override

@@ -21,14 +21,13 @@ public class ExpertSaveUpdateRequest {
     @NotBlank(groups = {ValidationGroup.save.class})
     @Null(groups = {ValidationGroup.update.class})
     private String lastName;
-    @NotBlank
+    @NotBlank(groups = {ValidationGroup.save.class})
+    @Email
     private String email;
-    @NotBlank
+    @NotBlank(groups = {ValidationGroup.save.class})
     @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$",
             message = "Password must be at least 8 characters long and contain both letters and numbers.")
     private String password;
-    @NotNull
-    private ExpertStatus expertStatus;
     private Double score;
     private String imagePath;
 }

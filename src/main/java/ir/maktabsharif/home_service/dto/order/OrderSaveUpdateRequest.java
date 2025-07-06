@@ -19,16 +19,14 @@ import java.time.LocalDateTime;
 public class OrderSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.update.class})
     private Integer id;
-    @NotBlank
+    @NotBlank(groups = {ValidationGroup.save.class})
     private String description;
-    @NotNull
+    @NotNull(groups = {ValidationGroup.save.class})
     private Double proposedPrice;
     @FutureOrPresent
     private LocalDateTime startDate;
-    @NotBlank
+    @NotBlank(groups = {ValidationGroup.save.class})
     private String address;
-    @NotNull
-    private OrderStatus orderStatus;
     @NotNull
     private Integer customerId;
     @NotNull

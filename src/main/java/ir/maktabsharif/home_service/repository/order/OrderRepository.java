@@ -11,5 +11,5 @@ import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order,Integer>, JpaSpecificationExecutor<Order> {
     boolean existsByExpertAndOrderStatusIn(Expert expert, List<OrderStatus> statuses);
-    Optional<List<Order>> findByServiceId(Integer serviceId);
+    List<Order> findByServiceId(Integer serviceId);
 }

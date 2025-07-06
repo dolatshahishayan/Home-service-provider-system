@@ -9,6 +9,8 @@ import java.util.Optional;
 
 public interface ServiceRepository extends JpaRepository<Service,Integer>, JpaSpecificationExecutor<Service> {
     boolean existsByName(String name);
-    Optional<List<Service>> findAllAndParentServiceIsNull();
-    Optional<List<Service>> findAllAndParentServiceIsNotNullByParentService(Service parent);
+
+    List<Service> findByParentServiceIsNull();
+
+    List<Service> findByParentService(Service parent);
 }

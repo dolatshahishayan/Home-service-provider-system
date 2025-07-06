@@ -136,7 +136,7 @@ class SuggestionServiceImplTest {
 
     @Test
     void findAllByExpertId_shouldThrow_whenNoSuggestionsFound() {
-        when(repository.findAllByExpertId(1)).thenReturn(Optional.of(Collections.emptyList()));
+        when(repository.findAllByExpertId(1)).thenReturn(Collections.emptyList());
 
         assertThrows(NoElementFoundException.class, () -> service.findAllByExpertId(1));
     }
@@ -149,7 +149,7 @@ class SuggestionServiceImplTest {
         SuggestionFindResponse response1 = new SuggestionFindResponse();
         SuggestionFindResponse response2 = new SuggestionFindResponse();
 
-        when(repository.findAllByExpertId(1)).thenReturn(Optional.of(List.of(suggestion1, suggestion2)));
+        when(repository.findAllByExpertId(1)).thenReturn(List.of(suggestion1, suggestion2));
         when(mapper.mapToResponse(suggestion1)).thenReturn(response1);
         when(mapper.mapToResponse(suggestion2)).thenReturn(response2);
 
@@ -183,7 +183,7 @@ class SuggestionServiceImplTest {
         );
 
         when(orderService.findById(1)).thenReturn(order);
-        when(repository.findAllByOrderAndSortByPriceAsc(order)).thenReturn(Optional.of(suggestions));
+        when(repository.findAllByOrderAndSortByPriceAsc(order)).thenReturn(suggestions);
 
         List<Suggestion> result = service.findAllAndSortByPriceAsc(1);
 
@@ -201,7 +201,7 @@ class SuggestionServiceImplTest {
         );
 
         when(orderService.findById(1)).thenReturn(order);
-        when(repository.findAllByOrderAndSortByExpertScoreDesc(order)).thenReturn(Optional.of(suggestions));
+        when(repository.findAllByOrderAndSortByExpertScoreDesc(order)).thenReturn(suggestions);
 
         List<Suggestion> result = service.findAllByAndSortByExpertScoreDesc(1);
 

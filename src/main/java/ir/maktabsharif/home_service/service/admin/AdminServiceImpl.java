@@ -5,6 +5,7 @@ import ir.maktabsharif.home_service.dto.admin.AdminSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.exception.UserWithSameEmailExistsException;
 import ir.maktabsharif.home_service.mapper.admin.AdminMapper;
+import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.user.Admin;
 import ir.maktabsharif.home_service.repository.admin.AdminRepository;
 import ir.maktabsharif.home_service.service.user.UserService;
@@ -29,6 +30,7 @@ public class AdminServiceImpl extends BaseServiceImpl<Admin,Integer, AdminReposi
             throw new UserWithSameEmailExistsException();
         }
         Admin admin = mapper.mapToEntity(adminSaveUpdateRequest);
+        admin.setRole(Role.ADMIN);
         admin.setEmail(adminSaveUpdateRequest.getEmail().toLowerCase());
         admin.setRegistrationDate(LocalDateTime.now());
         return save(admin);
