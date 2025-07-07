@@ -6,7 +6,6 @@ import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
-import ir.maktabsharif.home_service.model.user.Expert;
 
 import java.util.List;
 

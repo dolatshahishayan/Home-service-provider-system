@@ -21,9 +21,9 @@ public class TransactionServiceImpl extends BaseServiceImpl<Transaction, Integer
     }
 
     @Override
-    public Transaction saveTransaction(Transaction transaction) {
+    public void saveTransaction(Transaction transaction) {
         transaction.setTimestamp(LocalDateTime.now());
-        return save(transaction);
+        save(transaction);
     }
 
     @Override
