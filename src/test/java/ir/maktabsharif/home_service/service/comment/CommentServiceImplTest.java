@@ -20,123 +20,152 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
+import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceImplTest {
+
+    @Mock
+    private CommentRepository commentRepository;
+
+    @Mock
+    private CommentMapper commentMapper;
+
     @Mock
     private OrderService orderService;
 
     @Mock
     private ExpertService expertService;
 
-    @Mock
-    private CommentRepository repository;
-
-    @Mock
-    private CommentMapper mapper;
-
     @InjectMocks
     private CommentServiceImpl commentService;
 
-
     @Test
-    void saveWithDTO_ShouldThrowException_WhenUserIsNotCustomerOfOrder() {
+    void saveWithDTO_shouldThrow_WhenUserIsNotCustomer() {
         CommentSaveUpdateRequest dto = new CommentSaveUpdateRequest();
         dto.setOrderId(1);
+
         UserSessionDTO userSessionDTO = new UserSessionDTO();
-        Order order = new Order();
-        Customer otherCustomer = new Customer();
-        otherCustomer.setEmail("test123");
-        order.setCustomer(otherCustomer);
+        userSessionDTO.setEmail("unauthorized@example.com");
 
-        when(orderService.findById(dto.getOrderId())).thenReturn(order);
-
-        assertThrows(CouldNotUpdateException.class, () -> commentService.saveWithDTO(dto, userSessionDTO));
-    }
-
-    @Test
-    void saveWithDTO_ShouldThrowException_WhenCommentAlreadyExists() {
-        CommentSaveUpdateRequest dto = new CommentSaveUpdateRequest();
-        dto.setOrderId(1);
-
-        Order order = new Order();
         Customer customer = new Customer();
-        customer.setEmail("test");
+        customer.setEmail("realcustomer@example.com");
+
+        Order order = new Order();
         order.setCustomer(customer);
 
-        UserSessionDTO userSessionDTO = new UserSessionDTO();
-        userSessionDTO.setEmail("test");
-        when(orderService.findById(dto.getOrderId())).thenReturn(order);
-        when(repository.existsByOrder(order)).thenReturn(true);
+        when(orderService.findById(1)).thenReturn(order);
 
-        assertThrows(DuplicateInfoException.class, () -> commentService.saveWithDTO(dto, userSessionDTO));
+        assertThrows(CouldNotUpdateException.class, () ->
+                commentService.saveWithDTO(dto, userSessionDTO)
+        );
     }
 
     @Test
-    void saveWithDTO_ShouldSaveCommentAndUpdateExpertScore() {
+    void saveWithDTO_shouldThrow_WhenCommentAlreadyExists() {
         CommentSaveUpdateRequest dto = new CommentSaveUpdateRequest();
         dto.setOrderId(1);
 
+        UserSessionDTO userSessionDTO = new UserSessionDTO();
+        userSessionDTO.setEmail("user@example.com");
+
         Customer customer = new Customer();
-        customer.setEmail("test");
-        Expert expert = new Expert();
-        expert.setScore(4.0);
+        customer.setEmail("user@example.com");
 
         Order order = new Order();
+        order.setCustomer(customer);
+        order.setId(1);
+
+        when(orderService.findById(1)).thenReturn(order);
+        when(commentRepository.existsByOrder(order)).thenReturn(true);
+
+        assertThrows(DuplicateInfoException.class, () ->
+                commentService.saveWithDTO(dto, userSessionDTO)
+        );
+    }
+
+    @Test
+    void saveWithDTO_shouldSaveCommentAndUpdateExpertScore() {
+        CommentSaveUpdateRequest dto = new CommentSaveUpdateRequest();
+        dto.setOrderId(1);
+        dto.setExpertScore(5.0);
+
+        UserSessionDTO userSessionDTO = new UserSessionDTO();
+        userSessionDTO.setEmail("customer@example.com");
+
+        Customer customer = new Customer();
+        customer.setEmail("customer@example.com");
+
+        Expert expert = new Expert();
+        expert.setScore(3.0);
+
+        Order order = new Order();
+        order.setId(1);
         order.setCustomer(customer);
         order.setExpert(expert);
 
         Comment comment = new Comment();
         comment.setExpertScore(5.0);
-        UserSessionDTO userSessionDTO = new UserSessionDTO();
-        userSessionDTO.setEmail("test");
-        when(orderService.findById(dto.getOrderId())).thenReturn(order);
-        when(commentService.existsByOrder(order)).thenReturn(false);
-        when(mapper.mapToEntity(dto)).thenReturn(comment);
-        when(repository.existsByOrder(order)).thenReturn(false);
 
-        commentService.saveWithDTO(dto, userSessionDTO);
+        when(orderService.findById(1)).thenReturn(order);
+        when(commentRepository.existsByOrder(order)).thenReturn(false);
+        when(commentMapper.mapToEntity(dto)).thenReturn(comment);
+        when(commentRepository.save(comment)).thenReturn(comment);
 
-        verify(repository).save(comment);
-        assertEquals(4.5, expert.getScore());
+        Comment saved = commentService.saveWithDTO(dto, userSessionDTO);
+
+        assertEquals(order, saved.getOrder());
+        assertEquals(4.0, expert.getScore());
+        assertNotNull(saved.getRegistrationDate());
+
         verify(expertService).save(expert);
+        verify(commentRepository).save(comment);
     }
 
     @Test
-    void existsByOrder_ShouldReturnTrue_WhenRepositorySaysExists() {
+    void existsByOrder_shouldReturnTrueOrFalse() {
         Order order = new Order();
+        order.setId(1);
 
-        when(repository.existsByOrder(order)).thenReturn(true);
+        when(orderService.findById(1)).thenReturn(order);
+        when(commentRepository.existsByOrder(order)).thenReturn(true);
 
-        boolean result = commentService.existsByOrder(order);
-        assertTrue(result);
+        assertTrue(commentService.existsByOrder(1));
+
+        when(commentRepository.existsByOrder(order)).thenReturn(false);
+        assertFalse(commentService.existsByOrder(1));
     }
 
     @Test
-    void findByOrder_ShouldReturnComment_WhenExists() {
+    void findByOrder_shouldReturnComment_whenExists() {
         Order order = new Order();
-        Comment expectedComment = new Comment();
+        order.setId(1);
 
-        when(repository.findByOrder(order)).thenReturn(Optional.of(expectedComment));
-
-        Comment result = commentService.findByOrder(order);
-        assertEquals(expectedComment, result);
-    }
-
-    @Test
-    void viewExpertScoreByOrder_ShouldReturnExpertScore() {
-        int orderId = 1;
-        Order order = new Order();
         Comment comment = new Comment();
-        comment.setExpertScore(4.7);
 
-        when(orderService.findById(orderId)).thenReturn(order);
-        when(repository.findByOrder(order)).thenReturn(Optional.of(comment));
+        when(orderService.findById(1)).thenReturn(order);
+        when(commentRepository.findByOrder(order)).thenReturn(Optional.of(comment));
 
-        double result = commentService.viewExpertScoreByOrder(orderId);
-        assertEquals(4.7, result);
+        Comment result = commentService.findByOrder(1);
+
+        assertSame(comment, result);
+    }
+
+    @Test
+    void viewExpertScoreByOrder_shouldReturnExpertScore() {
+        Order order = new Order();
+        order.setId(1);
+        Comment comment = new Comment();
+        comment.setExpertScore(4.5);
+
+        when(orderService.findById(1)).thenReturn(order);
+        when(commentRepository.findByOrder(order)).thenReturn(Optional.of(comment));
+
+        double score = commentService.viewExpertScoreByOrder(1);
+
+        assertEquals(4.5, score);
     }
 }

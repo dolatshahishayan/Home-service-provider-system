@@ -11,7 +11,7 @@ import ir.maktabsharif.home_service.model.user.Expert;
 import java.util.List;
 
 public interface OrderService extends BaseService<Order,Integer> {
-    boolean existsBySpecialistAndOrderStatusIn(Expert expert, List<OrderStatus> statuses);
+    boolean existsBySpecialistAndOrderStatusIn(Integer expertId, List<OrderStatus> statuses);
     List<Order> findByServiceId(Integer serviceId);
     Order saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest);
     void chooseExpert(Integer suggestionId);

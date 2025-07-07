@@ -6,11 +6,7 @@ import ir.maktabsharif.home_service.dto.ValidationGroup;
 import ir.maktabsharif.home_service.dto.wallet.WalletFindResponse;
 import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.wallet.WalletMapper;
-import ir.maktabsharif.home_service.model.order.Order;
-import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
-import ir.maktabsharif.home_service.service.order.OrderService;
-import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +21,6 @@ public class WalletController {
 
     private final WalletService walletService;
     private final WalletMapper walletMapper;
-    private final OrderService orderService;
-    private final SuggestionService suggestionService;
 
     @PostMapping("/save")
     @Operation(summary = "Save wallet",description = "Method for saving a wallet")
@@ -52,9 +46,7 @@ public class WalletController {
     @PutMapping("/pay-from-wallet")
     @Operation(summary = "Pay from wallet",description = "Method for paying from wallet")
     public ResponseEntity<String> payFromWallet(@RequestParam Integer orderId, @RequestParam Integer suggestionId) {
-        Order byId = orderService.findById(orderId);
-        Suggestion suggestionById = suggestionService.findById(suggestionId);
-        walletService.payFromWallet(byId, suggestionById);
+        walletService.payFromWallet(orderId, suggestionId);
         return ResponseEntity.ok("Payed from wallet");
     }
 }

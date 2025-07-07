@@ -9,8 +9,6 @@ import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.mapper.order.OrderMapper;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
-import ir.maktabsharif.home_service.model.user.Expert;
-import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.service.order.OrderService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +28,6 @@ public class OrderController {
 
     private final OrderService orderService;
     private final OrderMapper orderMapper;
-    private final ExpertService expertService;
 
     @PostMapping("/save")
     @Operation(summary = "Save order", description = "Method for saving an order")
@@ -49,8 +46,7 @@ public class OrderController {
     @GetMapping("/exists-by-expert-and-order-status-in")
     @Operation(summary = "Exists by expert and order status in", description = "Checks if an expert has an order with given statuses")
     public ResponseEntity<Boolean> existsByExpertAndOrderStatusIn(@RequestParam Integer expertId, @RequestParam List<OrderStatus> orderStatuses) {
-        Expert byId = expertService.findById(expertId);
-        return ResponseEntity.ok(orderService.existsBySpecialistAndOrderStatusIn(byId, orderStatuses));
+        return ResponseEntity.ok(orderService.existsBySpecialistAndOrderStatusIn(expertId, orderStatuses));
     }
 
     @GetMapping("/find-by-service-id")

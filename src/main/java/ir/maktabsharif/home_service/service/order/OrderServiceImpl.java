@@ -128,7 +128,8 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
-    public boolean existsBySpecialistAndOrderStatusIn(Expert expert, List<OrderStatus> statuses) {
+    public boolean existsBySpecialistAndOrderStatusIn(Integer expertId, List<OrderStatus> statuses) {
+        Expert expert = expertService.findById(expertId);
         return repository.existsByExpertAndOrderStatusIn(expert, statuses);
     }
 

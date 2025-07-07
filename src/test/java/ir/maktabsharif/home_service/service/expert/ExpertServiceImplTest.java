@@ -175,7 +175,7 @@ class ExpertServiceImplTest {
         when(userService.existsByEmailAndIdNot(dto.getEmail(), dto.getId())).thenReturn(false);
         when(expertRepository.findById(dto.getId())).thenReturn(Optional.of(expert));
         when(orderService.existsBySpecialistAndOrderStatusIn(
-                eq(expert),
+                eq(expert.getId()),
                 eq(List.of(OrderStatus.WAITING_FOR_EXPERT_TO_VISIT, OrderStatus.STARTED))
         )).thenReturn(true);
 
@@ -197,7 +197,7 @@ class ExpertServiceImplTest {
         when(userService.existsByEmailAndIdNot(dto.getEmail(), dto.getId())).thenReturn(false);
         when(expertRepository.findById(dto.getId())).thenReturn(Optional.of(expert));
         when(orderService.existsBySpecialistAndOrderStatusIn(
-                eq(expert),
+                eq(expert.getId()),
                 eq(List.of(OrderStatus.WAITING_FOR_EXPERT_TO_VISIT, OrderStatus.STARTED))
         )).thenReturn(false);
         when(imageUtil.getBytesForExpert(imagePath)).thenReturn(new byte[]{1, 2, 3});

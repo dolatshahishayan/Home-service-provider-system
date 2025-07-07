@@ -7,7 +7,6 @@ import ir.maktabsharif.home_service.dto.comment.CommentFindResponse;
 import ir.maktabsharif.home_service.dto.comment.CommentSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.mapper.comment.CommentMapper;
-import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.service.comment.CommentService;
 import ir.maktabsharif.home_service.service.order.OrderService;
 import jakarta.servlet.http.HttpSession;
@@ -25,7 +24,6 @@ public class CommentController {
 
     private final CommentService commentService;
     private final CommentMapper commentMapper;
-    private final OrderService orderService;
 
     @PostMapping("/save")
     @Operation(summary = "Save comment", description = "Save method for comment")
@@ -40,19 +38,17 @@ public class CommentController {
     @GetMapping("/exists-by-order")
     @Operation(summary = "Exist by order", description = "Checks if order has a registered comment or not")
     public ResponseEntity<Boolean> existsByOrder(@RequestParam Integer orderId) {
-        Order byId = orderService.findById(orderId);
-        return ResponseEntity.ok(commentService.existsByOrder(byId));
+        return ResponseEntity.ok(commentService.existsByOrder(orderId));
     }
 
     @GetMapping("/find-by-order")
     @Operation(summary = "Find by order", description = "Find an order's comment")
     public ResponseEntity<CommentFindResponse> findByOrder(@RequestParam Integer orderId) {
-        Order byId = orderService.findById(orderId);
-        return ResponseEntity.ok(commentMapper.mapToResponse(commentService.findByOrder(byId)));
+        return ResponseEntity.ok(commentMapper.mapToResponse(commentService.findByOrder(orderId)));
     }
 
     @GetMapping("/view-expert-score-by-order")
-    @Operation(summary = "View expert score",description = "View expert score by order")
+    @Operation(summary = "View expert score", description = "View expert score by order")
     public ResponseEntity<Double> viewExpertScoreByOrder(@RequestParam Integer orderId) {
         return ResponseEntity.ok(commentService.viewExpertScoreByOrder(orderId));
     }

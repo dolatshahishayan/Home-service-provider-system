@@ -82,7 +82,7 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
         if (userService.existsByEmailAndIdNot(expertSaveUpdateRequest.getEmail(), expertSaveUpdateRequest.getId())) {
             throw new UserWithSameEmailExistsException();
         }
-        if (orderService.existsBySpecialistAndOrderStatusIn(expert, List.of(OrderStatus.WAITING_FOR_EXPERT_TO_VISIT, OrderStatus.STARTED))) {
+        if (orderService.existsBySpecialistAndOrderStatusIn(expert.getId(), List.of(OrderStatus.WAITING_FOR_EXPERT_TO_VISIT, OrderStatus.STARTED))) {
             throw new ExpertHasAnActiveOrderException();
         }
         if (imagePath!=null) {

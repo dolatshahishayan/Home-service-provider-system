@@ -133,7 +133,6 @@ class OrderServiceImplTest {
     }
 
 
-
     @Test
     void chooseExpert_shouldThrowIfExpertAlreadySet() {
         Integer suggestionId = 1;
@@ -155,6 +154,7 @@ class OrderServiceImplTest {
 
         assertThrows(CouldNotUpdateException.class, () -> service.chooseExpert(suggestionId));
     }
+
     @Test
     void chooseExpert_shouldUpdateOrderAndConfirmSuggestion() {
         Integer suggestionId = 1;
@@ -184,7 +184,6 @@ class OrderServiceImplTest {
         verify(repository, times(2)).save(order);
         verify(suggestionService).confirmSuggestionAcceptance(suggestionId);
     }
-
 
 
     @Test
@@ -217,23 +216,29 @@ class OrderServiceImplTest {
 
     @Test
     void existsBySpecialistAndOrderStatusIn_shouldReturnTrueFromRepo() {
+        Integer expertId = 10;
         Expert expert = new Expert();
         List<OrderStatus> statuses = List.of(OrderStatus.STARTED);
 
+        when(expertService.findById(expertId)).thenReturn(expert);
         when(repository.existsByExpertAndOrderStatusIn(expert, statuses)).thenReturn(true);
 
-        assertTrue(service.existsBySpecialistAndOrderStatusIn(expert, statuses));
+        assertTrue(service.existsBySpecialistAndOrderStatusIn(expertId, statuses));
     }
+
 
     @Test
     void existsBySpecialistAndOrderStatusIn_shouldReturnFalseFromRepo() {
+        Integer expertId = 20;
         Expert expert = new Expert();
         List<OrderStatus> statuses = List.of(OrderStatus.STARTED);
 
+        when(expertService.findById(expertId)).thenReturn(expert);
         when(repository.existsByExpertAndOrderStatusIn(expert, statuses)).thenReturn(false);
 
-        assertFalse(service.existsBySpecialistAndOrderStatusIn(expert, statuses));
+        assertFalse(service.existsBySpecialistAndOrderStatusIn(expertId, statuses));
     }
+
 
 
     @Test

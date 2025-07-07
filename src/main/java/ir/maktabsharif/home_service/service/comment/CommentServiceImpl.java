@@ -38,7 +38,7 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
         if (!order.getCustomer().getEmail().equals(currentUserEmail)) {
             throw new CouldNotUpdateException("You can't register any comments for this order!");
         }
-        if (existsByOrder(order)) {
+        if (existsByOrder(order.getId())) {
             throw new DuplicateInfoException("You have already registered a comment for this order!");
         }
 
@@ -55,20 +55,21 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
     }
 
     @Override
-    public boolean existsByOrder(Order order) {
+    public boolean existsByOrder(Integer orderId) {
+        Order order = orderService.findById(orderId);
         return repository.existsByOrder(order);
     }
 
     @Override
-    public Comment findByOrder(Order order) {
+    public Comment findByOrder(Integer orderId) {
+        Order order = orderService.findById(orderId);
         return repository.findByOrder(order).orElseThrow(NoElementFoundException::new);
 
     }
 
     @Override
     public double viewExpertScoreByOrder(Integer orderId) {
-        Order order = orderService.findById(orderId);
-        Comment byOrder = findByOrder(order);
+        Comment byOrder = findByOrder(orderId);
         return byOrder.getExpertScore();
     }
 }
