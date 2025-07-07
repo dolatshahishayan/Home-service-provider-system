@@ -27,8 +27,6 @@ public class OrderSaveUpdateRequest {
     @NotBlank(groups = {ValidationGroup.save.class})
     private String address;
     @NotNull
-    private Integer customerId;
-    @NotNull
     private Integer serviceId;
     private Integer expertId;
 }
