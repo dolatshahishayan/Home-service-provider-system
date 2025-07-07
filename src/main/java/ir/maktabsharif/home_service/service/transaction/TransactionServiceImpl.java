@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.service.transaction;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
+import ir.maktabsharif.home_service.exception.InvalidRequestException;
 import ir.maktabsharif.home_service.mapper.transaction.TransactionMapper;
 import ir.maktabsharif.home_service.model.transaction.Transaction;
 import ir.maktabsharif.home_service.repository.transaction.TransactionRepository;
@@ -22,6 +23,9 @@ public class TransactionServiceImpl extends BaseServiceImpl<Transaction, Integer
 
     @Override
     public void saveTransaction(Transaction transaction) {
+        if (transaction.getSender() == null || transaction.getReceiver() == null || transaction.getAmount() == null) {
+            throw new InvalidRequestException("Transaction must have sender, receiver, and amount");
+        }
         transaction.setTimestamp(LocalDateTime.now());
         save(transaction);
     }
