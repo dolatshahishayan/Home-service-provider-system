@@ -27,6 +27,7 @@ public class ServiceServiceImpl extends BaseServiceImpl<Service, Integer, Servic
         if (serviceSaveUpdateRequest.getParentServiceId() != null) {
             service.setParentService(findById(serviceSaveUpdateRequest.getParentServiceId()));
         }
+        service.setName(serviceSaveUpdateRequest.getName().toLowerCase());
         return save(service);
     }
 
@@ -40,6 +41,7 @@ public class ServiceServiceImpl extends BaseServiceImpl<Service, Integer, Servic
         if (serviceSaveUpdateRequest.getParentServiceId() != null) {
             service.setParentService(findById(serviceSaveUpdateRequest.getParentServiceId()));
         }
+        service.setName(serviceSaveUpdateRequest.getName().toLowerCase());
         return save(service);
     }
 
