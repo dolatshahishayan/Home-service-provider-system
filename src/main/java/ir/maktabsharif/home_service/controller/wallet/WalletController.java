@@ -18,7 +18,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/wallet")
+@RequestMapping("/api/v1/wallet")
 @RequiredArgsConstructor
 @Tag(name = "Wallet controller",description = "Controller class for wallet")
 public class WalletController {

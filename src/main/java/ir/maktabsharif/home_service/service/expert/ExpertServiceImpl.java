@@ -77,13 +77,23 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
     }
 
     @Override
-    public Expert updateWithDTO(ExpertSaveUpdateRequest expertSaveUpdateRequest) {
+    public Expert updateWithDTO(ExpertSaveUpdateRequest expertSaveUpdateRequest,String imagePath) {
         Expert expert = findById(expertSaveUpdateRequest.getId());
         if (userService.existsByEmailAndIdNot(expertSaveUpdateRequest.getEmail(), expertSaveUpdateRequest.getId())) {
             throw new UserWithSameEmailExistsException();
         }
         if (orderService.existsBySpecialistAndOrderStatusIn(expert, List.of(OrderStatus.WAITING_FOR_EXPERT_TO_VISIT, OrderStatus.STARTED))) {
             throw new ExpertHasAnActiveOrderException();
+        }
+        if (imagePath!=null) {
+            byte[] bytesForExpert = imageUtil.getBytesForExpert(imagePath);
+            if (!imagePath.endsWith(".jpg")) {
+                throw new ImageFormatException("Image format should be jpg");
+            }
+            if (bytesForExpert.length > 300000) {
+                throw new ImageLengthOutOfBoundException("Image size is more than 300kb.");
+            }
+            expert.setProfilePictureData(bytesForExpert);
         }
         mapper.updateEntityWithDTO(expertSaveUpdateRequest, expert);
         expert.setEmail(expertSaveUpdateRequest.getEmail().toLowerCase());

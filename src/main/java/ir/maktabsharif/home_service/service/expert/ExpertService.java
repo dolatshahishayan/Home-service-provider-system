@@ -6,7 +6,7 @@ import ir.maktabsharif.home_service.model.user.Expert;
 
 public interface ExpertService extends BaseService<Expert,Integer> {
     void updateStatusToVerified(Integer expertId);
-    Expert updateWithDTO(ExpertSaveUpdateRequest expertSaveUpdateRequest);
+    Expert updateWithDTO(ExpertSaveUpdateRequest expertSaveUpdateRequest,String imagePath);
     Expert register(ExpertSaveUpdateRequest expertSaveUpdateRequest,String imagePath);
     Expert findByEmail(String email);
 }

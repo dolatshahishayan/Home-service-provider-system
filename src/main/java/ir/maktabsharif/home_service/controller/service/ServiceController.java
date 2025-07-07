@@ -59,7 +59,7 @@ public class ServiceController {
         return ResponseEntity.ok(serviceService.existsByName(name));
     }
 
-    @GetMapping("/find-all-ParentServices")
+    @GetMapping("/find-all-parentServices")
     @Operation(summary = "Find all ParentServices",description = "Finds all subServices")
     public ResponseEntity<List<ServiceFindResponse>> findAllParentServices() {
         List<Service> allAndParentServiceIsNull = serviceService.findAllAndParentServiceIsNull();

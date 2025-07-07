@@ -14,8 +14,6 @@ public class ExpertFindResponse {
     private Integer id;
     private String firstName;
     private String lastName;
-    private String email;
-    private String password;
     private ExpertStatus expertStatus;
     private Double score;
     private byte[] profilePictureData;

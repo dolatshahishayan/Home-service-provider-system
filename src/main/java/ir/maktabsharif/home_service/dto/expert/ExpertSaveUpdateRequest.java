@@ -28,5 +28,4 @@ public class ExpertSaveUpdateRequest {
             message = "Password must be at least 8 characters long and contain both letters and numbers.")
     private String password;
     private Double score;
-    private String imagePath;
 }

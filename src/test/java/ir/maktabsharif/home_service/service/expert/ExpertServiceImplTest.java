@@ -119,7 +119,7 @@ class ExpertServiceImplTest {
         ExpertSaveUpdateRequest dto = new ExpertSaveUpdateRequest();
         dto.setEmail("test@example.com");
         String imagePath = "profile.jpg";
-        WalletSaveUpdateRequest walletSaveUpdateRequest= new WalletSaveUpdateRequest();
+        WalletSaveUpdateRequest walletSaveUpdateRequest = new WalletSaveUpdateRequest();
         Expert expert = new Expert();
         expert.setEmail(dto.getEmail());
         expert.setId(1);
@@ -193,7 +193,7 @@ class ExpertServiceImplTest {
 
         Expert expert = new Expert();
         expert.setId(1);
-
+        expert.setPassword("pass");
         when(userService.existsByEmailAndIdNot(dto.getEmail(), dto.getId())).thenReturn(false);
         when(expertRepository.findById(dto.getId())).thenReturn(Optional.of(expert));
         when(orderService.existsBySpecialistAndOrderStatusIn(
