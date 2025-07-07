@@ -12,10 +12,10 @@ import java.util.List;
 public interface OrderService extends BaseService<Order,Integer> {
     boolean existsBySpecialistAndOrderStatusIn(Integer expertId, List<OrderStatus> statuses);
     List<Order> findByServiceId(Integer serviceId);
-    Order saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest);
+    Order saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest,Integer customerId);
     void chooseExpert(Integer suggestionId);
     List<OrderFindResponse> findAllByExpertId(Integer expertId);
-    Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest);
+    Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest,Integer customerId);
     Order updateStatusToStarted(Integer orderId, UserSessionDTO currentUser);
     Order updateStatusToDone(Integer orderId,UserSessionDTO currentUser);
 }

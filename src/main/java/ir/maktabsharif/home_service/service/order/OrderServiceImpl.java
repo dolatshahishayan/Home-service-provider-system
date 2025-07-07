@@ -44,10 +44,15 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
-    public Order saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest) {
+    public Order saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest,Integer customerId) {
         Order order = mapper.mapToEntity(orderSaveUpdateRequest);
-        order.setCustomer(customerService.findById(orderSaveUpdateRequest.getCustomerId()));
-        order.setExpert(expertService.findById(orderSaveUpdateRequest.getExpertId()));
+        if (customerId == null) {
+            throw new InvalidRequestException("Customer Id is required");
+        }
+        order.setCustomer(customerService.findById(customerId));
+        if (orderSaveUpdateRequest.getExpertId() != null) {
+            order.setExpert(expertService.findById(orderSaveUpdateRequest.getExpertId()));
+        }
         order.setService(serviceService.findById(orderSaveUpdateRequest.getServiceId()));
         if (order.getProposedPrice() < order.getService().getBasePrice()) {
             throw new InvalidRequestException("Proposed price must be greater than the service price");
@@ -97,10 +102,13 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
-    public Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest) {
+    public Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest,Integer customerId) {
         Order order = findById(orderSaveUpdateRequest.getId());
         mapper.updateEntityWithDTO(orderSaveUpdateRequest, order);
-        order.setCustomer(customerService.findById(orderSaveUpdateRequest.getCustomerId()));
+        if (customerId == null) {
+            throw new InvalidRequestException("Customer Id is required");
+        }
+        order.setCustomer(customerService.findById(customerId));
         if (orderSaveUpdateRequest.getExpertId() != null) {
             order.setExpert(expertService.findById(orderSaveUpdateRequest.getExpertId()));
         }

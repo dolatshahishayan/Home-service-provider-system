@@ -67,11 +67,10 @@ class OrderServiceImplTest {
     @Test
     void saveWithDTO_shouldMapAndSaveOrder_whenPriceIsValid() {
         OrderSaveUpdateRequest dto = new OrderSaveUpdateRequest();
-        dto.setCustomerId(1);
         dto.setExpertId(2);
         dto.setServiceId(3);
         dto.setProposedPrice(2000d);
-
+        Integer customerId = 1;
         Customer customer = new Customer();
         Expert expert = new Expert();
         Service service2 = new Service();
@@ -81,12 +80,12 @@ class OrderServiceImplTest {
         mappedOrder.setProposedPrice(dto.getProposedPrice());
 
         when(mapper.mapToEntity(dto)).thenReturn(mappedOrder);
-        when(customerService.findById(dto.getCustomerId())).thenReturn(customer);
+        when(customerService.findById(customerId)).thenReturn(customer);
         when(expertService.findById(dto.getExpertId())).thenReturn(expert);
         when(serviceService.findById(dto.getServiceId())).thenReturn(service2);
         when(repository.save(mappedOrder)).thenReturn(mappedOrder);
 
-        Order result = service.saveWithDTO(dto);
+        Order result = service.saveWithDTO(dto, customerId);
 
         assertEquals(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION, result.getOrderStatus());
         assertNotNull(result.getCreationDate());
@@ -101,19 +100,18 @@ class OrderServiceImplTest {
     void updateWithDTO_shouldUpdateOrderCorrectly() {
         OrderSaveUpdateRequest dto = new OrderSaveUpdateRequest();
         dto.setId(1);
-        dto.setCustomerId(10);
         dto.setExpertId(20);
         dto.setServiceId(30);
 
         Order existingOrder = new Order();
         existingOrder.setId(dto.getId());
-
+        Integer customerId = 1;
         Customer customer = new Customer();
         Expert expert = new Expert();
         Service service2 = new Service();
 
         when(repository.findById(dto.getId())).thenReturn(Optional.of(existingOrder));
-        when(customerService.findById(dto.getCustomerId())).thenReturn(customer);
+        when(customerService.findById(customerId)).thenReturn(customer);
         when(expertService.findById(dto.getExpertId())).thenReturn(expert);
         when(serviceService.findById(dto.getServiceId())).thenReturn(service2);
 
@@ -121,7 +119,7 @@ class OrderServiceImplTest {
 
         when(repository.save(existingOrder)).thenReturn(existingOrder);
 
-        Order updatedOrder = service.updateWithDTO(dto);
+        Order updatedOrder = service.updateWithDTO(dto,customerId);
 
         assertSame(existingOrder, updatedOrder);
         verify(mapper).updateEntityWithDTO(dto, existingOrder);
@@ -238,7 +236,6 @@ class OrderServiceImplTest {
 
         assertFalse(service.existsBySpecialistAndOrderStatusIn(expertId, statuses));
     }
-
 
 
     @Test
