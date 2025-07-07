@@ -49,7 +49,11 @@ public class ExpertServiceServiceImpl extends BaseServiceImpl<ExpertService, Int
 
     @Override
     public List<ExpertService> findByExpertId(Integer expertId) {
-        return repository.findByExpertId(expertId).orElseThrow(NoExpertFoundWithServiceException::new);
+        List<ExpertService> byExpertId = repository.findByExpertId(expertId);
+        if (byExpertId.isEmpty()){
+            throw new NoExpertFoundWithServiceException();
+        }
+        return byExpertId;
 
     }
 

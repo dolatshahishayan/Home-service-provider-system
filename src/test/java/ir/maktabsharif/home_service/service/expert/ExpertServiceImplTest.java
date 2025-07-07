@@ -144,7 +144,7 @@ class ExpertServiceImplTest {
         dto.setId(42);
         dto.setEmail("existing@example.com");
         dto.setPassword("newpass");
-
+        String imagePath = "profile.jpg";
         Expert existingExpert = new Expert();
         existingExpert.setId(42);
 
@@ -153,7 +153,7 @@ class ExpertServiceImplTest {
         when(userService.existsByEmailAndIdNot(dto.getEmail(), dto.getId())).thenReturn(true);
 
         UserWithSameEmailExistsException exception = assertThrows(UserWithSameEmailExistsException.class,
-                () -> expertService.updateWithDTO(dto));
+                () -> expertService.updateWithDTO(dto,imagePath));
 
         assertNotNull(exception);
 
@@ -168,7 +168,7 @@ class ExpertServiceImplTest {
         ExpertSaveUpdateRequest dto = new ExpertSaveUpdateRequest();
         dto.setEmail("test@example.com");
         dto.setId(1);
-
+        String imagePath = "profile.jpg";
         Expert expert = new Expert();
         expert.setId(1);
 
@@ -179,7 +179,7 @@ class ExpertServiceImplTest {
                 eq(List.of(OrderStatus.WAITING_FOR_EXPERT_TO_VISIT, OrderStatus.STARTED))
         )).thenReturn(true);
 
-        ExpertHasAnActiveOrderException ex = assertThrows(ExpertHasAnActiveOrderException.class, () -> expertService.updateWithDTO(dto));
+        ExpertHasAnActiveOrderException ex = assertThrows(ExpertHasAnActiveOrderException.class, () -> expertService.updateWithDTO(dto,imagePath));
 
         assertNotNull(ex);
     }
@@ -190,7 +190,7 @@ class ExpertServiceImplTest {
         dto.setEmail("test@example.com");
         dto.setPassword("pass");
         dto.setId(1);
-
+        String imagePath = "profile.jpg";
         Expert expert = new Expert();
         expert.setId(1);
         expert.setPassword("pass");
@@ -200,8 +200,9 @@ class ExpertServiceImplTest {
                 eq(expert),
                 eq(List.of(OrderStatus.WAITING_FOR_EXPERT_TO_VISIT, OrderStatus.STARTED))
         )).thenReturn(false);
+        when(imageUtil.getBytesForExpert(imagePath)).thenReturn(new byte[]{1, 2, 3});
 
-        expertService.updateWithDTO(dto);
+        expertService.updateWithDTO(dto,imagePath);
 
         assertEquals(dto.getEmail(), expert.getEmail());
         assertEquals(dto.getPassword(), expert.getPassword());

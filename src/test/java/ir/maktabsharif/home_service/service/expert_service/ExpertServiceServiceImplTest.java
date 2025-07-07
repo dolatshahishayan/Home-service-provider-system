@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,7 +66,7 @@ class ExpertServiceServiceImplTest {
 
     @Test
     void removeExpertFromService_shouldThrow_whenExpertServiceNotFound() {
-        when(service.findByExpertIdAndServiceId(1, 2)).thenReturn(null);
+        when(repository.findByExpertIdAndServiceId(1, 2)).thenReturn(Optional.empty());
 
         assertThrows(NoExpertFoundWithServiceException.class, () ->
                 service.removeExpertFromService(1, 2)
@@ -77,7 +78,7 @@ class ExpertServiceServiceImplTest {
         ExpertService expertService = new ExpertService();
         expertService.setId(10);
 
-        when(service.findByExpertIdAndServiceId(1, 2)).thenReturn(expertService);
+        when(repository.findByExpertIdAndServiceId(1, 2)).thenReturn(Optional.of(expertService));
 
         service.removeExpertFromService(1, 2);
 
@@ -85,20 +86,22 @@ class ExpertServiceServiceImplTest {
     }
 
 
+
     @Test
     void findByExpertId_shouldThrow_whenListEmpty() {
-        when(repository.findByExpertId(1)).thenReturn(Optional.of(List.of()));
+        when(repository.findByExpertId(1)).thenReturn(Collections.emptyList());
 
         assertThrows(NoExpertFoundWithServiceException.class, () ->
                 service.findByExpertId(1)
         );
     }
 
+
     @Test
     void findByExpertId_shouldReturnList_whenExists() {
         List<ExpertService> expertServices = List.of(new ExpertService());
 
-        when(repository.findByExpertId(1)).thenReturn(Optional.of(expertServices));
+        when(repository.findByExpertId(1)).thenReturn(expertServices);
 
         List<ExpertService> result = service.findByExpertId(1);
 

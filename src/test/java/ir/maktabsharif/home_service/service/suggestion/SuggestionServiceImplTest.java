@@ -9,6 +9,7 @@ import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
+import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.suggestion.SuggestionRepository;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.service.order.OrderService;
@@ -24,8 +25,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SuggestionServiceImplTest {
@@ -46,91 +46,96 @@ class SuggestionServiceImplTest {
     private SuggestionServiceImpl service;
 
     @Test
-    void registerSuggestionForOrder_shouldThrow_whenOrderStatusIsInvalid() {
-        SuggestionSaveUpdateRequest dto = new SuggestionSaveUpdateRequest();
+    void registerSuggestion_validRequest_shouldSaveSuggestionAndUpdateOrderStatus() {
+        Integer orderId = 1;
+        Integer expertId = 2;
+        double basePrice = 100.0;
+        double suggestedPrice = 150.0;
+
+        SuggestionSaveUpdateRequest request = new SuggestionSaveUpdateRequest();
+        request.setOrderId(orderId);
+        request.setExpertId(expertId);
+        request.setPrice(suggestedPrice);
 
         Order order = new Order();
-        order.setOrderStatus(OrderStatus.STARTED);
-
-        Service serviceEntity = new Service();
-        serviceEntity.setBasePrice(100.0);
-        order.setService(serviceEntity);
-
-        Suggestion suggestion = new Suggestion();
-        suggestion.setOrder(order);
-        suggestion.setPrice(120.0);
-        dto.setOrderId(1);
-        dto.setExpertId(1);
-        when(mapper.mapToEntity(dto)).thenReturn(suggestion);
-
-        when(orderService.findById(anyInt())).thenReturn(order);
-        when(expertService.findById(anyInt())).thenReturn(new ir.maktabsharif.home_service.model.user.Expert());
-
-        assertThrows(InvalidRequestException.class, () -> service.registerSuggestionForOrder(dto));
-    }
-
-    @Test
-    void registerSuggestionForOrder_shouldThrow_whenPriceBelowBasePrice() {
-        SuggestionSaveUpdateRequest dto = new SuggestionSaveUpdateRequest();
-
-        Order order = new Order();
+        order.setId(orderId);
         order.setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION);
 
-        Service serviceEntity = new Service();
-        serviceEntity.setBasePrice(150.0);
-        order.setService(serviceEntity);
+        Service service2 = new Service();
+        service2.setBasePrice(basePrice);
+        order.setService(service2);
+
+        Expert expert = new Expert();
+        expert.setId(expertId);
 
         Suggestion suggestion = new Suggestion();
         suggestion.setOrder(order);
-        suggestion.setPrice(120.0);
-        dto.setOrderId(1);
-        dto.setExpertId(1);
-        when(mapper.mapToEntity(dto)).thenReturn(suggestion);
+        suggestion.setExpert(expert);
+        suggestion.setPrice(suggestedPrice);
 
-        when(orderService.findById(anyInt())).thenReturn(order);
-        when(expertService.findById(anyInt())).thenReturn(new ir.maktabsharif.home_service.model.user.Expert());
+        Suggestion savedSuggestion = new Suggestion();
+        savedSuggestion.setId(10);
 
-        assertThrows(InvalidRequestException.class, () -> service.registerSuggestionForOrder(dto));
-    }
+        when(orderService.findById(orderId)).thenReturn(order);
+        when(expertService.findById(expertId)).thenReturn(expert);
+        when(mapper.mapToEntity(request)).thenReturn(suggestion);
+        when(repository.save(suggestion)).thenReturn(savedSuggestion);
 
-    @Test
-    void saveWithDTO_shouldSave_whenValid() {
-        SuggestionSaveUpdateRequest dto = new SuggestionSaveUpdateRequest();
+        Suggestion result = service.registerSuggestionForOrder(request);
 
-        Order order = new Order();
-        order.setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION);
+        assertEquals(savedSuggestion, result);
+        assertEquals(OrderStatus.WAITING_TO_CHOOSE_EXPERT, order.getOrderStatus());
 
-        Service serviceEntity = new Service();
-        serviceEntity.setBasePrice(100.0);
-        order.setService(serviceEntity);
-
-        Suggestion suggestion = new Suggestion();
-        suggestion.setOrder(order);
-        suggestion.setPrice(120.0);
-        dto.setOrderId(1);
-        dto.setExpertId(1);
-        when(mapper.mapToEntity(dto)).thenReturn(suggestion);
-
-        when(orderService.findById(anyInt())).thenReturn(order);
-        when(expertService.findById(anyInt())).thenReturn(new ir.maktabsharif.home_service.model.user.Expert());
-
-        service.registerSuggestionForOrder(dto);
-
-        assertNotNull(suggestion.getCreationDate());
+        verify(orderService).save(order);
         verify(repository).save(suggestion);
     }
 
+    @Test
+    void registerSuggestion_invalidOrderStatus_shouldThrowException() {
+        SuggestionSaveUpdateRequest request = new SuggestionSaveUpdateRequest();
+        request.setOrderId(1);
+        request.setExpertId(2);
+        request.setPrice(200.0);
+
+        Order order = new Order();
+        order.setOrderStatus(OrderStatus.DONE);
+
+        Service service1 = new Service();
+        service1.setBasePrice(100.0);
+        order.setService(service1);
+
+        Expert expert = new Expert();
+
+        Suggestion suggestion = new Suggestion();
+        suggestion.setOrder(order);
+        suggestion.setExpert(expert);
+        suggestion.setPrice(200.0);
+
+        when(orderService.findById(anyInt())).thenReturn(order);
+        when(expertService.findById(anyInt())).thenReturn(expert);
+        when(mapper.mapToEntity(request)).thenReturn(suggestion);
+
+        InvalidRequestException ex = assertThrows(
+                InvalidRequestException.class,
+                () -> service.registerSuggestionForOrder(request)
+        );
+
+        assertEquals("Order is not waiting for any suggestions.", ex.getMessage());
+    }
 
     @Test
     void updateWithDTO_shouldMapAndUpdate() {
         SuggestionSaveUpdateRequest dto = new SuggestionSaveUpdateRequest();
-        Suggestion suggestion = new Suggestion();
+        dto.setId(1);
 
-        when(mapper.mapToEntity(dto)).thenReturn(suggestion);
+        Suggestion existing = new Suggestion();
+
+        when(repository.findById(1)).thenReturn(Optional.of(existing));
+        doNothing().when(mapper).updateEntityWithDTO(dto, existing);
 
         service.updateWithDTO(dto);
 
-        verify(repository).save(suggestion);
+        verify(repository).save(any(Suggestion.class));
     }
 
 
@@ -173,6 +178,7 @@ class SuggestionServiceImplTest {
         assertTrue(suggestion.getAccepted());
         verify(repository).save(suggestion);
     }
+
     @Test
     void findAllAndSortByPriceAsc_ShouldReturnSortedSuggestions() {
         Order order = new Order();

@@ -61,7 +61,10 @@ class CustomerServiceImplTest {
 
         Customer existingCustomer = new Customer();
         existingCustomer.setId(1);
-
+        existingCustomer.setFirstName(dto.getFirstName());
+        existingCustomer.setLastName(dto.getLastName());
+        existingCustomer.setEmail(dto.getEmail());
+        existingCustomer.setPassword(dto.getPassword());
         when(userService.existsByEmailAndIdNot(dto.getEmail(), dto.getId())).thenReturn(false);
         when(customerRepository.findById(dto.getId())).thenReturn(Optional.of(existingCustomer));
 

@@ -43,23 +43,31 @@ class ServiceServiceImplTest {
     @Test
     void updateWithDTO_shouldUpdate_whenNameIsUnique() {
         ServiceSaveUpdateRequest dto = new ServiceSaveUpdateRequest();
+        dto.setId(1);
         dto.setName("Painting");
-        dto.setParentServiceId(1);
+        dto.setParentServiceId(2);
 
-        Service mapped = new Service();
+        Service existingService = new Service();
+        existingService.setId(1);
+
         Service parent = new Service();
-        parent.setId(1);
+        parent.setId(2);
 
         when(repository.existsByName("Painting")).thenReturn(false);
-        when(mapper.mapToEntity(dto)).thenReturn(mapped);
-        when(repository.findById(1)).thenReturn(Optional.of(parent));
+        when(repository.findById(1)).thenReturn(Optional.of(existingService));
+        when(repository.findById(2)).thenReturn(Optional.of(parent));
+
+        doNothing().when(mapper).updateEntityWithDTO(any(ServiceSaveUpdateRequest.class), any(Service.class));
 
         service.updateWithDTO(dto);
 
-        verify(mapper).mapToEntity(dto);
-        verify(repository).save(mapped);
-        assertEquals(parent, mapped.getParentService());
+        verify(mapper).updateEntityWithDTO(dto, existingService);
+        verify(repository).save(existingService);
+        assertEquals(parent, existingService.getParentService());
     }
+
+
+
     @Test
     void updateDescription_shouldUpdateDescription_whenIdExists() {
         Service serviceEntity = new Service();

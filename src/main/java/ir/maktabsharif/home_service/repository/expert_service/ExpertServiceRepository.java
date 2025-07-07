@@ -10,5 +10,5 @@ import java.util.Optional;
 public interface ExpertServiceRepository extends JpaRepository<ExpertService,Integer>, JpaSpecificationExecutor<ExpertService> {
     Optional<ExpertService> findByExpertIdAndServiceId(Integer expertId, Integer serviceId);
     boolean existsByExpertIdAndServiceId(Integer expertId, Integer serviceId);
-    Optional<List<ExpertService>> findByExpertId(Integer expertId);
+    List<ExpertService> findByExpertId(Integer expertId);
 }

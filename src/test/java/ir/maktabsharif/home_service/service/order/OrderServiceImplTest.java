@@ -98,16 +98,40 @@ class OrderServiceImplTest {
 
 
     @Test
-    void updateWithDTO_shouldMapAndUpdateOrder() {
+    void updateWithDTO_shouldUpdateOrderCorrectly() {
         OrderSaveUpdateRequest dto = new OrderSaveUpdateRequest();
-        Order order = new Order();
+        dto.setId(1);
+        dto.setCustomerId(10);
+        dto.setExpertId(20);
+        dto.setServiceId(30);
 
-        when(mapper.mapToEntity(dto)).thenReturn(order);
+        Order existingOrder = new Order();
+        existingOrder.setId(dto.getId());
 
-        service.updateWithDTO(dto);
+        Customer customer = new Customer();
+        Expert expert = new Expert();
+        Service service2 = new Service();
 
-        verify(repository).save(order);
+        when(repository.findById(dto.getId())).thenReturn(Optional.of(existingOrder));
+        when(customerService.findById(dto.getCustomerId())).thenReturn(customer);
+        when(expertService.findById(dto.getExpertId())).thenReturn(expert);
+        when(serviceService.findById(dto.getServiceId())).thenReturn(service2);
+
+        doNothing().when(mapper).updateEntityWithDTO(dto, existingOrder);
+
+        when(repository.save(existingOrder)).thenReturn(existingOrder);
+
+        Order updatedOrder = service.updateWithDTO(dto);
+
+        assertSame(existingOrder, updatedOrder);
+        verify(mapper).updateEntityWithDTO(dto, existingOrder);
+        verify(repository).save(existingOrder);
+
+        assertEquals(customer, existingOrder.getCustomer());
+        assertEquals(expert, existingOrder.getExpert());
+        assertEquals(service2, existingOrder.getService());
     }
+
 
 
     @Test

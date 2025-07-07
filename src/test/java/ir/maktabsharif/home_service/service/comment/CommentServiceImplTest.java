@@ -23,6 +23,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 class CommentServiceImplTest {
     @Mock
@@ -53,7 +54,7 @@ class CommentServiceImplTest {
 
         when(orderService.findById(dto.getOrderId())).thenReturn(order);
 
-        assertThrows(CouldNotUpdateException.class, () -> commentService.saveWithDTO(dto,userSessionDTO));
+        assertThrows(CouldNotUpdateException.class, () -> commentService.saveWithDTO(dto, userSessionDTO));
     }
 
     @Test
@@ -67,9 +68,9 @@ class CommentServiceImplTest {
         order.setCustomer(customer);
 
         UserSessionDTO userSessionDTO = new UserSessionDTO();
-
+        userSessionDTO.setEmail("test");
         when(orderService.findById(dto.getOrderId())).thenReturn(order);
-        when(commentService.existsByOrder(order)).thenReturn(true);
+        when(repository.existsByOrder(order)).thenReturn(true);
 
         assertThrows(DuplicateInfoException.class, () -> commentService.saveWithDTO(dto, userSessionDTO));
     }
@@ -91,11 +92,13 @@ class CommentServiceImplTest {
         Comment comment = new Comment();
         comment.setExpertScore(5.0);
         UserSessionDTO userSessionDTO = new UserSessionDTO();
+        userSessionDTO.setEmail("test");
         when(orderService.findById(dto.getOrderId())).thenReturn(order);
         when(commentService.existsByOrder(order)).thenReturn(false);
         when(mapper.mapToEntity(dto)).thenReturn(comment);
+        when(repository.existsByOrder(order)).thenReturn(false);
 
-        commentService.saveWithDTO(dto,userSessionDTO);
+        commentService.saveWithDTO(dto, userSessionDTO);
 
         verify(repository).save(comment);
         assertEquals(4.5, expert.getScore());

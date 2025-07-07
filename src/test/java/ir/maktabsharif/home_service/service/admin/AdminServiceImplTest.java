@@ -16,8 +16,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
 class AdminServiceImplTest {
 
@@ -58,6 +58,7 @@ class AdminServiceImplTest {
         verify(adminRepository).save(mockAdmin);
         assertNotNull(mockAdmin.getRegistrationDate());
     }
+
     @Test
     void updateWithDTO_ShouldThrowException_WhenEmailUsedByAnotherUser() {
         AdminSaveUpdateRequest dto = new AdminSaveUpdateRequest();
@@ -78,12 +79,13 @@ class AdminServiceImplTest {
         Admin admin = new Admin();
 
         when(userService.existsByEmailAndIdNot(dto.getEmail(), dto.getId())).thenReturn(false);
-        when(mapper.mapToEntity(dto)).thenReturn(admin);
-
+        doNothing().when(mapper).updateEntityWithDTO(dto, admin);
+        when(adminRepository.findById(dto.getId())).thenReturn(Optional.of(admin));
         adminService.updateWithDTO(dto);
 
         verify(adminRepository).save(admin);
     }
+
     @Test
     void findByEmail_ShouldFindAdmin_WhenEmailExists() {
         Admin admin = new Admin();

@@ -38,13 +38,18 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
         suggestion.setCreationDate(LocalDateTime.now());
         suggestion.setExpert(expertService.findById(suggestionSaveUpdateRequest.getExpertId()));
         suggestion.setOrder(orderService.findById(suggestionSaveUpdateRequest.getOrderId()));
-        if (!suggestion.getOrder().getOrderStatus().equals(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION)) {
+        if (!(suggestion.getOrder().getOrderStatus().equals(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION)||suggestion.getOrder().getOrderStatus().equals(OrderStatus.WAITING_TO_CHOOSE_EXPERT))) {
             throw new InvalidRequestException("Order is not waiting for any suggestions.");
         }
         if (suggestion.getPrice() < suggestion.getOrder().getService().getBasePrice()) {
             throw new InvalidRequestException("Price must be greater than the base price.");
         }
-        return save(suggestion);
+        Suggestion save = save(suggestion);
+        if (suggestion.getOrder().getOrderStatus().equals(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION)) {
+            suggestion.getOrder().setOrderStatus(OrderStatus.WAITING_TO_CHOOSE_EXPERT);
+            orderService.save(suggestion.getOrder());
+        }
+        return save;
     }
 
     @Override
