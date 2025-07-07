@@ -31,15 +31,17 @@ public class OrderController {
 
     @PostMapping("/save")
     @Operation(summary = "Save order", description = "Method for saving an order")
-    public ResponseEntity<OrderFindResponse> save(@RequestBody @Validated(ValidationGroup.save.class) OrderSaveUpdateRequest order) {
-        Order saved = orderService.saveWithDTO(order);
+    public ResponseEntity<OrderFindResponse> save(@RequestBody @Validated(ValidationGroup.save.class) OrderSaveUpdateRequest order, HttpSession session) {
+        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
+        Order saved = orderService.saveWithDTO(order,currentUser.getUserId());
         return ResponseEntity.ok(orderMapper.mapToResponse(saved));
     }
 
     @PutMapping("/update")
     @Operation(summary = "Update order", description = "Method for updating an order")
-    public ResponseEntity<OrderFindResponse> update(@RequestBody @Validated(ValidationGroup.update.class) OrderSaveUpdateRequest order) {
-        Order updated = orderService.updateWithDTO(order);
+    public ResponseEntity<OrderFindResponse> update(@RequestBody @Validated(ValidationGroup.update.class) OrderSaveUpdateRequest order,HttpSession session) {
+        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
+        Order updated = orderService.updateWithDTO(order,currentUser.getUserId());
         return ResponseEntity.ok(orderMapper.mapToResponse(updated));
     }
 
