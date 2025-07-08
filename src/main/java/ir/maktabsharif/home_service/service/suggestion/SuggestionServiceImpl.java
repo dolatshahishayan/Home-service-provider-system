@@ -62,7 +62,6 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
     @Override
     public Suggestion updateWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest,UserSessionDTO session) {
         Suggestion suggestion = findById(suggestionSaveUpdateRequest.getId());
-        suggestion.setOrder(orderService.findById(suggestionSaveUpdateRequest.getOrderId()));
         if (!expertServiceService.existsByExpertIdAndServiceId(session.getUserId(), suggestion.getOrder().getService().getId())) {
             throw new InvalidRequestException("Expert Id and Service Id are not registered");
         }
