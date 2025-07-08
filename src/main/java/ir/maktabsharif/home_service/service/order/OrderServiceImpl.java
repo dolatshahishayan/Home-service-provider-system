@@ -120,6 +120,9 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
         if (!order.getCustomer().getEmail().equals(currentUser.getEmail())) {
             throw new CouldNotUpdateException("You can't update the status of this order.");
         }
+        if (!order.getStartDate().isBefore(LocalDateTime.now())) {
+            throw new CouldNotUpdateException("You can't update order status to started before the start date.");
+        }
         order.setOrderStatus(newStatus);
         return save(order);
     }
