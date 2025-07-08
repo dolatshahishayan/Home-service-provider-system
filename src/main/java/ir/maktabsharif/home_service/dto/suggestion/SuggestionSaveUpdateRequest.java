@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class SuggestionSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.update.class})
     private Integer id;
-    @NotNull
+    @NotNull(groups = {ValidationGroup.save.class})
     private Integer orderId;
     @NotBlank(groups = {ValidationGroup.save.class})
     private String description;
