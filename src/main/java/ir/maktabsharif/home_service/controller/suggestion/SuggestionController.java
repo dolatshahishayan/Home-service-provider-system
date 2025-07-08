@@ -5,9 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.maktabsharif.home_service.dto.ValidationGroup;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionFindResponse;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionSaveUpdateRequest;
+import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.mapper.suggestion.SuggestionMapper;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -27,15 +29,17 @@ public class SuggestionController {
 
     @PostMapping("/save")
     @Operation(summary = "Save suggestion",description = "Method for saving a suggestion")
-    public ResponseEntity<SuggestionFindResponse> save(@RequestBody @Validated(ValidationGroup.save.class) SuggestionSaveUpdateRequest suggestion) {
-        Suggestion saved = suggestionService.registerSuggestionForOrder(suggestion);
+    public ResponseEntity<SuggestionFindResponse> save(@RequestBody @Validated(ValidationGroup.save.class) SuggestionSaveUpdateRequest suggestion, HttpSession session) {
+        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
+        Suggestion saved = suggestionService.registerSuggestionForOrder(suggestion,currentUser);
         return ResponseEntity.ok(suggestionMapper.mapToResponse(saved));
     }
 
     @PutMapping("/update")
     @Operation(summary = "Update suggestion",description = "Method for updating a suggestion")
-    public ResponseEntity<SuggestionFindResponse> update(@RequestBody @Validated(ValidationGroup.update.class) SuggestionSaveUpdateRequest suggestion) {
-        Suggestion updated = suggestionService.updateWithDTO(suggestion);
+    public ResponseEntity<SuggestionFindResponse> update(@RequestBody @Validated(ValidationGroup.update.class) SuggestionSaveUpdateRequest suggestion,HttpSession session) {
+        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
+        Suggestion updated = suggestionService.updateWithDTO(suggestion,currentUser);
         return ResponseEntity.ok(suggestionMapper.mapToResponse(updated));
     }
 

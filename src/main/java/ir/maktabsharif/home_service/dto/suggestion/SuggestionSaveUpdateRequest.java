@@ -18,8 +18,6 @@ public class SuggestionSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.update.class})
     private Integer id;
     @NotNull
-    private Integer expertId;
-    @NotNull
     private Integer orderId;
     @NotBlank(groups = {ValidationGroup.save.class})
     private String description;
