@@ -25,6 +25,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -301,6 +302,7 @@ class OrderServiceImplTest {
         order.setId(orderId);
         order.setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_TO_VISIT);
         order.setCustomer(customer);
+        order.setStartDate(LocalDateTime.now().minusHours(1));
 
         when(repository.findById(orderId)).thenReturn(Optional.of(order));
         when(repository.save(order)).thenReturn(order);
@@ -325,6 +327,7 @@ class OrderServiceImplTest {
         order.setId(orderId);
         order.setOrderStatus(OrderStatus.STARTED);
         order.setCustomer(customer);
+        order.setStartDate(LocalDateTime.now().minusHours(1));
 
         when(repository.findById(orderId)).thenReturn(Optional.of(order));
         when(repository.save(order)).thenReturn(order);

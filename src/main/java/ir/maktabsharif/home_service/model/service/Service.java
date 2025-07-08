@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Service extends BaseEntity {
-
+    @Column(unique = true)
     private String name;
 
     private Double basePrice;
