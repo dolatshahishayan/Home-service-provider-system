@@ -45,10 +45,15 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
         Comment comment = mapper.mapToEntity(commentSaveUpdateRequest);
         Expert expert = order.getExpert();
         Double commentScore = comment.getExpertScore();
-        Double expertScore = expert.getScore();
-        Double finalScore = (expertScore + commentScore) / 2;
-        expert.setScore(finalScore);
-        expertService.save(expert);
+        if (expert.getScore() != null) {
+            Double expertScore = expert.getScore();
+            Double finalScore = (expertScore + commentScore) / 2;
+            expert.setScore(finalScore);
+            expertService.save(expert);
+        } else {
+            expert.setScore(commentScore);
+            expertService.save(expert);
+        }
         comment.setOrder(order);
         comment.setRegistrationDate(LocalDateTime.now());
         return save(comment);
