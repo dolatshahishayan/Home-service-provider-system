@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentSaveUpdateRequest {
-    @NotNull(groups = {ValidationGroup.update.class})
+    @NotNull(groups = {ValidationGroup.Update.class})
     private Integer id;
     private String context;
     @NotNull

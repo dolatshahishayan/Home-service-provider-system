@@ -27,7 +27,7 @@ public class CustomerController {
 
     @PostMapping("/save")
     @Operation(summary = "Save customer", description = "Save method for customer")
-    public ResponseEntity<CustomerFindResponse> saveCustomer(@RequestBody @Validated(ValidationGroup.save.class) CustomerSaveUpdateRequest customer, HttpSession session) {
+    public ResponseEntity<CustomerFindResponse> saveCustomer(@RequestBody @Validated(ValidationGroup.Save.class) CustomerSaveUpdateRequest customer, HttpSession session) {
         Customer register = customerService.register(customer);
         session.setAttribute("currentUser", new UserSessionDTO(register.getId(), register.getEmail(), Role.CUSTOMER));
         return ResponseEntity.ok(customerMapper.mapToResponse(register));
@@ -35,7 +35,7 @@ public class CustomerController {
 
     @PutMapping("/update")
     @Operation(summary = "Update customer", description = "Update method for customer")
-    public ResponseEntity<CustomerFindResponse> updateCustomer(@RequestBody @Validated(ValidationGroup.update.class) CustomerSaveUpdateRequest customer, HttpSession session) {
+    public ResponseEntity<CustomerFindResponse> updateCustomer(@RequestBody @Validated(ValidationGroup.Update.class) CustomerSaveUpdateRequest customer, HttpSession session) {
         Customer updated = customerService.updateWithDTO(customer);
         session.setAttribute("currentUser", new UserSessionDTO(updated.getId(), updated.getEmail(), Role.CUSTOMER));
         return ResponseEntity.ok(customerMapper.mapToResponse(updated));

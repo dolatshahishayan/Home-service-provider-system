@@ -13,13 +13,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ServiceSaveUpdateRequest {
-    @NotNull(groups = {ValidationGroup.update.class})
+    @NotNull(groups = {ValidationGroup.Update.class})
     private Integer id;
-    @NotBlank(groups = {ValidationGroup.save.class})
+    @NotBlank(groups = {ValidationGroup.Save.class})
     private String name;
-    @NotNull(groups = {ValidationGroup.save.class})
+    @NotNull(groups = {ValidationGroup.Save.class})
     private Double basePrice;
-    @NotBlank(groups = {ValidationGroup.save.class})
+    @NotBlank(groups = {ValidationGroup.Save.class})
     private String description;
     private Integer parentServiceId;
 }

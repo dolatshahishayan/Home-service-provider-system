@@ -27,14 +27,14 @@ public class ServiceController {
 
     @PostMapping("/save")
     @Operation(summary = "Save service", description = "Method for saving a service")
-    public ResponseEntity<ServiceFindResponse> save(@RequestBody @Validated(ValidationGroup.save.class) ServiceSaveUpdateRequest serviceSaveUpdateRequest) {
+    public ResponseEntity<ServiceFindResponse> save(@RequestBody @Validated(ValidationGroup.Save.class) ServiceSaveUpdateRequest serviceSaveUpdateRequest) {
         Service saved = serviceService.saveWithDTO(serviceSaveUpdateRequest);
         return ResponseEntity.ok(serviceMapper.mapToResponse(saved));
     }
 
     @PutMapping("/update")
     @Operation(summary = "Update service", description = "Method for update a service")
-    public ResponseEntity<ServiceFindResponse> update(@RequestBody @Validated(ValidationGroup.update.class)ServiceSaveUpdateRequest serviceSaveUpdateRequest) {
+    public ResponseEntity<ServiceFindResponse> update(@RequestBody @Validated(ValidationGroup.Update.class)ServiceSaveUpdateRequest serviceSaveUpdateRequest) {
         Service updated = serviceService.updateWithDTO(serviceSaveUpdateRequest);
         return ResponseEntity.ok(serviceMapper.mapToResponse(updated));
     }

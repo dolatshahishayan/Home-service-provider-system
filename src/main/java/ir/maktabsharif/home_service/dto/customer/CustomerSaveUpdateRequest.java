@@ -14,16 +14,16 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CustomerSaveUpdateRequest {
-    @NotNull(groups = {ValidationGroup.update.class})
+    @NotNull(groups = {ValidationGroup.Update.class})
     private Integer id;
-    @NotBlank(groups = {ValidationGroup.save.class})
+    @NotBlank(groups = {ValidationGroup.Save.class})
     private String firstName;
-    @NotBlank(groups = {ValidationGroup.save.class})
+    @NotBlank(groups = {ValidationGroup.Save.class})
     private String lastName;
-    @NotBlank(groups = {ValidationGroup.save.class})
+    @NotBlank(groups = {ValidationGroup.Save.class})
     @Email
     private String email;
-    @NotBlank(groups = {ValidationGroup.save.class})
+    @NotBlank(groups = {ValidationGroup.Save.class})
     @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$",
             message = "Password must be at least 8 characters long and contain both letters and numbers.")
     private String password;

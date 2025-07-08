@@ -26,7 +26,7 @@ public class CommentController {
 
     @PostMapping("/save")
     @Operation(summary = "Save comment", description = "Save method for comment")
-    public ResponseEntity<?> save(@RequestBody @Validated(ValidationGroup.save.class) CommentSaveUpdateRequest commentSaveUpdateRequest, HttpSession session) {
+    public ResponseEntity<?> save(@RequestBody @Validated(ValidationGroup.Save.class) CommentSaveUpdateRequest commentSaveUpdateRequest, HttpSession session) {
         UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");

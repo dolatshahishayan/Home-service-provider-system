@@ -29,7 +29,7 @@ public class SuggestionController {
 
     @PostMapping("/save")
     @Operation(summary = "Save suggestion",description = "Method for saving a suggestion")
-    public ResponseEntity<SuggestionFindResponse> save(@RequestBody @Validated(ValidationGroup.save.class) SuggestionSaveUpdateRequest suggestion, HttpSession session) {
+    public ResponseEntity<SuggestionFindResponse> save(@RequestBody @Validated(ValidationGroup.Save.class) SuggestionSaveUpdateRequest suggestion, HttpSession session) {
         UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
         Suggestion saved = suggestionService.registerSuggestionForOrder(suggestion,currentUser);
         return ResponseEntity.ok(suggestionMapper.mapToResponse(saved));
@@ -37,7 +37,7 @@ public class SuggestionController {
 
     @PutMapping("/update")
     @Operation(summary = "Update suggestion",description = "Method for updating a suggestion")
-    public ResponseEntity<SuggestionFindResponse> update(@RequestBody @Validated(ValidationGroup.update.class) SuggestionSaveUpdateRequest suggestion,HttpSession session) {
+    public ResponseEntity<SuggestionFindResponse> update(@RequestBody @Validated(ValidationGroup.Update.class) SuggestionSaveUpdateRequest suggestion, HttpSession session) {
         UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
         Suggestion updated = suggestionService.updateWithDTO(suggestion,currentUser);
         return ResponseEntity.ok(suggestionMapper.mapToResponse(updated));

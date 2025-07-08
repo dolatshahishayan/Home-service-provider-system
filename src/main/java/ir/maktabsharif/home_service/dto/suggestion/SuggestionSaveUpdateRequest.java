@@ -15,17 +15,17 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SuggestionSaveUpdateRequest {
-    @NotNull(groups = {ValidationGroup.update.class})
+    @NotNull(groups = {ValidationGroup.Update.class})
     private Integer id;
-    @NotNull(groups = {ValidationGroup.save.class})
+    @NotNull(groups = {ValidationGroup.Save.class})
     private Integer orderId;
-    @NotBlank(groups = {ValidationGroup.save.class})
+    @NotBlank(groups = {ValidationGroup.Save.class})
     private String description;
-    @NotNull(groups = {ValidationGroup.save.class})
+    @NotNull(groups = {ValidationGroup.Save.class})
     private Double price;
-    @NotNull(groups = {ValidationGroup.save.class})
+    @NotNull(groups = {ValidationGroup.Save.class})
     private Double workDuration;
-    @NotNull(groups = {ValidationGroup.save.class})
+    @NotNull(groups = {ValidationGroup.Save.class})
     private LocalDateTime startDate;
     private Boolean accepted;
 }

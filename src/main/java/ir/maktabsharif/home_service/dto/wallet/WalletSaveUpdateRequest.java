@@ -12,10 +12,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WalletSaveUpdateRequest {
-    @NotNull(groups = {ValidationGroup.update.class})
+    @NotNull(groups = {ValidationGroup.Update.class})
     private Integer id;
-    @NotNull(groups = {ValidationGroup.save.class})
+    @NotNull(groups = {ValidationGroup.Save.class})
     private Double balance;
-    @NotNull(groups = {ValidationGroup.save.class})
+    @NotNull(groups = {ValidationGroup.Save.class})
     private Integer userId;
 }

@@ -16,15 +16,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderSaveUpdateRequest {
-    @NotNull(groups = {ValidationGroup.update.class})
+    @NotNull(groups = {ValidationGroup.Update.class})
     private Integer id;
-    @NotBlank(groups = {ValidationGroup.save.class})
+    @NotBlank(groups = {ValidationGroup.Save.class})
     private String description;
-    @NotNull(groups = {ValidationGroup.save.class})
+    @NotNull(groups = {ValidationGroup.Save.class})
     private Double proposedPrice;
     @FutureOrPresent
     private LocalDateTime startDate;
-    @NotBlank(groups = {ValidationGroup.save.class})
+    @NotBlank(groups = {ValidationGroup.Save.class})
     private String address;
     @NotNull
     private Integer serviceId;

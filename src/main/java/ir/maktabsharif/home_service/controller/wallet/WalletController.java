@@ -26,7 +26,7 @@ public class WalletController {
 
     @PostMapping("/save")
     @Operation(summary = "Save wallet",description = "Method for saving a wallet")
-    public ResponseEntity<WalletFindResponse> save(@RequestBody @Validated(ValidationGroup.save.class)WalletSaveUpdateRequest walletSaveUpdateRequest) {
+    public ResponseEntity<WalletFindResponse> save(@RequestBody @Validated(ValidationGroup.Save.class)WalletSaveUpdateRequest walletSaveUpdateRequest) {
         Wallet wallet = walletService.saveWithDTO(walletSaveUpdateRequest);
         return ResponseEntity.ok(walletMapper.mapToResponse(wallet));
     }
