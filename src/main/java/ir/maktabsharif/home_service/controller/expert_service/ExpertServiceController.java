@@ -46,7 +46,7 @@ public class ExpertServiceController {
     @GetMapping("/exists-by-service-id-and-expert-id")
     @Operation(summary = "Exists by service id and expert id", description = "Checks if an expert is in a service or not")
     public ResponseEntity<Boolean> existsByServiceIdAndExpertId(@RequestParam Integer serviceId, @RequestParam Integer expertId) {
-        return ResponseEntity.ok(expertServiceService.existsByExpertIdAndServiceId(serviceId, expertId));
+        return ResponseEntity.ok(expertServiceService.existsByExpertIdAndServiceId(expertId, serviceId));
     }
 
     @GetMapping("/find-by-expert-id")
