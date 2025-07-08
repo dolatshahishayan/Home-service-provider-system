@@ -3,11 +3,13 @@ package ir.maktabsharif.home_service.controller.wallet;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.maktabsharif.home_service.dto.ValidationGroup;
+import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.dto.wallet.WalletFindResponse;
 import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.wallet.WalletMapper;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -31,8 +33,9 @@ public class WalletController {
 
     @PutMapping("/add-credit-to-wallet")
     @Operation(summary = "Add credit to wallet",description = "Method for adding credit to wallet")
-    public ResponseEntity<String> addCreditToWallet(@RequestParam Double credit, @RequestParam Integer userId) {
-        walletService.addCreditToWallet(credit, userId);
+    public ResponseEntity<String> addCreditToWallet(@RequestParam Double credit, HttpSession session) {
+        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
+        walletService.addCreditToWallet(credit, currentUser.getUserId());
         return ResponseEntity.ok("Added credit to wallet");
     }
 

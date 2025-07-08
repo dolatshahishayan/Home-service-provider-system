@@ -2,6 +2,7 @@ package ir.maktabsharif.home_service.service.transaction;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.exception.InvalidRequestException;
+import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.transaction.TransactionMapper;
 import ir.maktabsharif.home_service.model.transaction.Transaction;
 import ir.maktabsharif.home_service.repository.transaction.TransactionRepository;
@@ -32,11 +33,19 @@ public class TransactionServiceImpl extends BaseServiceImpl<Transaction, Integer
 
     @Override
     public List<Transaction> findBySenderId(Integer customerId) {
-        return repository.findBySenderId(customerId);
+        List<Transaction> bySenderId = repository.findBySenderId(customerId);
+        if (bySenderId.isEmpty()) {
+            throw new NoElementFoundException();
+        }
+        return bySenderId;
     }
 
     @Override
     public List<Transaction> findByReceiverId(Integer customerId) {
-        return repository.findByReceiverId(customerId);
+        List<Transaction> byReceiverId = repository.findByReceiverId(customerId);
+        if (byReceiverId.isEmpty()) {
+            throw new NoElementFoundException();
+        }
+        return byReceiverId;
     }
 }

@@ -4,6 +4,7 @@ import ir.maktabsharif.home_service.dto.order.OrderFindResponse;
 import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
+import ir.maktabsharif.home_service.exception.InvalidRequestException;
 import ir.maktabsharif.home_service.mapper.order.OrderMapper;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.expert_service.ExpertService;
@@ -103,31 +104,66 @@ class OrderServiceImplTest {
         dto.setExpertId(20);
         dto.setServiceId(30);
 
+        Integer customerId = 10;
+
         Order existingOrder = new Order();
-        existingOrder.setId(dto.getId());
-        Integer customerId = 1;
+        existingOrder.setId(1);
+
         Customer customer = new Customer();
+        customer.setId(customerId);
+
         Expert expert = new Expert();
-        Service service2 = new Service();
+        expert.setId(dto.getExpertId());
 
         when(repository.findById(dto.getId())).thenReturn(Optional.of(existingOrder));
         when(customerService.findById(customerId)).thenReturn(customer);
         when(expertService.findById(dto.getExpertId())).thenReturn(expert);
-        when(serviceService.findById(dto.getServiceId())).thenReturn(service2);
 
         doNothing().when(mapper).updateEntityWithDTO(dto, existingOrder);
-
         when(repository.save(existingOrder)).thenReturn(existingOrder);
 
-        Order updatedOrder = service.updateWithDTO(dto,customerId);
+        Order result = service.updateWithDTO(dto, customerId);
 
-        assertSame(existingOrder, updatedOrder);
+        assertNotNull(result);
+        assertEquals(customer, result.getCustomer());
+        assertEquals(expert, result.getExpert());
         verify(mapper).updateEntityWithDTO(dto, existingOrder);
         verify(repository).save(existingOrder);
+    }
 
-        assertEquals(customer, existingOrder.getCustomer());
-        assertEquals(expert, existingOrder.getExpert());
-        assertEquals(service2, existingOrder.getService());
+    @Test
+    void updateWithDTO_whenCustomerIdIsNull_shouldThrowException() {
+        OrderSaveUpdateRequest dto = new OrderSaveUpdateRequest();
+        dto.setId(1);
+
+        Order existingOrder = new Order();
+        when(repository.findById(dto.getId())).thenReturn(Optional.of(existingOrder));
+
+        assertThrows(InvalidRequestException.class, () -> service.updateWithDTO(dto, null));
+    }
+    @Test
+    void updateWithDTO_withoutExpert_shouldUpdateWithoutExpert() {
+        OrderSaveUpdateRequest dto = new OrderSaveUpdateRequest();
+        dto.setId(1);
+        dto.setExpertId(null);
+
+        Integer customerId = 10;
+
+        Order existingOrder = new Order();
+        existingOrder.setId(1);
+
+        Customer customer = new Customer();
+        customer.setId(customerId);
+
+        when(repository.findById(dto.getId())).thenReturn(Optional.of(existingOrder));
+        when(customerService.findById(customerId)).thenReturn(customer);
+        doNothing().when(mapper).updateEntityWithDTO(dto, existingOrder);
+        when(repository.save(existingOrder)).thenReturn(existingOrder);
+
+        Order result = service.updateWithDTO(dto, customerId);
+
+        assertEquals(customer, result.getCustomer());
+        assertNull(result.getExpert());
     }
 
 
