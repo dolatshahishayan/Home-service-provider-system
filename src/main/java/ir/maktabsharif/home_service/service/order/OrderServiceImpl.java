@@ -112,7 +112,6 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
         if (orderSaveUpdateRequest.getExpertId() != null) {
             order.setExpert(expertService.findById(orderSaveUpdateRequest.getExpertId()));
         }
-        order.setService(serviceService.findById(orderSaveUpdateRequest.getServiceId()));
         return save(order);
     }
 
