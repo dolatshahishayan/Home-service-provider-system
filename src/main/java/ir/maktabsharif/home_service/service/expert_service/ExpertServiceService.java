@@ -2,7 +2,6 @@ package ir.maktabsharif.home_service.service.expert_service;
 
 import ir.maktabsharif.home_service.base.service.BaseService;
 import ir.maktabsharif.home_service.model.expert_service.ExpertService;
-import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 
