@@ -51,4 +51,14 @@ public class CommentController {
     public ResponseEntity<Double> viewExpertScoreByOrder(@RequestParam Integer orderId) {
         return ResponseEntity.ok(commentService.viewExpertScoreByOrder(orderId));
     }
+
+    @GetMapping("/view-average-score")
+    @Operation(summary = "View average score",description = "View expert average score")
+    public ResponseEntity<?> viewAverageScore(HttpSession session) {
+        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
+        if (currentUser == null) {
+            return new ResponseEntity<>("No user logged in",HttpStatus.UNAUTHORIZED);
+        }
+        return ResponseEntity.ok(commentService.viewExpertAverageScore(currentUser.getUserId()));
+    }
 }

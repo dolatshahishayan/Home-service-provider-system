@@ -22,6 +22,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +45,7 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
-    public Order saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest,Integer customerId) {
+    public Order saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest, Integer customerId) {
         Order order = mapper.mapToEntity(orderSaveUpdateRequest);
         if (customerId == null) {
             throw new InvalidRequestException("Customer Id is required");
@@ -64,7 +65,7 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
 
     @Override
     public void chooseExpert(Integer suggestionId) {
-        Order order = setExpertForOrder(suggestionId);
+        Order order = setExpertAndFinalPriceForOrder(suggestionId);
         if (order.getExpert() == null) {
             throw new CouldNotUpdateException("Couldn't register expert for this order.");
         }
@@ -78,13 +79,14 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
         save(byId);
     }
 
-    private Order setExpertForOrder(Integer suggestionId) {
+    private Order setExpertAndFinalPriceForOrder(Integer suggestionId) {
         Suggestion suggestion = suggestionService.findById(suggestionId);
         Order order = findById(suggestion.getOrder().getId());
         if (order.getExpert() != null) {
             throw new CouldNotUpdateException("You have already chose an expert for this order.");
         }
         order.setExpert(suggestion.getExpert());
+        order.setFinalPrice(suggestion.getPrice());
         return save(order);
     }
 
@@ -95,14 +97,16 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
         for (ExpertService expert_service : expert_services) {
             List<Order> byServiceId = findByServiceId(expert_service.getService().getId());
             for (Order order : byServiceId) {
-                responses.add(mapper.mapToResponse(order));
+                if (order.getExpert() == expertService.findById(expertId)) {
+                    responses.add(mapper.mapToResponse(order));
+                }
             }
         }
         return responses;
     }
 
     @Override
-    public Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest,Integer customerId) {
+    public Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest, Integer customerId) {
         Order order = findById(orderSaveUpdateRequest.getId());
         mapper.updateEntityWithDTO(orderSaveUpdateRequest, order);
         if (customerId == null) {
@@ -120,21 +124,50 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
         if (!order.getCustomer().getEmail().equals(currentUser.getEmail())) {
             throw new CouldNotUpdateException("You can't update the status of this order.");
         }
-        if (!order.getStartDate().isBefore(LocalDateTime.now())) {
-            throw new CouldNotUpdateException("You can't update order status to started before the start date.");
-        }
         order.setOrderStatus(newStatus);
         return save(order);
     }
 
     @Override
     public Order updateStatusToStarted(Integer orderId, UserSessionDTO currentUser) {
+        Order order = findById(orderId);
+        if (!order.getStartDate().isBefore(LocalDateTime.now())) {
+            throw new CouldNotUpdateException("You can't update order status to started before the start date.");
+        }
         return updateStatus(orderId, OrderStatus.STARTED, currentUser);
     }
 
     @Override
     public Order updateStatusToDone(Integer orderId, UserSessionDTO currentUser) {
+        reduce1ScoreFromExpertPerHour(orderId);
         return updateStatus(orderId, OrderStatus.DONE, currentUser);
+    }
+
+    @Override
+    public void reduce1ScoreFromExpertPerHour(Integer orderId) {
+        Order order = findById(orderId);
+        if (!order.getStartDate().isBefore(LocalDateTime.now())) {
+            throw new CouldNotUpdateException("It's not the order's date.");
+        }
+        long between = ChronoUnit.HOURS.between(order.getStartDate(), LocalDateTime.now());
+        double newScore;
+        Expert expert = expertService.findById(order.getExpert().getId());
+        if (between >= 1) {
+            newScore = expert.getScore() - between;
+            if (newScore < 0) {
+                newScore = 0;
+            }
+            expert.setScore(newScore);
+        }
+        Expert updated = expertService.save(expert);
+        if (updated.getScore().equals(0D)) {
+            expertService.updateStatusToUnverified(expert.getId());
+        }
+    }
+
+    @Override
+    public List<Order> findByCustomerId(Integer customerId) {
+        return repository.findByCustomerId(customerId);
     }
 
     @Override

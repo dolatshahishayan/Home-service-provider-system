@@ -39,8 +39,11 @@ public class OrderController {
 
     @PutMapping("/update")
     @Operation(summary = "Update order", description = "Method for updating an order")
-    public ResponseEntity<OrderFindResponse> update(@RequestBody @Validated(ValidationGroup.Update.class) OrderSaveUpdateRequest order, HttpSession session) {
+    public ResponseEntity<?> update(@RequestBody @Validated(ValidationGroup.Update.class) OrderSaveUpdateRequest order, HttpSession session) {
         UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
+        if (currentUser==null) {
+            return new ResponseEntity<>("No user logged in",HttpStatus.UNAUTHORIZED);
+        }
         Order updated = orderService.updateWithDTO(order,currentUser.getUserId());
         return ResponseEntity.ok(orderMapper.mapToResponse(updated));
     }
@@ -71,16 +74,32 @@ public class OrderController {
 
     @GetMapping("/find-all-by-expert-id")
     @Operation(summary = "Find all by expert id",description = "Find all orders for an expert")
-    public ResponseEntity<List<OrderFindResponse>> findAllByExpertId(@RequestParam Integer expertId) {
-        return ResponseEntity.ok(orderService.findAllByExpertId(expertId));
+    public ResponseEntity<?> findAllByExpertId(HttpSession session) {
+        UserSessionDTO currentUser=(UserSessionDTO) session.getAttribute("currentUser");
+        if (currentUser==null) {
+            return new ResponseEntity<>("No user logged in",HttpStatus.UNAUTHORIZED);
+        }
+        return ResponseEntity.ok(orderService.findAllByExpertId(currentUser.getUserId()));
+    }
+
+    @GetMapping("/find-all-by-customer-id")
+    @Operation(summary = "Find all by customer id",description = "Find all orders for a customer")
+    public ResponseEntity<?> findAllByCustomerId(HttpSession session) {
+        UserSessionDTO currentUser=(UserSessionDTO) session.getAttribute("currentUser");
+        System.out.println("Session ID: " + session.getId());
+        System.out.println("User in session: " + session.getAttribute("currentUser"));
+        if (currentUser==null) {
+            return new ResponseEntity<>("No user logged in",HttpStatus.UNAUTHORIZED);
+        }
+        return ResponseEntity.ok(orderService.findByCustomerId(currentUser.getUserId()));
     }
 
     @PutMapping("/update-status-to-started")
     @Operation(summary = "Update status to started",description = "Update an order's status to started")
-    public ResponseEntity<OrderFindResponse> updateStatusToStarted(@RequestParam Integer orderId, HttpSession session) {
+    public ResponseEntity<?> updateStatusToStarted(@RequestParam Integer orderId, HttpSession session) {
         UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
         if (currentUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return new ResponseEntity<>("No user logged in",HttpStatus.UNAUTHORIZED);
         }
         Order order = orderService.updateStatusToStarted(orderId, currentUser);
         return ResponseEntity.ok(orderMapper.mapToResponse(order));

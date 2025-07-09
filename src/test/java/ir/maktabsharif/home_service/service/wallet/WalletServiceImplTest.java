@@ -109,7 +109,7 @@ class WalletServiceImplTest {
         when(repository.findByUserId(1)).thenReturn(Optional.of(customerWallet));
         when(repository.findByUserId(2)).thenReturn(Optional.of(expertWallet));
 
-        service.payFromWallet(5, 6);
+        service.payFromWallet( 6);
 
         assertEquals(600.0, customerWallet.getBalance());
         assertEquals(500.0, expertWallet.getBalance());
@@ -140,7 +140,7 @@ class WalletServiceImplTest {
         when(suggestionService.findById(anyInt())).thenReturn(suggestion);
         when(repository.findByUserId(1)).thenReturn(Optional.of(customerWallet));
 
-        assertThrows(CouldNotUpdateException.class, () -> service.payFromWallet(1, 1));
+        assertThrows(CouldNotUpdateException.class, () -> service.payFromWallet( 1));
         verify(repository, never()).save(any());
     }
 

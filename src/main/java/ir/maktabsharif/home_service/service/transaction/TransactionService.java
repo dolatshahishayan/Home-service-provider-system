@@ -7,6 +7,5 @@ import java.util.List;
 
 public interface TransactionService extends BaseService<Transaction, Integer> {
     void saveTransaction(Transaction transaction);
-    List<Transaction> findBySenderId(Integer customerId);
-    List<Transaction> findByReceiverId(Integer customerId);
+    List<Transaction> findByUserId(Integer userId);
 }

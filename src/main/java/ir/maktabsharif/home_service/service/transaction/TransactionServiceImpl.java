@@ -32,20 +32,11 @@ public class TransactionServiceImpl extends BaseServiceImpl<Transaction, Integer
     }
 
     @Override
-    public List<Transaction> findBySenderId(Integer customerId) {
-        List<Transaction> bySenderId = repository.findBySenderId(customerId);
-        if (bySenderId.isEmpty()) {
+    public List<Transaction> findByUserId(Integer userId){
+        List<Transaction> bySenderIdOrReceiverId = repository.findBySenderIdOrReceiverId(userId, userId);
+        if (bySenderIdOrReceiverId.isEmpty()) {
             throw new NoElementFoundException();
         }
-        return bySenderId;
-    }
-
-    @Override
-    public List<Transaction> findByReceiverId(Integer customerId) {
-        List<Transaction> byReceiverId = repository.findByReceiverId(customerId);
-        if (byReceiverId.isEmpty()) {
-            throw new NoElementFoundException();
-        }
-        return byReceiverId;
+        return bySenderIdOrReceiverId;
     }
 }

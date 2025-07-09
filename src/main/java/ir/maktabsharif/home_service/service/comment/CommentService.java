@@ -10,4 +10,5 @@ public interface CommentService extends BaseService<Comment,Integer> {
     Comment findByOrder(Integer orderId);
     double viewExpertScoreByOrder(Integer orderId);
     Comment saveWithDTO(CommentSaveUpdateRequest commentSaveUpdateRequest, UserSessionDTO currentUser);
+    double viewExpertAverageScore(Integer expertId);
 }

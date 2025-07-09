@@ -41,4 +41,6 @@ public class Order extends BaseEntity {
     private Expert expert;
 
     private LocalDateTime creationDate;
+
+    private Double finalPrice;
 }

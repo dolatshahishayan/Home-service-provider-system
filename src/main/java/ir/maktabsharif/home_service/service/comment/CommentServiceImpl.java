@@ -8,6 +8,7 @@ import ir.maktabsharif.home_service.exception.DuplicateInfoException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.comment.CommentMapper;
 import ir.maktabsharif.home_service.model.comment.Comment;
+import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.comment.CommentRepository;
@@ -40,6 +41,10 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
         }
         if (existsByOrder(order.getId())) {
             throw new DuplicateInfoException("You have already registered a comment for this order!");
+        }
+
+        if (order.getOrderStatus()!= OrderStatus.PAYED){
+            throw new CouldNotUpdateException("You can't register any comments for this order because the order has not been finished yet!");
         }
 
         Comment comment = mapper.mapToEntity(commentSaveUpdateRequest);
@@ -76,5 +81,11 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
     public double viewExpertScoreByOrder(Integer orderId) {
         Comment byOrder = findByOrder(orderId);
         return byOrder.getExpertScore();
+    }
+
+    @Override
+    public double viewExpertAverageScore(Integer expertId){
+        Expert expert = expertService.findById(expertId);
+        return expert.getScore();
     }
 }

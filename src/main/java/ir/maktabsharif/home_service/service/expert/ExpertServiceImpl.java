@@ -46,20 +46,36 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
     }
 
     @Override
+    public void updateStatusToUnverified(Integer expertId) {
+        Expert byId = findById(expertId);
+        byId.setExpertStatus(ExpertStatus.DISABLED);
+        save(byId);
+    }
+
+    @Override
     public Expert register(ExpertSaveUpdateRequest expertSaveUpdateRequest, String imagePath) {
         Expert expert = mapper.mapToEntity(expertSaveUpdateRequest);
-        byte[] bytesForExpert = imageUtil.getBytesForExpert(imagePath);
         if (userService.existsByEmail(expertSaveUpdateRequest.getEmail().toLowerCase())) {
             throw new UserWithSameEmailExistsException();
         }
-        if (!imagePath.endsWith(".jpg")) {
-            throw new ImageFormatException("Image format should be jpg");
-        }
-        if (bytesForExpert.length > 300000) {
-            throw new ImageLengthOutOfBoundException("Image size is more than 300kb.");
+        byte[] bytesForExpert = new byte[0];
+        if (imagePath != null) {
+            bytesForExpert = imageUtil.getBytesForExpert(imagePath);
+            if (!imagePath.endsWith(".jpg")) {
+                throw new ImageFormatException("Image format should be jpg");
+            }
+            if (bytesForExpert.length > 300000) {
+                throw new ImageLengthOutOfBoundException("Image size is more than 300kb.");
+            }
+            expert.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);
+            return getExpert(expertSaveUpdateRequest, expert);
         }
         expert.setProfilePictureData(bytesForExpert);
         expert.setExpertStatus(ExpertStatus.NEW);
+        return getExpert(expertSaveUpdateRequest, expert);
+    }
+
+    private Expert getExpert(ExpertSaveUpdateRequest expertSaveUpdateRequest, Expert expert) {
         expert.setRole(Role.EXPERT);
         expert.setEmail(expertSaveUpdateRequest.getEmail().toLowerCase());
         expert.setRegistrationDate(LocalDateTime.now());

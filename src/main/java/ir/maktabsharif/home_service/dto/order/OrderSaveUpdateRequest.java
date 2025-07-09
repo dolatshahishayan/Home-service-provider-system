@@ -29,4 +29,5 @@ public class OrderSaveUpdateRequest {
     @NotNull
     private Integer serviceId;
     private Integer expertId;
+    private Double finalPrice;
 }

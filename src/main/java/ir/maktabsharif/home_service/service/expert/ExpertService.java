@@ -13,4 +13,5 @@ public interface ExpertService extends BaseService<Expert,Integer> {
     Expert register(ExpertSaveUpdateRequest expertSaveUpdateRequest,String imagePath);
     Expert findByEmail(String email);
     List<Expert> findAll(Specification<Expert> spec);
+    void updateStatusToUnverified(Integer expertId);
 }

@@ -2,11 +2,10 @@ package ir.maktabsharif.home_service.service.wallet;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
-import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
+import ir.maktabsharif.home_service.exception.InsufficientFundsException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.wallet.WalletMapper;
 import ir.maktabsharif.home_service.model.order.Order;
-import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.model.transaction.Transaction;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
 import ir.maktabsharif.home_service.repository.wallet.WalletRepository;
@@ -26,7 +25,7 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
     protected final SuggestionService suggestionService;
     protected final TransactionService transactionService;
 
-    public WalletServiceImpl(WalletRepository repository, WalletMapper walletMapper, UserService userService,@Lazy OrderService orderService, SuggestionService suggestionService, TransactionService transactionService) {
+    public WalletServiceImpl(WalletRepository repository, WalletMapper walletMapper, UserService userService, @Lazy OrderService orderService, SuggestionService suggestionService, TransactionService transactionService) {
         super(repository, walletMapper);
         this.userService = userService;
         this.orderService = orderService;
@@ -55,32 +54,40 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
     }
 
     @Override
-    public void payFromWallet(Integer orderId, Integer suggestionId) {
+    public Wallet payFromWallet(Integer orderId) {
         Order order = orderService.findById(orderId);
-        Suggestion suggestion = suggestionService.findById(suggestionId);
         Wallet wallet = findByUserId(order.getCustomer().getId());
-        Double price = suggestion.getPrice();
+        Double price = order.getFinalPrice();
         if (wallet.getBalance() < price) {
-            throw new CouldNotUpdateException("Insufficient funds.");
+            throw new InsufficientFundsException();
         }
         Double newBalance = wallet.getBalance() - price;
         wallet.setBalance(newBalance);
-        save(wallet);
+        Wallet saved = save(wallet);
 
+        double expertShare = (price * 100) / 70;
         Wallet expertWallet = findByUserId(order.getExpert().getId());
-        expertWallet.setBalance(expertWallet.getBalance() + price);
+        expertWallet.setBalance(expertWallet.getBalance() + expertShare);
         save(expertWallet);
 
 
         Transaction transaction = new Transaction();
-        transaction.setAmount(price);
+        transaction.setAmount(expertShare);
         transaction.setSender(order.getCustomer());
         transaction.setReceiver(order.getExpert());
         transactionService.saveTransaction(transaction);
+
+        return saved;
     }
 
     @Override
     public Wallet findByUserId(Integer userId) {
         return repository.findByUserId(userId).orElseThrow(NoElementFoundException::new);
+    }
+
+    @Override
+    public Double getCurrentBalance(Integer userId) {
+        Wallet wallet = findByUserId(userId);
+        return wallet.getBalance();
     }
 }

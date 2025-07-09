@@ -22,4 +22,5 @@ public class OrderFindResponse {
     private Integer serviceId;
     private Integer expertId;
     private LocalDateTime creationDate;
+    private Double finalPrice;
 }
