@@ -12,9 +12,11 @@ import ir.maktabsharif.home_service.repository.customer.CustomerRepository;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
 import jakarta.transaction.Transactional;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Transactional
@@ -42,6 +44,11 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
     @Override
     public Customer findByEmail(String email) {
        return repository.findByEmail(email).orElseThrow(NoUserFoundWithGivenCredentialsException::new);
+    }
+
+    @Override
+    public List<Customer> findAll(Specification<Customer> spec) {
+        return repository.findAll(spec);
     }
 
     @Override

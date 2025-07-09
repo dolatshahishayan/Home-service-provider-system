@@ -6,6 +6,7 @@ import ir.maktabsharif.home_service.exception.NoExpertFoundWithServiceException;
 import ir.maktabsharif.home_service.mapper.expert_service.ExpertServiceMapper;
 import ir.maktabsharif.home_service.model.expert_service.ExpertService;
 import ir.maktabsharif.home_service.model.user.Expert;
+import ir.maktabsharif.home_service.repository.expert_service.ExpertServiceCriteriaRepository;
 import ir.maktabsharif.home_service.repository.expert_service.ExpertServiceRepository;
 import ir.maktabsharif.home_service.service.service.ServiceService;
 import jakarta.transaction.Transactional;
@@ -18,15 +19,18 @@ import java.util.List;
 public class ExpertServiceServiceImpl extends BaseServiceImpl<ExpertService, Integer, ExpertServiceRepository, ExpertServiceMapper> implements ExpertServiceService {
     protected final ir.maktabsharif.home_service.service.expert.ExpertService expertService;
     protected final ServiceService serviceService;
-    public ExpertServiceServiceImpl(ExpertServiceRepository repository, ExpertServiceMapper expertServiceMapper, ir.maktabsharif.home_service.service.expert.ExpertService expertService, ServiceService serviceService) {
+    protected final ExpertServiceCriteriaRepository expertServiceCriteriaRepository;
+
+    public ExpertServiceServiceImpl(ExpertServiceRepository repository, ExpertServiceMapper expertServiceMapper, ir.maktabsharif.home_service.service.expert.ExpertService expertService, ServiceService serviceService, ExpertServiceCriteriaRepository expertServiceCriteriaRepository) {
         super(repository, expertServiceMapper);
         this.expertService = expertService;
         this.serviceService = serviceService;
+        this.expertServiceCriteriaRepository = expertServiceCriteriaRepository;
     }
 
     @Override
     public void addExpertToService(Integer expertId, Integer serviceId) {
-        if(existsByExpertIdAndServiceId(expertId, serviceId)) {
+        if (existsByExpertIdAndServiceId(expertId, serviceId)) {
             throw new ExpertAlreadyInServiceException();
         }
         Expert expert = expertService.findById(expertId);
@@ -38,6 +42,7 @@ public class ExpertServiceServiceImpl extends BaseServiceImpl<ExpertService, Int
         expertService.setService(service);
         save(expertService);
     }
+
     @Override
     public void removeExpertFromService(Integer expertId, Integer serviceId) {
         ExpertService expertService = findByExpertIdAndServiceId(expertId, serviceId);
@@ -50,12 +55,18 @@ public class ExpertServiceServiceImpl extends BaseServiceImpl<ExpertService, Int
     @Override
     public List<ExpertService> findByExpertId(Integer expertId) {
         List<ExpertService> byExpertId = repository.findByExpertId(expertId);
-        if (byExpertId.isEmpty()){
+        if (byExpertId.isEmpty()) {
             throw new NoExpertFoundWithServiceException();
         }
         return byExpertId;
 
     }
+
+    @Override
+    public List<Integer> findExpertIdsByServiceIds(List<Integer> serviceIds) {
+        return expertServiceCriteriaRepository.findExpertIdsByServiceIds(serviceIds);
+    }
+
 
     @Override
     public ExpertService findByExpertIdAndServiceId(Integer expertId, Integer serviceId) {

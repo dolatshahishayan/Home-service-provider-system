@@ -16,6 +16,7 @@ import ir.maktabsharif.home_service.service.wallet.WalletService;
 import ir.maktabsharif.home_service.util.ImageUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -74,6 +75,11 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
     public Expert findByEmail(String email) {
         return repository.findByEmail(email).orElseThrow(NoElementFoundException::new);
 
+    }
+
+    @Override
+    public List<Expert> findAll(Specification<Expert> spec) {
+        return repository.findAll(spec);
     }
 
     @Override
