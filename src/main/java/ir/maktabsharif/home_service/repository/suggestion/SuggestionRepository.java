@@ -15,4 +15,5 @@ public interface SuggestionRepository extends JpaRepository<Suggestion,Integer>,
     List<Suggestion> findAllByOrderAndSortByPriceAsc(@Param("order") Order order);
     @Query("select s from Suggestion s where s.order = :order order by s.expert.score desc")
     List<Suggestion> findAllByOrderAndSortByExpertScoreDesc(@Param("order") Order order);
+    boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId, Integer expertId);
 }

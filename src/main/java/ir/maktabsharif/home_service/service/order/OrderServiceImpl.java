@@ -3,6 +3,7 @@ package ir.maktabsharif.home_service.service.order;
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.order.OrderFindResponse;
 import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
+import ir.maktabsharif.home_service.dto.order.OrderSummaryDTO;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
 import ir.maktabsharif.home_service.exception.InvalidRequestException;
@@ -91,18 +92,23 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
-    public List<OrderFindResponse> findAllByExpertId(Integer expertId) {
+    public List<OrderSummaryDTO> findAllByExpertId(Integer expertId) {
         List<ExpertService> expert_services = expert_ServiceService.findByExpertId(expertId);
-        List<OrderFindResponse> responses = new ArrayList<>();
+        List<OrderSummaryDTO> responses = new ArrayList<>();
         for (ExpertService expert_service : expert_services) {
             List<Order> byServiceId = findByServiceId(expert_service.getService().getId());
             for (Order order : byServiceId) {
                 if (order.getExpert() == expertService.findById(expertId)) {
-                    responses.add(mapper.mapToResponse(order));
+                    responses.add(mapper.mapToSummary(order));
                 }
             }
         }
         return responses;
+    }
+
+    @Override
+    public boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId, Integer expertId) {
+        return suggestionService.existsByOrderIdAndExpertIdAndAcceptedTrue(orderId, expertId);
     }
 
     @Override

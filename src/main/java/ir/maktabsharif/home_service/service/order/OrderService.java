@@ -3,6 +3,7 @@ package ir.maktabsharif.home_service.service.order;
 import ir.maktabsharif.home_service.base.service.BaseService;
 import ir.maktabsharif.home_service.dto.order.OrderFindResponse;
 import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
+import ir.maktabsharif.home_service.dto.order.OrderSummaryDTO;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
@@ -18,7 +19,7 @@ public interface OrderService extends BaseService<Order, Integer> {
 
     void chooseExpert(Integer suggestionId);
 
-    List<OrderFindResponse> findAllByExpertId(Integer expertId);
+    List<OrderSummaryDTO> findAllByExpertId(Integer expertId);
 
     Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest, Integer customerId);
 
@@ -29,4 +30,6 @@ public interface OrderService extends BaseService<Order, Integer> {
     void reduce1ScoreFromExpertPerHour(Integer orderId);
 
     List<Order> findByCustomerId(Integer customerId);
+
+    boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId, Integer expertId);
 }

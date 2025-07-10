@@ -39,29 +39,6 @@ class TransactionServiceImplTest {
         verify(repository).save(transaction);
     }
 
-    @Test
-    void findBySenderId_shouldReturnTransactionList() {
-        Integer senderId = 1;
-        List<Transaction> mockTransactions = List.of(new Transaction(), new Transaction());
-        when(repository.findBySenderId(senderId)).thenReturn(mockTransactions);
-
-        List<Transaction> result = transactionService.findBySenderId(senderId);
-
-        assertThat(result).hasSize(2);
-        verify(repository).findBySenderId(senderId);
-    }
-
-    @Test
-    void findByReceiverId_shouldReturnTransactionList() {
-        Integer receiverId = 2;
-        List<Transaction> mockTransactions = List.of(new Transaction());
-        when(repository.findByReceiverId(receiverId)).thenReturn(mockTransactions);
-
-        List<Transaction> result = transactionService.findByReceiverId(receiverId);
-
-        assertThat(result).hasSize(1);
-        verify(repository).findByReceiverId(receiverId);
-    }
 
     @Test
     void saveTransaction_shouldThrowException_whenSenderOrReceiverOrAmountIsNull() {

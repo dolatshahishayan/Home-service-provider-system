@@ -91,6 +91,11 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
     }
 
     @Override
+    public boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId, Integer expertId) {
+        return repository.existsByOrderIdAndExpertIdAndAcceptedTrue(orderId, expertId);
+    }
+
+    @Override
     public List<SuggestionFindResponse> findAllByExpertId(Integer expertId) {
         List<Suggestion> allByExpertId = repository.findAllByExpertId(expertId);
         if (allByExpertId.isEmpty()) {

@@ -82,6 +82,22 @@ public class OrderController {
         return ResponseEntity.ok(orderService.findAllByExpertId(currentUser.getUserId()));
     }
 
+    @GetMapping("/find-order-with-details")
+    @Operation(summary = "Find order with details",description = "Find order with details by order id")
+    public ResponseEntity<?> findOrderWithDetails(@RequestParam Integer orderId,HttpSession session) {
+        UserSessionDTO currentUser=(UserSessionDTO) session.getAttribute("currentUser");
+        if (currentUser==null) {
+            return new ResponseEntity<>("No user logged in",HttpStatus.UNAUTHORIZED);
+        }
+        boolean isAccepted = orderService.existsByOrderIdAndExpertIdAndAcceptedTrue(orderId, currentUser.getUserId());
+        if (!isAccepted) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
+        Order order = orderService.findById(orderId);
+        return ResponseEntity.ok(orderMapper.mapToResponse(order));
+    }
+
+
     @GetMapping("/find-all-by-customer-id")
     @Operation(summary = "Find all by customer id",description = "Find all orders for a customer")
     public ResponseEntity<?> findAllByCustomerId(HttpSession session) {

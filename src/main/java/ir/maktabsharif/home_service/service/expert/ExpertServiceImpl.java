@@ -58,7 +58,7 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
         if (userService.existsByEmail(expertSaveUpdateRequest.getEmail().toLowerCase())) {
             throw new UserWithSameEmailExistsException();
         }
-        byte[] bytesForExpert = new byte[0];
+        byte[] bytesForExpert;
         if (imagePath != null) {
             bytesForExpert = imageUtil.getBytesForExpert(imagePath);
             if (!imagePath.endsWith(".jpg")) {
@@ -68,9 +68,9 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
                 throw new ImageLengthOutOfBoundException("Image size is more than 300kb.");
             }
             expert.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);
+            expert.setProfilePictureData(bytesForExpert);
             return getExpert(expertSaveUpdateRequest, expert);
         }
-        expert.setProfilePictureData(bytesForExpert);
         expert.setExpertStatus(ExpertStatus.NEW);
         return getExpert(expertSaveUpdateRequest, expert);
     }

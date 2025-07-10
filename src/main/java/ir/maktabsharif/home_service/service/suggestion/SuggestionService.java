@@ -15,4 +15,5 @@ public interface SuggestionService extends BaseService<Suggestion,Integer> {
     Suggestion updateWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest,UserSessionDTO session);
     List<Suggestion> findAllAndSortByPriceAsc(Integer orderId);
     List<Suggestion> findAllByAndSortByExpertScoreDesc(Integer orderId);
+    boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId, Integer expertId);
 }

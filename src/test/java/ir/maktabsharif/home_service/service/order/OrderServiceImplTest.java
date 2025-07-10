@@ -2,6 +2,7 @@ package ir.maktabsharif.home_service.service.order;
 
 import ir.maktabsharif.home_service.dto.order.OrderFindResponse;
 import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
+import ir.maktabsharif.home_service.dto.order.OrderSummaryDTO;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
 import ir.maktabsharif.home_service.exception.InvalidRequestException;
@@ -241,7 +242,7 @@ class OrderServiceImplTest {
         when(mapper.mapToResponse(order1)).thenReturn(response1);
         when(mapper.mapToResponse(order2)).thenReturn(response2);
 
-        List<OrderFindResponse> result = service.findAllByExpertId(expertId);
+        List<OrderSummaryDTO> result = service.findAllByExpertId(expertId);
 
         assertEquals(2, result.size());
         assertTrue(result.contains(response1));
