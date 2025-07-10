@@ -151,6 +151,9 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     @Override
     public void reduce1ScoreFromExpertPerHour(Integer orderId) {
         Order order = findById(orderId);
+        if (order.getExpert().getScore()==null){
+            return;
+        }
         if (!order.getStartDate().isBefore(LocalDateTime.now())) {
             throw new CouldNotUpdateException("It's not the order's date.");
         }

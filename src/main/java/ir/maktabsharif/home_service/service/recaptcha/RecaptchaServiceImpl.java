@@ -2,9 +2,7 @@ package ir.maktabsharif.home_service.service.recaptcha;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -14,34 +12,47 @@ import java.util.Map;
 
 @Service
 public class RecaptchaServiceImpl implements RecaptchaService {
-//add value annotation and add secret key
+
+    @Value("${recaptcha.secret}")
     private String recaptchaSecret;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Override
     public boolean isValid(String token) {
+        System.out.println("⚡️ Recaptcha validation started...");
+
         String verifyUrl = "https://www.google.com/recaptcha/api/siteverify";
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("secret", recaptchaSecret);
         params.add("response", token);
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                 verifyUrl,
                 HttpMethod.POST,
-                new HttpEntity<>(params),
-                new ParameterizedTypeReference<>() {
-                }
+                request,
+                new ParameterizedTypeReference<>() {}
         );
-
 
         Map<String, Object> body = response.getBody();
 
-        if (body != null && body.get("success") instanceof Boolean success) {
-            return success;
+        if (body == null || !Boolean.TRUE.equals(body.get("success"))) {
+            return false;
         }
 
-        return false;
+        Double score = (Double) body.get("score");
+        String action = (String) body.get("action");
+
+        System.out.println("Recaptcha score: " + score + " | action: " + action);
+        System.out.println("=== Recaptcha Response Body ===");
+        System.out.println(body);
+        System.out.println("==============================");
+        return score != null && score >= 0.5 && "submit".equals(action);
     }
 }

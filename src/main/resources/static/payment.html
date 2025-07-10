@@ -2,13 +2,12 @@
 <html lang="fa">
 <head>
     <meta charset="UTF-8">
-    <title>پرداخت</title>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <title>پرداخت با reCAPTCHA v3</title>
+    <script src="https://www.google.com/recaptcha/api.js?render=6LcWs34rAAAAAGeYuBlMjOzjyQ9gVxkzCwVsh5rI"></script>
     <style>
         body { font-family: sans-serif; direction: rtl; margin: 2rem; }
-        .timer { font-size: 1.5rem; color: red; margin-bottom: 1rem; }
-        label { font-weight: bold; }
         input, select { width: 300px; padding: 0.5rem; margin-bottom: 1rem; }
+        .timer { font-size: 1.5rem; color: red; margin-bottom: 1rem; }
     </style>
 </head>
 <body>
@@ -38,8 +37,6 @@
         <input type="password" name="otp" required>
     </label><br>
 
-    <div class="g-recaptcha" data-sitekey="SITE_KEY_YOU_GET_FROM_GOOGLE"></div><br>
-
     <button type="submit">پرداخت</button>
 </form>
 
@@ -66,7 +63,6 @@
             alert("عدم دریافت سفارش‌ها. لطفاً وارد حساب کاربری شوید.");
             return;
         }
-
         const orders = await res.json();
         const select = document.getElementById("orderSelect");
 
@@ -80,7 +76,7 @@
 
     loadOrders();
 
-    document.getElementById("paymentForm").addEventListener("submit", async function (e) {
+    document.getElementById("paymentForm").addEventListener("submit", function (e) {
         e.preventDefault();
 
         if (timeLeft <= 0) {
@@ -88,35 +84,32 @@
             return;
         }
 
-        const token = grecaptcha.getResponse();
-        if (!token) {
-            alert("لطفاً reCAPTCHA را تکمیل کنید.");
-            return;
-        }
+        grecaptcha.execute('6LcWs34rAAAAAGeYuBlMjOzjyQ9gVxkzCwVsh5rI', {action: 'submit'}).then(async function (token) {
+            console.log("✅ reCAPTCHA token:", token);
+            const formData = new FormData(e.target);
+            const payload = {
+                orderId: formData.get("orderId"),
+                cardNumber: formData.get("cardNumber"),
+                cvv2: formData.get("cvv2"),
+                otp: formData.get("otp"),
+                recaptcha: token,
+                clientTimeLeft: timeLeft
+            };
 
-        const formData = new FormData(e.target);
-        const payload = {
-            orderId: formData.get("orderId"),
-            cardNumber: formData.get("cardNumber"),
-            cvv2: formData.get("cvv2"),
-            otp: formData.get("otp"),
-            recaptcha: token,
-            clientTimeLeft: timeLeft
-        };
+            const response = await fetch("/api/v1/wallet/pay-from-wallet", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify(payload)
+            });
 
-        const response = await fetch("/api/v1/wallet/pay-from-wallet", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(payload)
+            if (response.ok) {
+                alert("پرداخت موفقیت‌آمیز بود.");
+            } else {
+                const error = await response.text();
+                alert("خطا در پرداخت: " + error);
+            }
         });
-
-        if (response.ok) {
-            alert("پرداخت موفقیت‌آمیز بود.");
-        } else {
-            const error = await response.text();
-            alert("خطا در پرداخت: " + error);
-        }
     });
 </script>
 

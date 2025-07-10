@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.service.transaction;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
+import ir.maktabsharif.home_service.dto.transaction.TransactionFindResponse;
 import ir.maktabsharif.home_service.exception.InvalidRequestException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.transaction.TransactionMapper;
@@ -11,6 +12,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 @Service
 @Transactional
@@ -36,6 +38,10 @@ public class TransactionServiceImpl extends BaseServiceImpl<Transaction, Integer
         List<Transaction> bySenderIdOrReceiverId = repository.findBySenderIdOrReceiverId(userId, userId);
         if (bySenderIdOrReceiverId.isEmpty()) {
             throw new NoElementFoundException();
+        }
+        List<TransactionFindResponse> responses=new ArrayList<>();
+        for (Transaction transaction : bySenderIdOrReceiverId) {
+            responses.add(mapper.mapToResponse(transaction));
         }
         return bySenderIdOrReceiverId;
     }

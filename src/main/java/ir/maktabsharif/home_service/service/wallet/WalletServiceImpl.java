@@ -5,6 +5,7 @@ import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.InsufficientFundsException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.wallet.WalletMapper;
+import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.transaction.Transaction;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
@@ -58,6 +59,7 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
         Order order = orderService.findById(orderId);
         Wallet wallet = findByUserId(order.getCustomer().getId());
         Double price = order.getFinalPrice();
+        addCreditToWallet(price, order.getCustomer().getId());
         if (wallet.getBalance() < price) {
             throw new InsufficientFundsException();
         }
@@ -69,6 +71,8 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
         Wallet expertWallet = findByUserId(order.getExpert().getId());
         expertWallet.setBalance(expertWallet.getBalance() + expertShare);
         save(expertWallet);
+        order.setOrderStatus(OrderStatus.PAYED);
+        orderService.save(order);
 
 
         Transaction transaction = new Transaction();
@@ -76,7 +80,6 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
         transaction.setSender(order.getCustomer());
         transaction.setReceiver(order.getExpert());
         transactionService.saveTransaction(transaction);
-
         return saved;
     }
 
