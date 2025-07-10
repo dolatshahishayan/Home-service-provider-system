@@ -7,7 +7,5 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.util.List;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Integer> , JpaSpecificationExecutor<Transaction> {
-    List<Transaction> findBySenderId(Integer customerId);
-    List<Transaction> findByReceiverId(Integer customerId);
     List<Transaction> findBySenderIdOrReceiverId(Integer senderId, Integer receiverId);
 }
