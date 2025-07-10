@@ -2,7 +2,6 @@ package ir.maktabsharif.home_service.model.transaction;
 
 import ir.maktabsharif.home_service.base.model.BaseEntity;
 import ir.maktabsharif.home_service.model.user.User;
-import ir.maktabsharif.home_service.model.wallet.Wallet;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
