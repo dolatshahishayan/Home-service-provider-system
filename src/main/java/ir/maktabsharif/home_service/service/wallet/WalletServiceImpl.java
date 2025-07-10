@@ -65,7 +65,7 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
         wallet.setBalance(newBalance);
         Wallet saved = save(wallet);
 
-        double expertShare = (price * 100) / 70;
+        double expertShare = (price * 70) / 100;
         Wallet expertWallet = findByUserId(order.getExpert().getId());
         expertWallet.setBalance(expertWallet.getBalance() + expertShare);
         save(expertWallet);
