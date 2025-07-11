@@ -55,13 +55,12 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
     }
 
     @Override
-    public Wallet payFromWallet(Integer orderId) {
+    public Wallet payOrder(Integer orderId) {
         Order order = orderService.findById(orderId);
         Wallet wallet = findByUserId(order.getCustomer().getId());
         Double price = order.getFinalPrice();
-        addCreditToWallet(price, order.getCustomer().getId());
         if (wallet.getBalance() < price) {
-            throw new InsufficientFundsException();
+            throw new InsufficientFundsException("Insufficient funds. Please deposit "+(price- wallet.getBalance())+" to your wallet.");
         }
         Double newBalance = wallet.getBalance() - price;
         wallet.setBalance(newBalance);

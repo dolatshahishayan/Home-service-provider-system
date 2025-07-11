@@ -80,7 +80,7 @@ class WalletServiceImplTest {
     }
 
     @Test
-    void payFromWallet_shouldTransferMoneyAndSaveTransaction() {
+    void payOrder_shouldTransferMoneyAndSaveTransaction() {
         Customer customer = new Customer();
         customer.setId(1);
         customer.setEmail("customer@example.com");
@@ -109,7 +109,7 @@ class WalletServiceImplTest {
         when(repository.findByUserId(1)).thenReturn(Optional.of(customerWallet));
         when(repository.findByUserId(2)).thenReturn(Optional.of(expertWallet));
 
-        service.payFromWallet( 6);
+        service.payOrder( 6);
 
         assertEquals(600.0, customerWallet.getBalance());
         assertEquals(500.0, expertWallet.getBalance());
@@ -118,7 +118,7 @@ class WalletServiceImplTest {
     }
 
     @Test
-    void payFromWallet_shouldThrow_whenInsufficientFunds() {
+    void payOrder_shouldThrow_whenInsufficientFunds() {
         Customer customer = new Customer();
         customer.setId(1);
 
@@ -140,7 +140,7 @@ class WalletServiceImplTest {
         when(suggestionService.findById(anyInt())).thenReturn(suggestion);
         when(repository.findByUserId(1)).thenReturn(Optional.of(customerWallet));
 
-        assertThrows(CouldNotUpdateException.class, () -> service.payFromWallet( 1));
+        assertThrows(CouldNotUpdateException.class, () -> service.payOrder( 1));
         verify(repository, never()).save(any());
     }
 

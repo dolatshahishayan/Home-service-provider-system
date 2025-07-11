@@ -2,42 +2,48 @@
 <html lang="fa">
 <head>
     <meta charset="UTF-8">
-    <title>پرداخت با reCAPTCHA v3</title>
+    <title>شارژ کیف پول با reCAPTCHA v3</title>
     <script src="https://www.google.com/recaptcha/api.js?render=6LcWs34rAAAAAGeYuBlMjOzjyQ9gVxkzCwVsh5rI"></script>
     <style>
         body { font-family: sans-serif; direction: rtl; margin: 2rem; }
-        input, select { width: 300px; padding: 0.5rem; margin-bottom: 1rem; }
+        input { width: 300px; padding: 0.5rem; margin-bottom: 1rem; }
         .timer { font-size: 1.5rem; color: red; margin-bottom: 1rem; }
+        label { display: block; font-weight: bold; margin-top: 1rem; }
     </style>
 </head>
 <body>
 
-<h2>فرم پرداخت</h2>
+<h2>فرم شارژ کیف پول</h2>
 
 <div class="timer" id="timer">۱۰:۰۰</div>
 
 <form id="paymentForm">
-    <label>سفارش:</label><br>
-    <label for="orderSelect"></label><select id="orderSelect" name="orderId" required>
-        <option value="">سفارش را انتخاب کنید</option>
-    </select><br>
+    <label>مبلغ شارژ (تومان):</label>
+    <label>
+        <input type="number" name="amount" required min="1000">
+    </label>
 
-    <label>شماره کارت:</label><br>
+    <label>شماره کارت:</label>
     <label>
         <input type="text" name="cardNumber" required>
-    </label><br>
+    </label>
 
-    <label>CVV2:</label><br>
+    <label>CVV2:</label>
     <label>
         <input type="text" name="cvv2" required>
-    </label><br>
+    </label>
 
-    <label>رمز دوم:</label><br>
+    <label>تاریخ انقضا (ماه/سال):</label>
+    <label>
+        <input type="month" name="expirationDate" required>
+    </label>
+
+    <label>رمز دوم:</label>
     <label>
         <input type="password" name="otp" required>
-    </label><br>
+    </label>
 
-    <button type="submit">پرداخت</button>
+    <button type="submit">شارژ کیف پول</button>
 </form>
 
 <script>
@@ -57,25 +63,6 @@
         }
     }, 1000);
 
-    async function loadOrders() {
-        const res = await fetch("/api/v1/order/find-all-by-customer-id", { credentials: 'include' });
-        if (!res.ok) {
-            alert("عدم دریافت سفارش‌ها. لطفاً وارد حساب کاربری شوید.");
-            return;
-        }
-        const orders = await res.json();
-        const select = document.getElementById("orderSelect");
-
-        orders.forEach(order => {
-            const option = document.createElement("option");
-            option.value = order.id;
-            option.textContent = `سفارش ${order.id} - مبلغ: ${order.finalPrice}`;
-            select.appendChild(option);
-        });
-    }
-
-    loadOrders();
-
     document.getElementById("paymentForm").addEventListener("submit", function (e) {
         e.preventDefault();
 
@@ -88,15 +75,16 @@
             console.log("✅ reCAPTCHA token:", token);
             const formData = new FormData(e.target);
             const payload = {
-                orderId: formData.get("orderId"),
+                amount: parseFloat(formData.get("amount")),
                 cardNumber: formData.get("cardNumber"),
                 cvv2: formData.get("cvv2"),
+                expirationDate: formData.get("expirationDate"),
                 otp: formData.get("otp"),
                 recaptcha: token,
                 clientTimeLeft: timeLeft
             };
 
-            const response = await fetch("/api/v1/wallet/pay-from-wallet", {
+            const response = await fetch("/api/v1/wallet/add-credit-to-wallet", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -104,10 +92,10 @@
             });
 
             if (response.ok) {
-                alert("پرداخت موفقیت‌آمیز بود.");
+                alert("شارژ کیف پول با موفقیت انجام شد.");
             } else {
                 const error = await response.text();
-                alert("خطا در پرداخت: " + error);
+                alert("خطا در شارژ کیف پول: " + error);
             }
         });
     });

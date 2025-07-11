@@ -10,10 +10,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentRequestDTO {
+    private Double amount;
     private String cardNumber;
     private String cvv2;
+    private String expirationDate;
     private String otp;
     private String recaptcha;
     private int clientTimeLeft;
-    private Integer orderId;
 }

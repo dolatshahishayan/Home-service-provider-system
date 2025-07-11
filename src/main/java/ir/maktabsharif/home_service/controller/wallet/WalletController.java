@@ -37,25 +37,7 @@ public class WalletController {
 
     @PutMapping("/add-credit-to-wallet")
     @Operation(summary = "Add credit to wallet", description = "Method for adding credit to wallet")
-    public ResponseEntity<String> addCreditToWallet(@RequestParam Double credit, HttpSession session) {
-        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
-        if (currentUser == null) {
-            return new ResponseEntity<>("No user logged in", HttpStatus.UNAUTHORIZED);
-        }
-        walletService.addCreditToWallet(credit,currentUser.getUserId());
-        return ResponseEntity.ok("Added credit to wallet");
-    }
-
-    @GetMapping("/find-by-user-id")
-    @Operation(summary = "Find by user id", description = "Finds a wallet with given user id")
-    public ResponseEntity<WalletFindResponse> findByUserId(@RequestParam Integer userId) {
-        Wallet byUserId = walletService.findByUserId(userId);
-        return ResponseEntity.ok(walletMapper.mapToResponse(byUserId));
-    }
-
-    @PutMapping("/pay-from-wallet")
-    @Operation(summary = "Pay from wallet", description = "Method for paying from wallet")
-    public ResponseEntity<?> payFromWallet(@RequestBody PaymentRequestDTO dto, HttpSession session) {
+    public ResponseEntity<String> addCreditToWallet(@RequestBody PaymentRequestDTO dto, HttpSession session) {
         UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
         if (currentUser == null) {
             return new ResponseEntity<>("No user logged in", HttpStatus.UNAUTHORIZED);
@@ -69,7 +51,21 @@ public class WalletController {
         if (dto.getClientTimeLeft()<=0){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Client time left is invalid");
         }
-        Wallet wallet = walletService.payFromWallet(dto.getOrderId());
+        walletService.addCreditToWallet(dto.getAmount(),currentUser.getUserId());
+        return ResponseEntity.ok("Added credit to wallet");
+    }
+
+    @GetMapping("/find-by-user-id")
+    @Operation(summary = "Find by user id", description = "Finds a wallet with given user id")
+    public ResponseEntity<WalletFindResponse> findByUserId(@RequestParam Integer userId) {
+        Wallet byUserId = walletService.findByUserId(userId);
+        return ResponseEntity.ok(walletMapper.mapToResponse(byUserId));
+    }
+
+    @PutMapping("/pay-from-wallet")
+    @Operation(summary = "Pay from wallet", description = "Method for paying from wallet")
+    public ResponseEntity<WalletFindResponse> payOrder(@RequestParam Integer orderId) {
+        Wallet wallet = walletService.payOrder(orderId);
         return ResponseEntity.ok(walletMapper.mapToResponse(wallet));
     }
 

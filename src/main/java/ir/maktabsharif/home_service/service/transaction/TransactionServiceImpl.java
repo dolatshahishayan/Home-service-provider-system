@@ -34,7 +34,7 @@ public class TransactionServiceImpl extends BaseServiceImpl<Transaction, Integer
     }
 
     @Override
-    public List<Transaction> findByUserId(Integer userId){
+    public List<TransactionFindResponse> findByUserId(Integer userId){
         List<Transaction> bySenderIdOrReceiverId = repository.findBySenderIdOrReceiverId(userId, userId);
         if (bySenderIdOrReceiverId.isEmpty()) {
             throw new NoElementFoundException();
@@ -43,6 +43,6 @@ public class TransactionServiceImpl extends BaseServiceImpl<Transaction, Integer
         for (Transaction transaction : bySenderIdOrReceiverId) {
             responses.add(mapper.mapToResponse(transaction));
         }
-        return bySenderIdOrReceiverId;
+        return responses;
     }
 }

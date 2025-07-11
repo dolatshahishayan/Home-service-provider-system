@@ -49,10 +49,7 @@ public class RecaptchaServiceImpl implements RecaptchaService {
         Double score = (Double) body.get("score");
         String action = (String) body.get("action");
 
-        System.out.println("Recaptcha score: " + score + " | action: " + action);
-        System.out.println("=== Recaptcha Response Body ===");
-        System.out.println(body);
-        System.out.println("==============================");
+
         return score != null && score >= 0.5 && "submit".equals(action);
     }
 }
