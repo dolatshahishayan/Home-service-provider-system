@@ -6,6 +6,7 @@ import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
 import ir.maktabsharif.home_service.exception.DuplicateInfoException;
 import ir.maktabsharif.home_service.mapper.comment.CommentMapper;
 import ir.maktabsharif.home_service.model.comment.Comment;
+import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.model.user.Expert;
@@ -78,7 +79,7 @@ class CommentServiceImplTest {
         Order order = new Order();
         order.setCustomer(customer);
         order.setId(1);
-
+        order.setOrderStatus(OrderStatus.DONE);
         when(orderService.findById(1)).thenReturn(order);
         when(commentRepository.existsByOrder(order)).thenReturn(true);
 
@@ -106,7 +107,7 @@ class CommentServiceImplTest {
         order.setId(1);
         order.setCustomer(customer);
         order.setExpert(expert);
-
+        order.setOrderStatus(OrderStatus.DONE);
         Comment comment = new Comment();
         comment.setExpertScore(5.0);
 

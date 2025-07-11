@@ -43,7 +43,7 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
             throw new DuplicateInfoException("You have already registered a comment for this order!");
         }
 
-        if (order.getOrderStatus()!= OrderStatus.PAYED){
+        if (order.getOrderStatus()!= OrderStatus.PAYED&&order.getOrderStatus()!=OrderStatus.DONE) {
             throw new CouldNotUpdateException("You can't register any comments for this order because the order has not been finished yet!");
         }
 
