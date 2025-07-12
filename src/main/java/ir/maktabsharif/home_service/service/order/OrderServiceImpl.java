@@ -151,15 +151,15 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     @Override
     public void reduce1ScoreFromExpertPerHour(Integer orderId) {
         Order order = findById(orderId);
-        if (order.getExpert().getScore()==null){
-            return;
+        Expert expert = expertService.findById(order.getExpert().getId());
+        if (expert.getScore()==null){
+            throw new InvalidRequestException("Expert has no score yet.");
         }
         if (!order.getStartDate().isBefore(LocalDateTime.now())) {
             throw new CouldNotUpdateException("It's not the order's date.");
         }
         long between = ChronoUnit.HOURS.between(order.getStartDate(), LocalDateTime.now());
         double newScore;
-        Expert expert = expertService.findById(order.getExpert().getId());
         if (between >= 1) {
             newScore = expert.getScore() - between;
             if (newScore < 0) {

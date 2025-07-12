@@ -20,9 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/suggestion")
+@RequestMapping("/api/v1/suggestions")
 @RequiredArgsConstructor
-@Tag(name = "Suggestion controller", description = "Controller class for suggestion")
+@Tag(name = "Suggestions controller", description = "Controller class for suggestions")
 public class SuggestionController {
 
     private final SuggestionService suggestionService;

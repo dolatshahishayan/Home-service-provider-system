@@ -9,7 +9,7 @@ public interface WalletService extends BaseService<Wallet, Integer> {
 
     Wallet findByUserId(Integer userId);
 
-    Wallet payOrder(Integer orderId);
+    Wallet payFromWallet(Integer orderId);
 
     Wallet saveWithDTO(WalletSaveUpdateRequest walletSaveUpdateRequest);
 

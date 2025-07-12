@@ -13,13 +13,14 @@ import ir.maktabsharif.home_service.service.admin.AdminService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/admin")
+@RequestMapping("/api/v1/admins")
 @RequiredArgsConstructor
-@Tag(name = "Admin controller",description = "Controller class for admin")
+@Tag(name = "Admins controller",description = "Controller class for admins")
 public class AdminController {
 
     private final AdminService adminService;

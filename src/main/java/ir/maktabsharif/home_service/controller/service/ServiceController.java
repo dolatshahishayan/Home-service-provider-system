@@ -17,9 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/service")
+@RequestMapping("/api/v1/services")
 @RequiredArgsConstructor
-@Tag(name = "Service controller", description = "Controller class for service")
+@Tag(name = "Services controller", description = "Controller class for services")
 public class ServiceController {
 
     private final ServiceService serviceService;

@@ -13,16 +13,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/transaction")
+@RequestMapping("/api/v1/transactions")
 @RequiredArgsConstructor
-@Tag(name = "Transaction controller",description = "Controller class for transaction")
+@Tag(name = "Transactions controller",description = "Controller class for transactions")
 public class TransactionController {
 
     private final TransactionService transactionService;
 
     @GetMapping("/find-by-user-id")
     @Operation(summary = "Find by user id",description = "Finds all transactions by user id")
-    public ResponseEntity<?> findTransactionsBySenderId(HttpSession session) {
+    public ResponseEntity<?> findTransactionsByUserId(HttpSession session) {
         UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
         if (currentUser == null) {
             return new ResponseEntity<>("No user logged in", HttpStatus.UNAUTHORIZED);

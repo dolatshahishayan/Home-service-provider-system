@@ -16,9 +16,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/comment")
+@RequestMapping("/api/v1/comments")
 @RequiredArgsConstructor
-@Tag(name = "Comment controller", description = "Controller class for comment")
+@Tag(name = "Comments controller", description = "Controller class for comments")
 public class CommentController {
 
     private final CommentService commentService;

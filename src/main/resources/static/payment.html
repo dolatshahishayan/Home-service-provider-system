@@ -84,7 +84,7 @@
                 clientTimeLeft: timeLeft
             };
 
-            const response = await fetch("/api/v1/wallet/add-credit-to-wallet", {
+            const response = await fetch("/api/v1/wallets/add-credit-to-wallet", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",

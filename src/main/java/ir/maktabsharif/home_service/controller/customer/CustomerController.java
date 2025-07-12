@@ -17,9 +17,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/customer")
+@RequestMapping("/api/v1/customers")
 @RequiredArgsConstructor
-@Tag(name = "Customer controller", description = "Controller class for customer")
+@Tag(name = "Customers controller", description = "Controller class for customers")
 public class CustomerController {
 
     private final CustomerService customerService;

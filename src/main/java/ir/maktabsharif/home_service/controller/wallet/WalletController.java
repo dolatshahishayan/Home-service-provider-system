@@ -19,9 +19,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/wallet")
+@RequestMapping("/api/v1/wallets")
 @RequiredArgsConstructor
-@Tag(name = "Wallet controller", description = "Controller class for wallet")
+@Tag(name = "Wallets controller", description = "Controller class for wallets")
 public class WalletController {
 
     private final WalletService walletService;
@@ -64,8 +64,8 @@ public class WalletController {
 
     @PutMapping("/pay-from-wallet")
     @Operation(summary = "Pay from wallet", description = "Method for paying from wallet")
-    public ResponseEntity<WalletFindResponse> payOrder(@RequestParam Integer orderId) {
-        Wallet wallet = walletService.payOrder(orderId);
+    public ResponseEntity<WalletFindResponse> payFromWallet(@RequestParam Integer orderId) {
+        Wallet wallet = walletService.payFromWallet(orderId);
         return ResponseEntity.ok(walletMapper.mapToResponse(wallet));
     }
 

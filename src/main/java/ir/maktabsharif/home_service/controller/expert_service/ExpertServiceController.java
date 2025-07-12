@@ -14,9 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/expert-service")
+@RequestMapping("/api/v1/expert-services")
 @RequiredArgsConstructor
-@Tag(name = "Expert-service controller", description = "Controller class for expert-service")
+@Tag(name = "Expert-services controller", description = "Controller class for expert-services")
 public class ExpertServiceController {
 
     private final ExpertServiceService expertServiceService;

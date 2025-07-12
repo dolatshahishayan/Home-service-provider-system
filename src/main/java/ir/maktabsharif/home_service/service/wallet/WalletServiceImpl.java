@@ -55,7 +55,7 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
     }
 
     @Override
-    public Wallet payOrder(Integer orderId) {
+    public Wallet payFromWallet(Integer orderId) {
         Order order = orderService.findById(orderId);
         Wallet wallet = findByUserId(order.getCustomer().getId());
         Double price = order.getFinalPrice();

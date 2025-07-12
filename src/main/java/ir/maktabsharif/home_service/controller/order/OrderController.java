@@ -21,9 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/order")
+@RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
-@Tag(name = "Order controller", description = "Controller class for order")
+@Tag(name = "Orders controller", description = "Controller class for orders")
 public class OrderController {
 
     private final OrderService orderService;

@@ -17,9 +17,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/expert")
+@RequestMapping("/api/v1/experts")
 @RequiredArgsConstructor
-@Tag(name = "Expert controller", description = "Controller class for expert")
+@Tag(name = "Experts controller", description = "Controller class for experts")
 public class ExpertController {
 
     private final ExpertService expertService;
