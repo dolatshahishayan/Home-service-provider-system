@@ -2,10 +2,7 @@ package ir.maktabsharif.home_service.service.expert;
 
 import ir.maktabsharif.home_service.dto.expert.ExpertSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
-import ir.maktabsharif.home_service.exception.ExpertHasAnActiveOrderException;
-import ir.maktabsharif.home_service.exception.ImageFormatException;
-import ir.maktabsharif.home_service.exception.ImageLengthOutOfBoundException;
-import ir.maktabsharif.home_service.exception.UserWithSameEmailExistsException;
+import ir.maktabsharif.home_service.exception.*;
 import ir.maktabsharif.home_service.mapper.expert.ExpertMapper;
 import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
@@ -20,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 import java.util.Optional;
@@ -130,13 +128,36 @@ class ExpertServiceImplTest {
         when(expertRepository.findByEmail(dto.getEmail())).thenReturn(Optional.of(expert));
         expertService.register(dto, imagePath);
 
-        assertEquals(ExpertStatus.NEW, expert.getExpertStatus());
+        assertEquals(ExpertStatus.WAITING_FOR_VERIFYING, expert.getExpertStatus());
         assertNotNull(expert.getRegistrationDate());
 
         verify(expertRepository).save(expert);
 
         verify(walletService).saveWithDTO(any(WalletSaveUpdateRequest.class));
     }
+
+    @Test
+    void register_ShouldSaveExpertWithNewStatus_WhenNoImagePath() {
+        ExpertSaveUpdateRequest dto = new ExpertSaveUpdateRequest();
+        dto.setEmail("noimage@example.com");
+
+        Expert expert = new Expert();
+        expert.setEmail(dto.getEmail());
+        expert.setId(2);
+
+        when(userService.existsByEmail(dto.getEmail())).thenReturn(false);
+        when(mapper.mapToEntity(dto)).thenReturn(expert);
+        when(expertRepository.findByEmail(dto.getEmail())).thenReturn(Optional.of(expert));
+
+        Expert result = expertService.register(dto, null);
+
+        assertEquals(ExpertStatus.NEW, result.getExpertStatus());
+        assertNotNull(result.getRegistrationDate());
+
+        verify(expertRepository).save(expert);
+        verify(walletService).saveWithDTO(any(WalletSaveUpdateRequest.class));
+    }
+
 
     @Test
     void updateWithDTO_ShouldThrow_WhenEmailUsedByAnother() {
@@ -153,7 +174,7 @@ class ExpertServiceImplTest {
         when(userService.existsByEmailAndIdNot(dto.getEmail(), dto.getId())).thenReturn(true);
 
         UserWithSameEmailExistsException exception = assertThrows(UserWithSameEmailExistsException.class,
-                () -> expertService.updateWithDTO(dto,imagePath));
+                () -> expertService.updateWithDTO(dto, imagePath));
 
         assertNotNull(exception);
 
@@ -179,7 +200,7 @@ class ExpertServiceImplTest {
                 eq(List.of(OrderStatus.WAITING_FOR_EXPERT_TO_VISIT, OrderStatus.STARTED))
         )).thenReturn(true);
 
-        ExpertHasAnActiveOrderException ex = assertThrows(ExpertHasAnActiveOrderException.class, () -> expertService.updateWithDTO(dto,imagePath));
+        ExpertHasAnActiveOrderException ex = assertThrows(ExpertHasAnActiveOrderException.class, () -> expertService.updateWithDTO(dto, imagePath));
 
         assertNotNull(ex);
     }
@@ -202,7 +223,7 @@ class ExpertServiceImplTest {
         )).thenReturn(false);
         when(imageUtil.getBytesForExpert(imagePath)).thenReturn(new byte[]{1, 2, 3});
 
-        expertService.updateWithDTO(dto,imagePath);
+        expertService.updateWithDTO(dto, imagePath);
 
         assertEquals(dto.getEmail(), expert.getEmail());
         assertEquals(dto.getPassword(), expert.getPassword());
@@ -218,4 +239,41 @@ class ExpertServiceImplTest {
         expertService.findByEmail("exists@example.com");
         verify(expertRepository).findByEmail("exists@example.com");
     }
+
+    @Test
+    void findByEmail_shouldThrowException_WhenExpertNotFound() {
+        when(expertRepository.findByEmail("missing@example.com")).thenReturn(Optional.empty());
+
+        assertThrows(NoElementFoundException.class, () -> expertService.findByEmail("missing@example.com"));
+    }
+
+    @Test
+    void updateStatusToUnverified_shouldSetStatusToDisabled() {
+        Integer expertId = 1;
+        Expert expert = new Expert();
+        expert.setExpertStatus(ExpertStatus.VERIFIED);
+
+        when(expertRepository.findById(expertId)).thenReturn(Optional.of(expert));
+
+        expertService.updateStatusToUnverified(expertId);
+
+        assertEquals(ExpertStatus.DISABLED, expert.getExpertStatus());
+        verify(expertRepository).save(expert);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void findAll_ShouldReturnListOfExperts_WhenSpecGiven() {
+        Specification<Expert> spec = (Specification<Expert>) mock(Specification.class);
+        List<Expert> mockExperts = List.of(new Expert(), new Expert());
+
+        when(expertRepository.findAll(spec)).thenReturn(mockExperts);
+
+        List<Expert> result = expertService.findAll(spec);
+
+        assertEquals(2, result.size());
+        verify(expertRepository).findAll(spec);
+    }
+
+
 }

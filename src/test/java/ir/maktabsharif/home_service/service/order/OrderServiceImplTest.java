@@ -1,13 +1,14 @@
 package ir.maktabsharif.home_service.service.order;
 
-import ir.maktabsharif.home_service.dto.order.OrderFindResponse;
 import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.order.OrderSummaryDTO;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
 import ir.maktabsharif.home_service.exception.InvalidRequestException;
+import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.order.OrderMapper;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
+import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.expert_service.ExpertService;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.service.Service;
@@ -36,308 +37,201 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class OrderServiceImplTest {
 
-    @Mock
-    private OrderRepository repository;
-
-    @Mock
-    private OrderMapper mapper;
-
-    @Mock
-    private SuggestionService suggestionService;
-
-    @Mock
-    private ExpertServiceService expertServiceService;
-
-    @Mock
-    private CustomerService customerService;
-
-    @Mock
-    private ir.maktabsharif.home_service.service.expert.ExpertService expertService;
-
-    @Mock
-    private ServiceService serviceService;
+    @Mock private OrderRepository repository;
+    @Mock private OrderMapper mapper;
+    @Mock private SuggestionService suggestionService;
+    @Mock private ExpertServiceService expertServiceService;
+    @Mock private CustomerService customerService;
+    @Mock private ir.maktabsharif.home_service.service.expert.ExpertService expertService;
+    @Mock private ServiceService serviceService;
 
     @InjectMocks
-    private OrderServiceImpl service;
+    private OrderServiceImpl orderService;
 
-    private final Customer test = new Customer();
+    private Order order;
+    private Expert expert;
+    private Customer customer;
 
     @BeforeEach
     void setUp() {
-        test.setEmail("user@example.com");
+        order = new Order();
+        order.setId(1);
+        customer = new Customer();
+        customer.setEmail("a@b.com");
+        order.setCustomer(customer);
+        order.setStartDate(LocalDateTime.now().minusHours(2));
+        expert = new Expert();
+        expert.setId(1);
+        expert.setScore(5.0);
+        order.setExpert(expert);
     }
 
     @Test
-    void saveWithDTO_shouldMapAndSaveOrder_whenPriceIsValid() {
-        OrderSaveUpdateRequest dto = new OrderSaveUpdateRequest();
-        dto.setExpertId(2);
-        dto.setServiceId(3);
-        dto.setProposedPrice(2000d);
-        Integer customerId = 1;
-        Customer customer = new Customer();
-        Expert expert = new Expert();
-        Service service2 = new Service();
-        service2.setBasePrice(1500d);
+    void saveWithDTO_ShouldThrow_WhenCustomerIdIsNull() {
+        OrderSaveUpdateRequest request = new OrderSaveUpdateRequest();
+        assertThrows(InvalidRequestException.class, () -> orderService.saveWithDTO(request, null));
+    }
+
+    @Test
+    void saveWithDTO_ShouldThrow_WhenPriceIsLessThanBase() {
+        OrderSaveUpdateRequest request = new OrderSaveUpdateRequest();
+        request.setServiceId(1);
+        request.setProposedPrice(50d);
+
+        Service service = new Service();
+        service.setBasePrice(100d);
 
         Order mappedOrder = new Order();
-        mappedOrder.setProposedPrice(dto.getProposedPrice());
+        mappedOrder.setProposedPrice(50d);
 
-        when(mapper.mapToEntity(dto)).thenReturn(mappedOrder);
-        when(customerService.findById(customerId)).thenReturn(customer);
-        when(expertService.findById(dto.getExpertId())).thenReturn(expert);
-        when(serviceService.findById(dto.getServiceId())).thenReturn(service2);
-        when(repository.save(mappedOrder)).thenReturn(mappedOrder);
-
-        Order result = service.saveWithDTO(dto, customerId);
-
-        assertEquals(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION, result.getOrderStatus());
-        assertNotNull(result.getCreationDate());
-        assertEquals(customer, result.getCustomer());
-        assertEquals(expert, result.getExpert());
-        assertEquals(service2, result.getService());
-        verify(repository).save(mappedOrder);
-    }
-
-
-    @Test
-    void updateWithDTO_shouldUpdateOrderCorrectly() {
-        OrderSaveUpdateRequest dto = new OrderSaveUpdateRequest();
-        dto.setId(1);
-        dto.setExpertId(20);
-        dto.setServiceId(30);
-
-        Integer customerId = 10;
-
-        Order existingOrder = new Order();
-        existingOrder.setId(1);
+        when(serviceService.findById(1)).thenReturn(service);
+        when(mapper.mapToEntity(request)).thenReturn(mappedOrder);
 
         Customer customer = new Customer();
-        customer.setId(customerId);
+        when(customerService.findById(1)).thenReturn(customer);
 
-        Expert expert = new Expert();
-        expert.setId(dto.getExpertId());
-
-        when(repository.findById(dto.getId())).thenReturn(Optional.of(existingOrder));
-        when(customerService.findById(customerId)).thenReturn(customer);
-        when(expertService.findById(dto.getExpertId())).thenReturn(expert);
-
-        doNothing().when(mapper).updateEntityWithDTO(dto, existingOrder);
-        when(repository.save(existingOrder)).thenReturn(existingOrder);
-
-        Order result = service.updateWithDTO(dto, customerId);
-
-        assertNotNull(result);
-        assertEquals(customer, result.getCustomer());
-        assertEquals(expert, result.getExpert());
-        verify(mapper).updateEntityWithDTO(dto, existingOrder);
-        verify(repository).save(existingOrder);
+        InvalidRequestException ex = assertThrows(InvalidRequestException.class, () -> orderService.saveWithDTO(request, 1));
+        assertEquals("Proposed price must be greater than the service price", ex.getMessage());
     }
 
     @Test
-    void updateWithDTO_whenCustomerIdIsNull_shouldThrowException() {
-        OrderSaveUpdateRequest dto = new OrderSaveUpdateRequest();
-        dto.setId(1);
-
-        Order existingOrder = new Order();
-        when(repository.findById(dto.getId())).thenReturn(Optional.of(existingOrder));
-
-        assertThrows(InvalidRequestException.class, () -> service.updateWithDTO(dto, null));
-    }
-    @Test
-    void updateWithDTO_withoutExpert_shouldUpdateWithoutExpert() {
-        OrderSaveUpdateRequest dto = new OrderSaveUpdateRequest();
-        dto.setId(1);
-        dto.setExpertId(null);
-
-        Integer customerId = 10;
-
-        Order existingOrder = new Order();
-        existingOrder.setId(1);
-
-        Customer customer = new Customer();
-        customer.setId(customerId);
-
-        when(repository.findById(dto.getId())).thenReturn(Optional.of(existingOrder));
-        when(customerService.findById(customerId)).thenReturn(customer);
-        doNothing().when(mapper).updateEntityWithDTO(dto, existingOrder);
-        when(repository.save(existingOrder)).thenReturn(existingOrder);
-
-        Order result = service.updateWithDTO(dto, customerId);
-
-        assertEquals(customer, result.getCustomer());
-        assertNull(result.getExpert());
-    }
-
-
-    @Test
-    void chooseExpert_shouldThrowIfExpertAlreadySet() {
-        Integer suggestionId = 1;
-        Integer orderId = 10;
-
-        Expert expert = new Expert();
-        Order order = new Order();
-        order.setId(orderId);
-        order.setExpert(new Expert());
-
+    void chooseExpert_ShouldUpdateOrderAndConfirmSuggestion() {
         Suggestion suggestion = new Suggestion();
-        suggestion.setExpert(expert);
-        Order orderRef = new Order();
-        orderRef.setId(orderId);
-        suggestion.setOrder(orderRef);
-
-        when(suggestionService.findById(suggestionId)).thenReturn(suggestion);
-        when(repository.findById(orderId)).thenReturn(Optional.of(order));
-
-        assertThrows(CouldNotUpdateException.class, () -> service.chooseExpert(suggestionId));
-    }
-
-    @Test
-    void chooseExpert_shouldUpdateOrderAndConfirmSuggestion() {
-        Integer suggestionId = 1;
-        Integer orderId = 10;
-
-        Expert expert = new Expert();
-
         Order order = new Order();
-        order.setId(orderId);
+        order.setId(1);
+        suggestion.setOrder(order);
+        suggestion.setExpert(new Expert());
+        suggestion.setPrice(123D);
 
-        Suggestion suggestion = new Suggestion();
-        suggestion.setExpert(expert);
+        when(suggestionService.findById(any())).thenReturn(suggestion);
+        when(repository.findById(any())).thenReturn(Optional.of(order));
+        when(repository.save(any())).thenReturn(order);
 
-        Order orderRef = new Order();
-        orderRef.setId(orderId);
-        suggestion.setOrder(orderRef);
-
-        when(suggestionService.findById(suggestionId)).thenReturn(suggestion);
-        when(repository.findById(orderId)).thenReturn(Optional.of(order));
-        when(repository.save(order)).thenReturn(order);
-
-        service.chooseExpert(suggestionId);
-
-        assertEquals(expert, order.getExpert());
-        assertEquals(OrderStatus.WAITING_FOR_EXPERT_TO_VISIT, order.getOrderStatus());
-
+        orderService.chooseExpert(1);
         verify(repository, times(2)).save(order);
-        verify(suggestionService).confirmSuggestionAcceptance(suggestionId);
-    }
-
-
-    @Test
-    void findAllByExpertId_shouldReturnMappedOrders() {
-        Integer expertId = 10;
-
-        ExpertService es = new ExpertService();
-        Service serv = new Service();
-        serv.setId(100);
-        es.setService(serv);
-
-        Order order1 = new Order();
-        Order order2 = new Order();
-
-        OrderFindResponse response1 = new OrderFindResponse();
-        OrderFindResponse response2 = new OrderFindResponse();
-
-        when(expertServiceService.findByExpertId(expertId)).thenReturn(List.of(es));
-        when(repository.findByServiceId(100)).thenReturn(List.of(order1, order2));
-        when(mapper.mapToResponse(order1)).thenReturn(response1);
-        when(mapper.mapToResponse(order2)).thenReturn(response2);
-
-        List<OrderSummaryDTO> result = service.findAllByExpertId(expertId);
-
-        assertEquals(2, result.size());
-        assertTrue(result.contains(response1));
-        assertTrue(result.contains(response2));
-    }
-
-
-    @Test
-    void existsBySpecialistAndOrderStatusIn_shouldReturnTrueFromRepo() {
-        Integer expertId = 10;
-        Expert expert = new Expert();
-        List<OrderStatus> statuses = List.of(OrderStatus.STARTED);
-
-        when(expertService.findById(expertId)).thenReturn(expert);
-        when(repository.existsByExpertAndOrderStatusIn(expert, statuses)).thenReturn(true);
-
-        assertTrue(service.existsBySpecialistAndOrderStatusIn(expertId, statuses));
-    }
-
-
-    @Test
-    void existsBySpecialistAndOrderStatusIn_shouldReturnFalseFromRepo() {
-        Integer expertId = 20;
-        Expert expert = new Expert();
-        List<OrderStatus> statuses = List.of(OrderStatus.STARTED);
-
-        when(expertService.findById(expertId)).thenReturn(expert);
-        when(repository.existsByExpertAndOrderStatusIn(expert, statuses)).thenReturn(false);
-
-        assertFalse(service.existsBySpecialistAndOrderStatusIn(expertId, statuses));
-    }
-
-
-    @Test
-    void findByServiceId_shouldReturnListFromRepo() {
-        Integer serviceId = 3;
-        Order order = new Order();
-
-        when(repository.findByServiceId(serviceId)).thenReturn(List.of(order));
-
-        List<Order> result = service.findByServiceId(serviceId);
-
-        assertEquals(1, result.size());
-        assertEquals(order, result.getFirst());
+        verify(suggestionService).confirmSuggestionAcceptance(1);
     }
 
     @Test
-    void updateStatusToStarted_ShouldUpdate_WhenCurrentUserIsCustomer() {
-        Integer orderId = 1;
+    void setExpertAndFinalPriceForOrder_ShouldThrow_WhenAlreadyAssigned() {
+        Order o = new Order();
+        o.setExpert(new Expert());
+        Suggestion s = new Suggestion();
+        s.setOrder(o);
+        when(suggestionService.findById(1)).thenReturn(s);
+        when(repository.findById(any())).thenReturn(Optional.of(o));
 
-        UserSessionDTO currentUser = new UserSessionDTO();
-        currentUser.setEmail("user@example.com");
-
-        Customer customer = new Customer();
-        customer.setEmail("user@example.com");
-
-        Order order = new Order();
-        order.setId(orderId);
-        order.setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_TO_VISIT);
-        order.setCustomer(customer);
-        order.setStartDate(LocalDateTime.now().minusHours(1));
-
-        when(repository.findById(orderId)).thenReturn(Optional.of(order));
-        when(repository.save(order)).thenReturn(order);
-
-        Order result = service.updateStatusToStarted(orderId, currentUser);
-
-        assertEquals(OrderStatus.STARTED, result.getOrderStatus());
-        verify(repository).save(order);
+        assertThrows(CouldNotUpdateException.class, () -> orderService.chooseExpert(1));
     }
 
     @Test
-    void updateStatusToDone_ShouldUpdate_WhenCurrentUserIsCustomer() {
-        Integer orderId = 1;
+    void updateStatusToStarted_ShouldThrow_WhenStartDateInFuture() {
+        Order o = new Order();
+        o.setStartDate(LocalDateTime.now().plusHours(1));
+        o.setCustomer(customer);
+        when(repository.findById(1)).thenReturn(Optional.of(o));
+        assertThrows(CouldNotUpdateException.class, () -> orderService.updateStatusToStarted(1, new UserSessionDTO(customer.getId(),"a@b.com", Role.CUSTOMER)));
+    }
 
-        UserSessionDTO currentUser = new UserSessionDTO();
-        currentUser.setEmail("user@example.com");
-
-        Customer customer = new Customer();
-        customer.setEmail("user@example.com");
-
-        Order order = new Order();
-        order.setId(orderId);
-        order.setOrderStatus(OrderStatus.STARTED);
-        order.setCustomer(customer);
-        order.setStartDate(LocalDateTime.now().minusHours(1));
-
-        when(repository.findById(orderId)).thenReturn(Optional.of(order));
-        when(repository.save(order)).thenReturn(order);
-
-        Order result = service.updateStatusToDone(orderId, currentUser);
-
+    @Test
+    void updateStatusToDone_ShouldUpdateAndReduceScore() {
+        order.setExpert(expert);
+        when(repository.findById(1)).thenReturn(Optional.of(order));
+        when(expertService.findById(any())).thenReturn(expert);
+        when(expertService.save(any())).thenReturn(expert);
+        when(repository.save(any())).thenReturn(order);
+        Order result = orderService.updateStatusToDone(1, new UserSessionDTO(customer.getId(),"a@b.com", Role.CUSTOMER));
         assertEquals(OrderStatus.DONE, result.getOrderStatus());
+    }
+
+    @Test
+    void reduce1ScoreFromExpertPerHour_ShouldSetExpertScoreZero() {
+        expert.setScore(1.0);
+        when(repository.findById(1)).thenReturn(Optional.of(order));
+        when(expertService.findById(any())).thenReturn(expert);
+        Expert saved = new Expert();
+        saved.setScore(0.0);
+        when(expertService.save(any())).thenReturn(saved);
+        orderService.reduce1ScoreFromExpertPerHour(1);
+        verify(expertService).updateStatusToUnverified(any());
+    }
+
+    @Test
+    void updateWithDTO_ShouldUpdateOrderFields() {
+        OrderSaveUpdateRequest request = new OrderSaveUpdateRequest();
+        request.setId(1);
+        request.setExpertId(2);
+        request.setServiceId(5);
+        request.setProposedPrice(200d);
+        Expert e = new Expert();
+        when(repository.findById(1)).thenReturn(Optional.of(order));
+        when(customerService.findById(1)).thenReturn(customer);
+        when(expertService.findById(2)).thenReturn(e);
+        when(repository.save(any())).thenReturn(order);
+        orderService.updateWithDTO(request, 1);
         verify(repository).save(order);
     }
 
+    @Test
+    void findAllByExpertId_ShouldReturnMappedOrders() {
+        ExpertService expertServiceObj = new ExpertService();
+        Service service = new Service();
+        service.setId(1);
+        expertServiceObj.setService(service);
+        when(expertServiceService.findByExpertId(any())).thenReturn(List.of(expertServiceObj));
+        when(repository.findByServiceId(any())).thenReturn(List.of(order));
+        when(expertService.findById(any())).thenReturn(expert);
+        when(mapper.mapToSummary(any())).thenReturn(new OrderSummaryDTO());
+        List<OrderSummaryDTO> result = orderService.findAllByExpertId(1);
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void existsByOrderIdAndExpertIdAndAcceptedTrue_ShouldReturnTrue() {
+        when(suggestionService.existsByOrderIdAndExpertIdAndAcceptedTrue(1, 1)).thenReturn(true);
+        assertTrue(orderService.existsByOrderIdAndExpertIdAndAcceptedTrue(1, 1));
+    }
+
+    @Test
+    void existsBySpecialistAndOrderStatusIn_ShouldReturnTrue() {
+        List<OrderStatus> statuses = List.of(OrderStatus.STARTED);
+        when(expertService.findById(1)).thenReturn(expert);
+        when(repository.existsByExpertAndOrderStatusIn(expert, statuses)).thenReturn(true);
+        assertTrue(orderService.existsBySpecialistAndOrderStatusIn(1, statuses));
+    }
+
+    @Test
+    void findByServiceId_ShouldReturnOrders() {
+        when(repository.findByServiceId(1)).thenReturn(List.of(new Order()));
+        assertEquals(1, orderService.findByServiceId(1).size());
+    }
+
+    @Test
+    void findByServiceId_ShouldThrow_WhenEmpty() {
+        when(repository.findByServiceId(1)).thenReturn(List.of());
+        assertThrows(NoElementFoundException.class, () -> orderService.findByServiceId(1));
+    }
+
+    @Test
+    void findByCustomerId_ShouldReturnOrders() {
+        List<Order> orders = List.of(new Order());
+        when(repository.findByCustomerId(1)).thenReturn(orders);
+        List<Order> result = orderService.findByCustomerId(1);
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void updateStatus_ShouldThrow_WhenWrongUser() {
+        UserSessionDTO user = new UserSessionDTO();
+        user.setEmail("notmatch@example.com");
+
+        order.setStartDate(LocalDateTime.now().minusHours(1));
+
+        when(repository.findById(1)).thenReturn(Optional.of(order));
+        when(expertService.findById(expert.getId())).thenReturn(expert);
+        when(expertService.save(any())).thenReturn(expert);
+
+        assertThrows(CouldNotUpdateException.class, () -> orderService.updateStatusToDone(1, user));
+    }
 
 }

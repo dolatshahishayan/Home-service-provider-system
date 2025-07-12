@@ -1,9 +1,10 @@
 package ir.maktabsharif.home_service.service.wallet;
 
 import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
-import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
+import ir.maktabsharif.home_service.exception.InsufficientFundsException;
+import ir.maktabsharif.home_service.exception.NoElementFoundException;
+import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
-import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.model.transaction.Transaction;
 import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.model.user.Expert;
@@ -11,10 +12,8 @@ import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
 import ir.maktabsharif.home_service.repository.wallet.WalletRepository;
 import ir.maktabsharif.home_service.service.order.OrderService;
-import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
 import ir.maktabsharif.home_service.service.transaction.TransactionService;
 import ir.maktabsharif.home_service.service.user.UserService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,137 +22,160 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class WalletServiceImplTest {
 
-    @Mock private WalletRepository repository;
-    @Mock private UserService userService;
-    @Mock private OrderService orderService;
-    @Mock private SuggestionService suggestionService;
-    @Mock private TransactionService transactionService;
+    @Mock
+    private WalletRepository repository;
+
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private OrderService orderService;
+
+    @Mock
+    private TransactionService transactionService;
 
     @InjectMocks
-    private WalletServiceImpl service;
+    WalletServiceImpl walletService;
 
-    private Wallet wallet;
-    private User user;
-
-    @BeforeEach
-    void setUp() {
-        user = new User();
-        user.setId(1);
-
-        wallet = new Wallet();
-        wallet.setUser(user);
-        wallet.setBalance(1000.0);
-    }
 
     @Test
-    void saveWithDTO_shouldCreateWalletWithZeroBalance() {
-        WalletSaveUpdateRequest dto = new WalletSaveUpdateRequest();
-        dto.setUserId(1);
-
+    void saveWithDTO_ShouldSaveWalletWithZeroBalance() {
+        WalletSaveUpdateRequest request = new WalletSaveUpdateRequest();
+        request.setUserId(1);
+        User user = new User();
         when(userService.findById(1)).thenReturn(user);
-        when(repository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        Wallet saved = service.saveWithDTO(dto);
+        Wallet savedWallet = new Wallet();
+        savedWallet.setUser(user);
+        savedWallet.setBalance(0.0);
+        when(repository.save(any())).thenReturn(savedWallet);
 
-        assertEquals(0.0, saved.getBalance());
-        assertEquals(user, saved.getUser());
+        Wallet result = walletService.saveWithDTO(request);
+
+        assertEquals(0.0, result.getBalance());
+        assertEquals(user, result.getUser());
         verify(repository).save(any(Wallet.class));
+        verify(userService).findById(1);
     }
 
     @Test
-    void addCreditToWallet_shouldAddBalanceAndCreateTransaction() {
-        when(repository.findByUserId(1)).thenReturn(Optional.of(wallet));
-        when(userService.findById(1)).thenReturn(user);
+    void addCreditToWallet_ShouldIncreaseBalanceAndSaveTransaction() {
+        Integer userId = 1;
+        Double credit = 100.0;
 
-        service.addCreditToWallet(500.0, 1);
+        Wallet wallet = new Wallet();
+        wallet.setBalance(50.0);
+        User user = new User();
 
-        assertEquals(1500.0, wallet.getBalance());
+        when(repository.findByUserId(userId)).thenReturn(Optional.of(wallet));
+        when(userService.findById(userId)).thenReturn(user);
+        when(repository.save(wallet)).thenReturn(wallet);
+        doNothing().when(transactionService).saveTransaction(any(Transaction.class));
+
+        walletService.addCreditToWallet(credit, userId);
+
+        assertEquals(150.0, wallet.getBalance());
         verify(repository).save(wallet);
         verify(transactionService).saveTransaction(any(Transaction.class));
+        verify(userService, times(2)).findById(userId);
     }
 
     @Test
-    void payOrder_shouldTransferMoneyAndSaveTransaction() {
+    void payFromWallet_ShouldDeductPriceFromCustomerAndAddToExpert() {
+        Integer orderId = 1;
         Customer customer = new Customer();
         customer.setId(1);
-        customer.setEmail("customer@example.com");
-
         Expert expert = new Expert();
         expert.setId(2);
-        expert.setEmail("expert@example.com");
 
         Order order = new Order();
+        order.setId(orderId);
         order.setCustomer(customer);
         order.setExpert(expert);
-
-        Suggestion suggestion = new Suggestion();
-        suggestion.setPrice(400.0);
+        order.setFinalPrice(200.0);
+        order.setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION);
 
         Wallet customerWallet = new Wallet();
-        customerWallet.setUser(customer);
-        customerWallet.setBalance(1000.0);
-
+        customerWallet.setBalance(500.0);
         Wallet expertWallet = new Wallet();
-        expertWallet.setUser(expert);
-        expertWallet.setBalance(100.0);
+        expertWallet.setBalance(300.0);
 
-        when(orderService.findById(anyInt())).thenReturn(order);
-        when(suggestionService.findById(anyInt())).thenReturn(suggestion);
-        when(repository.findByUserId(1)).thenReturn(Optional.of(customerWallet));
-        when(repository.findByUserId(2)).thenReturn(Optional.of(expertWallet));
+        when(orderService.findById(orderId)).thenReturn(order);
+        when(repository.findByUserId(customer.getId())).thenReturn(Optional.of(customerWallet));
+        when(repository.findByUserId(expert.getId())).thenReturn(Optional.of(expertWallet));        when(repository.save(any(Wallet.class))).thenAnswer(i -> i.getArgument(0));
+        when(orderService.save(order)).thenReturn(order);
+        doNothing().when(transactionService).saveTransaction(any(Transaction.class));
 
-        service.payOrder( 6);
+        Wallet updatedWallet = walletService.payFromWallet(orderId);
 
-        assertEquals(600.0, customerWallet.getBalance());
-        assertEquals(500.0, expertWallet.getBalance());
+        // Assert balances updated correctly
+        assertEquals(300.0, updatedWallet.getBalance());
+        assertEquals(440.0, expertWallet.getBalance());
 
+        // Assert order status updated
+        assertEquals(OrderStatus.PAYED, order.getOrderStatus());
+
+        verify(repository, times(2)).save(any(Wallet.class));
+        verify(orderService).save(order);
         verify(transactionService).saveTransaction(any(Transaction.class));
     }
 
     @Test
-    void payOrder_shouldThrow_whenInsufficientFunds() {
+    void payFromWallet_ShouldThrow_WhenInsufficientFunds() {
+        Integer orderId = 1;
         Customer customer = new Customer();
         customer.setId(1);
-
         Expert expert = new Expert();
         expert.setId(2);
 
         Order order = new Order();
+        order.setId(orderId);
         order.setCustomer(customer);
         order.setExpert(expert);
-
-        Suggestion suggestion = new Suggestion();
-        suggestion.setPrice(1200.0); // More than wallet
+        order.setFinalPrice(200.0);
 
         Wallet customerWallet = new Wallet();
-        customerWallet.setUser(customer);
-        customerWallet.setBalance(1000.0);
+        customerWallet.setBalance(100.0);
 
-        when(orderService.findById(anyInt())).thenReturn(order);
-        when(suggestionService.findById(anyInt())).thenReturn(suggestion);
-        when(repository.findByUserId(1)).thenReturn(Optional.of(customerWallet));
+        when(orderService.findById(orderId)).thenReturn(order);
+        when(repository.findByUserId(customer.getId())).thenReturn(Optional.of(customerWallet));
+        InsufficientFundsException exception = assertThrows(InsufficientFundsException.class, () -> walletService.payFromWallet(orderId));
 
-        assertThrows(CouldNotUpdateException.class, () -> service.payOrder( 1));
+        assertTrue(exception.getMessage().contains("Insufficient funds"));
         verify(repository, never()).save(any());
+        verify(transactionService, never()).saveTransaction(any());
     }
 
     @Test
-    void findByUserId_shouldReturnWallet_whenExists() {
-        when(repository.findByUserId(1)).thenReturn(Optional.of(wallet));
-        Wallet result = service.findByUserId(1);
-        assertEquals(wallet, result);
+    void findByUserId_ShouldReturnWallet_WhenFound() {
+        Integer userId = 1;
+        Wallet wallet = new Wallet();
+        when(repository.findByUserId(userId)).thenReturn(Optional.of(wallet));
+        Wallet result = walletService.findByUserId(userId);
+        assertSame(wallet, result);
+        verify(repository).findByUserId(userId);
     }
 
     @Test
-    void findByUserId_shouldThrow_whenNotExists() {
-        when(repository.findByUserId(1)).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> service.findByUserId(1));
+    void findByUserId_ShouldThrow_WhenNotFound() {
+        Integer userId = 1;
+        when(repository.findByUserId(userId)).thenReturn(Optional.empty());
+        assertThrows(NoElementFoundException.class, () -> walletService.findByUserId(userId));
+        verify(repository).findByUserId(userId);
+    }
+
+    @Test
+    void getCurrentBalance_ShouldReturnBalance() {
+        Integer userId = 1;
+        Wallet wallet = new Wallet();
+        wallet.setBalance(250.0);
+        when(repository.findByUserId(userId)).thenReturn(Optional.of(wallet));
+        Double balance = walletService.getCurrentBalance(userId);
+        assertEquals(250.0, balance);
     }
 }

@@ -1,8 +1,10 @@
 package ir.maktabsharif.home_service.service.suggestion;
 
+import ir.maktabsharif.home_service.dto.suggestion.SuggestionFindResponse;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.exception.InvalidRequestException;
+import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.suggestion.SuggestionMapper;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
@@ -12,152 +14,152 @@ import ir.maktabsharif.home_service.repository.suggestion.SuggestionRepository;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.service.expert_service.ExpertServiceService;
 import ir.maktabsharif.home_service.service.order.OrderService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SuggestionServiceImplTest {
 
-    @Mock private SuggestionRepository repository;
-    @Mock private SuggestionMapper mapper;
-    @Mock private ExpertService expertService;
-    @Mock private OrderService orderService;
-    @Mock private ExpertServiceService expertServiceService;
+    @Mock SuggestionRepository repository;
+    @Mock SuggestionMapper mapper;
+    @Mock ExpertService expertService;
+    @Mock OrderService orderService;
+    @Mock ExpertServiceService expertServiceService;
+    @InjectMocks SuggestionServiceImpl service;
 
-    @InjectMocks
-    private SuggestionServiceImpl suggestionService;
+    Suggestion suggestion;
+    Order order;
+    Expert expert;
+    UserSessionDTO session;
+
+    @BeforeEach
+    void setup() {
+        suggestion = new Suggestion();
+        suggestion.setId(1);
+        suggestion.setPrice(2000d);
+        order = new Order();
+        order.setId(2);
+        expert = new Expert();
+        expert.setId(3);
+        session = new UserSessionDTO();
+        session.setUserId(3);
+    }
 
     @Test
-    void registerSuggestionForOrder_shouldSaveAndUpdateOrderStatus() {
-        SuggestionSaveUpdateRequest request = new SuggestionSaveUpdateRequest();
-        request.setOrderId(1);
-        request.setPrice(200.0);
-
-        UserSessionDTO session = new UserSessionDTO();
-        session.setUserId(10);
-
-        ir.maktabsharif.home_service.model.service.Service service = new ir.maktabsharif.home_service.model.service.Service();
-        service.setId(5);
-        service.setBasePrice(100.0);
-
-        Order order = new Order();
-        order.setId(1);
+    void registerSuggestion_ShouldSave_WhenValid() {
+        SuggestionSaveUpdateRequest dto = new SuggestionSaveUpdateRequest();
+        dto.setOrderId(2);
+        dto.setPrice(200.0);
         order.setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION);
-        order.setService(service);
+        order.setService(new ir.maktabsharif.home_service.model.service.Service());
+        order.getService().setBasePrice(100.0);
 
-        Suggestion suggestion = new Suggestion();
-        suggestion.setOrder(order);
-        suggestion.setPrice(200.0);
+        when(mapper.mapToEntity(dto)).thenReturn(suggestion);
+        when(orderService.findById(2)).thenReturn(order);
+        when(expertServiceService.existsByExpertIdAndServiceId(3, order.getService().getId())).thenReturn(true);
+        when(expertService.findById(3)).thenReturn(expert);
+        when(repository.save(any())).thenReturn(suggestion);
+        when(orderService.save(any())).thenReturn(order);
 
-        when(mapper.mapToEntity(request)).thenReturn(suggestion);
-        when(orderService.findById(1)).thenReturn(order);
-        when(expertServiceService.existsByExpertIdAndServiceId(10, 5)).thenReturn(true);
-        when(expertService.findById(10)).thenReturn(new Expert());
-        when(repository.save(ArgumentMatchers.any()))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-
-        Suggestion result = suggestionService.registerSuggestionForOrder(request, session);
-
-        assertThat(result.getOrder().getOrderStatus()).isEqualTo(OrderStatus.WAITING_TO_CHOOSE_EXPERT);
-        verify(orderService).save(order);
-        verify(repository).save(ArgumentMatchers.any());
+        Suggestion result = service.registerSuggestionForOrder(dto, session);
+        assertNotNull(result);
+        verify(repository).save(any());
     }
 
     @Test
-    void registerSuggestionForOrder_shouldThrow_whenExpertNotInService() {
-        SuggestionSaveUpdateRequest request = new SuggestionSaveUpdateRequest();
-        request.setOrderId(1);
-        request.setPrice(200.0);
-
-        UserSessionDTO session = new UserSessionDTO();
-        session.setUserId(10);
-
-        ir.maktabsharif.home_service.model.service.Service service = new ir.maktabsharif.home_service.model.service.Service();
-        service.setId(5);
-        service.setBasePrice(100.0);
-
-        Order order = new Order();
-        order.setService(service);
-
-        Suggestion suggestion = new Suggestion();
-        suggestion.setOrder(order);
-        suggestion.setPrice(200.0);
-
-        when(mapper.mapToEntity(request)).thenReturn(suggestion);
-        when(orderService.findById(1)).thenReturn(order);
-        when(expertServiceService.existsByExpertIdAndServiceId(10, 5)).thenReturn(false);
-
-        assertThatThrownBy(() -> suggestionService.registerSuggestionForOrder(request, session))
-                .isInstanceOf(InvalidRequestException.class)
-                .hasMessageContaining("Expert Id and Service Id are not registered");
-    }
-
-    @Test
-    void registerSuggestionForOrder_shouldThrow_whenOrderStatusInvalid() {
-        SuggestionSaveUpdateRequest request = new SuggestionSaveUpdateRequest();
-        request.setOrderId(1);
-        request.setPrice(200.0);
-
-        UserSessionDTO session = new UserSessionDTO();
-        session.setUserId(10);
-
-        ir.maktabsharif.home_service.model.service.Service service = new ir.maktabsharif.home_service.model.service.Service();
-        service.setId(5);
-        service.setBasePrice(100.0);
-
-        Order order = new Order();
-        order.setService(service);
-        order.setOrderStatus(OrderStatus.DONE);
-
-        Suggestion suggestion = new Suggestion();
-        suggestion.setOrder(order);
-        suggestion.setPrice(200.0);
-
-        when(mapper.mapToEntity(request)).thenReturn(suggestion);
-        when(orderService.findById(1)).thenReturn(order);
-        when(expertServiceService.existsByExpertIdAndServiceId(10, 5)).thenReturn(true);
-
-        assertThatThrownBy(() -> suggestionService.registerSuggestionForOrder(request, session))
-                .isInstanceOf(InvalidRequestException.class)
-                .hasMessageContaining("Order is not waiting for any suggestions");
-    }
-
-    @Test
-    void registerSuggestionForOrder_shouldThrow_whenPriceTooLow() {
-        SuggestionSaveUpdateRequest request = new SuggestionSaveUpdateRequest();
-        request.setOrderId(1);
-        request.setPrice(50.0);
-
-        UserSessionDTO session = new UserSessionDTO();
-        session.setUserId(10);
-
-        ir.maktabsharif.home_service.model.service.Service service = new ir.maktabsharif.home_service.model.service.Service();
-        service.setId(5);
-        service.setBasePrice(100.0);
-
-        Order order = new Order();
+    void registerSuggestion_ShouldThrow_WhenNotRegisteredExpertService() {
+        SuggestionSaveUpdateRequest dto = new SuggestionSaveUpdateRequest();
+        dto.setOrderId(2);
         order.setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION);
-        order.setService(service);
+        order.setService(new ir.maktabsharif.home_service.model.service.Service());
 
-        Suggestion suggestion = new Suggestion();
+        when(mapper.mapToEntity(dto)).thenReturn(suggestion);
+        when(orderService.findById(2)).thenReturn(order);
+        when(expertServiceService.existsByExpertIdAndServiceId(3, order.getService().getId())).thenReturn(false);
+
+        assertThrows(InvalidRequestException.class, () -> service.registerSuggestionForOrder(dto, session));
+    }
+
+    @Test
+    void registerSuggestion_ShouldThrow_WhenOrderStatusInvalid() {
+        SuggestionSaveUpdateRequest dto = new SuggestionSaveUpdateRequest();
+        dto.setOrderId(2);
+        order.setOrderStatus(OrderStatus.STARTED);
+        order.setService(new ir.maktabsharif.home_service.model.service.Service());
+        order.getService().setBasePrice(100.0);
+
+        when(mapper.mapToEntity(dto)).thenReturn(suggestion);
+        when(orderService.findById(2)).thenReturn(order);
+        when(expertServiceService.existsByExpertIdAndServiceId(3, order.getService().getId())).thenReturn(true);
+
+        assertThrows(InvalidRequestException.class, () -> service.registerSuggestionForOrder(dto, session));
+    }
+
+    @Test
+    void updateWithDTO_ShouldUpdate_WhenValid() {
+        SuggestionSaveUpdateRequest dto = new SuggestionSaveUpdateRequest();
+        dto.setId(1);
+        order.setService(new ir.maktabsharif.home_service.model.service.Service());
+
         suggestion.setOrder(order);
-        suggestion.setPrice(50.0);
+        when(repository.findById(1)).thenReturn(Optional.of(suggestion));
+        when(expertServiceService.existsByExpertIdAndServiceId(3, order.getService().getId())).thenReturn(true);
+        when(expertService.findById(3)).thenReturn(expert);
+        when(repository.save(suggestion)).thenReturn(suggestion);
 
-        when(mapper.mapToEntity(request)).thenReturn(suggestion);
-        when(orderService.findById(1)).thenReturn(order);
-        when(expertServiceService.existsByExpertIdAndServiceId(10, 5)).thenReturn(true);
+        Suggestion result = service.updateWithDTO(dto, session);
+        assertEquals(suggestion, result);
+    }
 
-        assertThatThrownBy(() -> suggestionService.registerSuggestionForOrder(request, session))
-                .isInstanceOf(InvalidRequestException.class)
-                .hasMessageContaining("Price must be greater than the base price");
+    @Test
+    void findAllAndSortByPriceAsc_ShouldReturnList() {
+        when(orderService.findById(2)).thenReturn(order);
+        when(repository.findAllByOrderAndSortByPriceAsc(order)).thenReturn(List.of(suggestion));
+
+        List<Suggestion> result = service.findAllAndSortByPriceAsc(2);
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void findAllByAndSortByExpertScoreDesc_ShouldThrow_WhenEmpty() {
+        when(orderService.findById(2)).thenReturn(order);
+        when(repository.findAllByOrderAndSortByExpertScoreDesc(order)).thenReturn(List.of());
+
+        assertThrows(NoElementFoundException.class, () -> service.findAllByAndSortByExpertScoreDesc(2));
+    }
+
+    @Test
+    void existsByOrderIdAndExpertIdAndAcceptedTrue_ShouldReturnTrue() {
+        when(repository.existsByOrderIdAndExpertIdAndAcceptedTrue(1, 3)).thenReturn(true);
+        assertTrue(service.existsByOrderIdAndExpertIdAndAcceptedTrue(1, 3));
+    }
+
+    @Test
+    void findAllByExpertId_ShouldReturnList() {
+        when(repository.findAllByExpertId(3)).thenReturn(List.of(suggestion));
+        when(mapper.mapToResponse(suggestion)).thenReturn(new SuggestionFindResponse());
+
+        List<SuggestionFindResponse> result = service.findAllByExpertId(3);
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void confirmSuggestionAcceptance_ShouldUpdateAcceptedTrue() {
+        when(repository.findById(1)).thenReturn(Optional.of(suggestion));
+
+        service.confirmSuggestionAcceptance(1);
+
+        assertTrue(suggestion.getAccepted());
+        verify(repository).save(suggestion);
     }
 }

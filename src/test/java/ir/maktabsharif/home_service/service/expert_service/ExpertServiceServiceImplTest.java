@@ -5,6 +5,7 @@ import ir.maktabsharif.home_service.exception.NoExpertFoundWithServiceException;
 import ir.maktabsharif.home_service.model.expert_service.ExpertService;
 import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.model.user.Expert;
+import ir.maktabsharif.home_service.repository.expert_service.ExpertServiceCriteriaRepository;
 import ir.maktabsharif.home_service.repository.expert_service.ExpertServiceRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +31,9 @@ class ExpertServiceServiceImplTest {
 
     @Mock
     private ir.maktabsharif.home_service.service.service.ServiceService serviceService;
+
+    @Mock
+    private ExpertServiceCriteriaRepository expertServiceCriteriaRepository;
 
     @InjectMocks
     private ExpertServiceServiceImpl service;
@@ -86,7 +90,6 @@ class ExpertServiceServiceImplTest {
     }
 
 
-
     @Test
     void findByExpertId_shouldThrow_whenListEmpty() {
         when(repository.findByExpertId(1)).thenReturn(Collections.emptyList());
@@ -120,6 +123,19 @@ class ExpertServiceServiceImplTest {
         assertSame(expertService, result);
     }
 
+    @Test
+    void findExpertIdsByServiceIds_ShouldReturnExpertIds() {
+        List<Integer> serviceIds = List.of(1, 2, 3);
+        List<Integer> expectedExpertIds = List.of(10, 20, 30);
+
+        when(expertServiceCriteriaRepository.findExpertIdsByServiceIds(serviceIds)).thenReturn(expectedExpertIds);
+
+        List<Integer> actualExpertIds = service.findExpertIdsByServiceIds(serviceIds);
+
+        assertEquals(expectedExpertIds, actualExpertIds);
+
+        verify(expertServiceCriteriaRepository).findExpertIdsByServiceIds(serviceIds);
+    }
 
     @Test
     void existsByExpertIdAndServiceId_shouldReturnTrueOrFalse() {
