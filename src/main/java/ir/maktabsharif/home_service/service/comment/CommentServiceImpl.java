@@ -59,7 +59,7 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
             expert.setScore(finalScore);
         }
         Expert saved = expertService.save(expert);
-        if (saved.getScore() <= 0) {
+        if (saved.getScore() < 0) {
             expertService.updateStatusToUnverified(saved.getId());
         }
         comment.setOrder(order);
