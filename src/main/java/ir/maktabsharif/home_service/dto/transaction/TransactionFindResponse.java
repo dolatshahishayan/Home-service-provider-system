@@ -1,5 +1,6 @@
 package ir.maktabsharif.home_service.dto.transaction;
 
+import ir.maktabsharif.home_service.model.enums.TransactionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,4 +17,5 @@ public class TransactionFindResponse {
     private Integer senderId;
     private Integer receiverId;
     private LocalDateTime timeStamp;
+    private TransactionStatus status;
 }

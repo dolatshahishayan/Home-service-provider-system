@@ -113,11 +113,9 @@ class WalletServiceImplTest {
 
         Wallet updatedWallet = walletService.payFromWallet(orderId);
 
-        // Assert balances updated correctly
         assertEquals(300.0, updatedWallet.getBalance());
         assertEquals(440.0, expertWallet.getBalance());
 
-        // Assert order status updated
         assertEquals(OrderStatus.PAYED, order.getOrderStatus());
 
         verify(repository, times(2)).save(any(Wallet.class));
@@ -143,12 +141,12 @@ class WalletServiceImplTest {
         customerWallet.setBalance(100.0);
 
         when(orderService.findById(orderId)).thenReturn(order);
+        doNothing().when(transactionService).saveTransaction(any(Transaction.class));
         when(repository.findByUserId(customer.getId())).thenReturn(Optional.of(customerWallet));
         InsufficientFundsException exception = assertThrows(InsufficientFundsException.class, () -> walletService.payFromWallet(orderId));
 
         assertTrue(exception.getMessage().contains("Insufficient funds"));
         verify(repository, never()).save(any());
-        verify(transactionService, never()).saveTransaction(any());
     }
 
     @Test
