@@ -3,6 +3,7 @@ package ir.maktabsharif.home_service.service.expert_service;
 import ir.maktabsharif.home_service.exception.ExpertAlreadyInServiceException;
 import ir.maktabsharif.home_service.exception.NoExpertFoundWithServiceException;
 import ir.maktabsharif.home_service.model.expert_service.ExpertService;
+import ir.maktabsharif.home_service.model.expert_service.ExpertServiceId;
 import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.expert_service.ExpertServiceCriteriaRepository;
@@ -80,13 +81,13 @@ class ExpertServiceServiceImplTest {
     @Test
     void removeExpertFromService_shouldDelete_whenExpertServiceExists() {
         ExpertService expertService = new ExpertService();
-        expertService.setId(10);
+        expertService.setId(new ExpertServiceId(1,2));
 
         when(repository.findByExpertIdAndServiceId(1, 2)).thenReturn(Optional.of(expertService));
 
         service.removeExpertFromService(1, 2);
 
-        verify(repository).deleteById(10);
+        verify(repository).delete(expertService);
     }
 
 
