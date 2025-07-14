@@ -43,21 +43,24 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
             throw new DuplicateInfoException("You have already registered a comment for this order!");
         }
 
-        if (order.getOrderStatus()!= OrderStatus.PAYED&&order.getOrderStatus()!=OrderStatus.DONE) {
+        if (order.getOrderStatus() != OrderStatus.PAYED) {
             throw new CouldNotUpdateException("You can't register any comments for this order because the order has not been finished yet!");
         }
-
+        long between = orderService.reduce1ScoreFromExpertPerHour(order);
         Comment comment = mapper.mapToEntity(commentSaveUpdateRequest);
         Expert expert = order.getExpert();
         Double commentScore = comment.getExpertScore();
+        Double finalScore = commentScore - between;
         if (expert.getScore() != null) {
             Double expertScore = expert.getScore();
-            Double finalScore = (expertScore + commentScore) / 2;
-            expert.setScore(finalScore);
-            expertService.save(expert);
+            Double finalExpertScore = (expertScore + commentScore) / 2;
+            expert.setScore(finalExpertScore);
         } else {
-            expert.setScore(commentScore);
-            expertService.save(expert);
+            expert.setScore(finalScore);
+        }
+        Expert saved = expertService.save(expert);
+        if (saved.getScore() <= 0) {
+            expertService.updateStatusToUnverified(saved.getId());
         }
         comment.setOrder(order);
         comment.setRegistrationDate(LocalDateTime.now());
@@ -84,7 +87,7 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
     }
 
     @Override
-    public double viewExpertAverageScore(Integer expertId){
+    public double viewExpertAverageScore(Integer expertId) {
         Expert expert = expertService.findById(expertId);
         return expert.getScore();
     }

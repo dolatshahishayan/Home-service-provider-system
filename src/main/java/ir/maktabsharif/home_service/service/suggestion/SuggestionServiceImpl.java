@@ -51,6 +51,7 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
         }
         suggestion.setCreationDate(LocalDateTime.now());
         suggestion.setExpert(expertService.findById(session.getUserId()));
+        suggestion.setAccepted(false);
         Suggestion save = save(suggestion);
         if (suggestion.getOrder().getOrderStatus().equals(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION)) {
             suggestion.getOrder().setOrderStatus(OrderStatus.WAITING_TO_CHOOSE_EXPERT);

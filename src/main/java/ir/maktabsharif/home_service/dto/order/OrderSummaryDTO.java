@@ -15,4 +15,5 @@ public class OrderSummaryDTO {
     private Integer serviceId;
     private Integer customerId;
     private LocalDateTime startDate;
+    private String address;
 }

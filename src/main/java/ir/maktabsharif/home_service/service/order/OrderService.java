@@ -26,7 +26,7 @@ public interface OrderService extends BaseService<Order, Integer> {
 
     Order updateStatusToDone(Integer orderId, UserSessionDTO currentUser);
 
-    void reduce1ScoreFromExpertPerHour(Integer orderId);
+    long reduce1ScoreFromExpertPerHour(Order order);
 
     List<Order> findByCustomerId(Integer customerId);
 

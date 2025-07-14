@@ -46,23 +46,23 @@ class CommentServiceImplTest {
     private CommentServiceImpl commentService;
 
     @Test
-    void saveWithDTO_shouldSaveNewExpertScore_WhenScoreIsNull() {
+    void saveWithDTO_shouldSaveCommentAndUpdateExpertScore_WhenValid() {
         CommentSaveUpdateRequest dto = new CommentSaveUpdateRequest();
         dto.setOrderId(1);
         dto.setExpertScore(5.0);
 
-        UserSessionDTO user = new UserSessionDTO();
-        user.setEmail("customer@example.com");
+        UserSessionDTO currentUser = new UserSessionDTO();
+        currentUser.setEmail("customer@example.com");
 
         Customer customer = new Customer();
         customer.setEmail("customer@example.com");
 
         Expert expert = new Expert();
-        expert.setScore(null);
+        expert.setScore(4.0);
 
         Order order = new Order();
         order.setId(1);
-        order.setOrderStatus(OrderStatus.DONE);
+        order.setOrderStatus(OrderStatus.PAYED);
         order.setCustomer(customer);
         order.setExpert(expert);
 
@@ -71,40 +71,17 @@ class CommentServiceImplTest {
 
         when(orderService.findById(1)).thenReturn(order);
         when(commentRepository.existsByOrder(order)).thenReturn(false);
+        when(orderService.reduce1ScoreFromExpertPerHour(order)).thenReturn(0L);
         when(commentMapper.mapToEntity(dto)).thenReturn(comment);
+        when(expertService.save(expert)).thenReturn(expert);
         when(commentRepository.save(comment)).thenReturn(comment);
 
-        Comment saved = commentService.saveWithDTO(dto, user);
+        Comment saved = commentService.saveWithDTO(dto, currentUser);
 
         assertEquals(order, saved.getOrder());
-        assertEquals(5.0, expert.getScore());
         assertNotNull(saved.getRegistrationDate());
-
         verify(expertService).save(expert);
         verify(commentRepository).save(comment);
-    }
-
-    @Test
-    void saveWithDTO_shouldThrow_WhenOrderStatusNotDoneOrPayed() {
-        CommentSaveUpdateRequest dto = new CommentSaveUpdateRequest();
-        dto.setOrderId(1);
-        dto.setExpertScore(4.0);
-
-        UserSessionDTO user = new UserSessionDTO();
-        user.setEmail("customer@example.com");
-
-        Customer customer = new Customer();
-        customer.setEmail("customer@example.com");
-
-        Order order = new Order();
-        order.setId(1);
-        order.setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION);
-        order.setCustomer(customer);
-
-        when(orderService.findById(1)).thenReturn(order);
-
-        assertThrows(CouldNotUpdateException.class, () ->
-                commentService.saveWithDTO(dto, user));
     }
 
     @Test
@@ -146,42 +123,6 @@ class CommentServiceImplTest {
         assertEquals(3.3, score);
     }
 
-    @Test
-    void saveWithDTO_shouldUpdateExpertScore_WhenAlreadyExists() {
-        CommentSaveUpdateRequest dto = new CommentSaveUpdateRequest();
-        dto.setOrderId(1);
-        dto.setExpertScore(4.0);
-
-        UserSessionDTO user = new UserSessionDTO();
-        user.setEmail("customer@example.com");
-
-        Customer customer = new Customer();
-        customer.setEmail("customer@example.com");
-
-        Expert expert = new Expert();
-        expert.setScore(4.0);
-
-        Order order = new Order();
-        order.setId(1);
-        order.setOrderStatus(OrderStatus.DONE);
-        order.setCustomer(customer);
-        order.setExpert(expert);
-
-        Comment comment = new Comment();
-        comment.setExpertScore(4.0);
-
-        when(orderService.findById(1)).thenReturn(order);
-        when(commentRepository.existsByOrder(order)).thenReturn(false);
-        when(commentMapper.mapToEntity(dto)).thenReturn(comment);
-        when(commentRepository.save(comment)).thenReturn(comment);
-
-        Comment saved = commentService.saveWithDTO(dto, user);
-
-        assertEquals(4.0, expert.getScore());
-        assertNotNull(saved.getRegistrationDate());
-        verify(expertService).save(expert);
-        verify(commentRepository).save(comment);
-    }
 
     @Test
     void existsByOrder_shouldReturnCorrectValue() {

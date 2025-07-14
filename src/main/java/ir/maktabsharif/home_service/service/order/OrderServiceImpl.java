@@ -3,13 +3,13 @@ package ir.maktabsharif.home_service.service.order;
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.order.OrderSummaryDTO;
+import ir.maktabsharif.home_service.dto.suggestion.SuggestionFindResponse;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
 import ir.maktabsharif.home_service.exception.InvalidRequestException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.order.OrderMapper;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
-import ir.maktabsharif.home_service.model.expert_service.ExpertService;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.model.user.Expert;
@@ -92,15 +92,14 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
 
     @Override
     public List<OrderSummaryDTO> findAllByExpertId(Integer expertId) {
-        List<ExpertService> expert_services = expert_ServiceService.findByExpertId(expertId);
+        List<SuggestionFindResponse> allOrderIdByExpertId = suggestionService.findAllByExpertId(expertId);
+       List<Order> orders=new ArrayList<>();
+       for (SuggestionFindResponse suggestionFindResponse : allOrderIdByExpertId) {
+               orders.add(findById(suggestionFindResponse.getOrderId()));
+       }
         List<OrderSummaryDTO> responses = new ArrayList<>();
-        for (ExpertService expert_service : expert_services) {
-            List<Order> byServiceId = findByServiceId(expert_service.getService().getId());
-            for (Order order : byServiceId) {
-                if (order.getExpert() == expertService.findById(expertId)) {
-                    responses.add(mapper.mapToSummary(order));
-                }
-            }
+        for (Order order : orders) {
+            responses.add(mapper.mapToSummary(order));
         }
         return responses;
     }
@@ -144,13 +143,11 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
 
     @Override
     public Order updateStatusToDone(Integer orderId, UserSessionDTO currentUser) {
-        reduce1ScoreFromExpertPerHour(orderId);
         return updateStatus(orderId, OrderStatus.DONE, currentUser);
     }
 
     @Override
-    public void reduce1ScoreFromExpertPerHour(Integer orderId) {
-        Order order = findById(orderId);
+    public long reduce1ScoreFromExpertPerHour(Order order) {
         Expert expert = expertService.findById(order.getExpert().getId());
         if (expert.getScore()==null){
             throw new InvalidRequestException("Expert has no score yet.");
@@ -158,19 +155,7 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
         if (!order.getStartDate().isBefore(LocalDateTime.now())) {
             throw new CouldNotUpdateException("It's not the order's date.");
         }
-        long between = ChronoUnit.HOURS.between(order.getStartDate(), LocalDateTime.now());
-        double newScore;
-        if (between >= 1) {
-            newScore = expert.getScore() - between;
-            if (newScore < 0) {
-                newScore = 0;
-            }
-            expert.setScore(newScore);
-        }
-        Expert updated = expertService.save(expert);
-        if (updated.getScore().equals(0D)) {
-            expertService.updateStatusToUnverified(expert.getId());
-        }
+        return ChronoUnit.HOURS.between(order.getStartDate(), LocalDateTime.now());
     }
 
     @Override
