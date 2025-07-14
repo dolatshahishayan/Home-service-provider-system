@@ -17,7 +17,7 @@ public class BaseServiceImpl<T,ID, R extends JpaRepository<T, ID>, M> implements
     }
 
     @Override
-    public void delete(ID id) {
+    public void deleteById(ID id) {
         repository.deleteById(id);
     }
 
@@ -30,5 +30,11 @@ public class BaseServiceImpl<T,ID, R extends JpaRepository<T, ID>, M> implements
     @Override
     public List<T> findAll() {
         return repository.findAll();
+    }
+
+
+    @Override
+    public void delete(T t) {
+        repository.delete(t);
     }
 }

@@ -12,8 +12,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExpertServiceSaveUpdateRequest {
-    @NotNull(groups = {ValidationGroup.Update.class})
-    private Integer id;
     @NotNull
     private Integer expertId;
     @NotNull

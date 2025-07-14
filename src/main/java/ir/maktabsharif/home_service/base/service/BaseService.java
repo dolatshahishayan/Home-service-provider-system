@@ -4,7 +4,8 @@ import java.util.List;
 
 public interface BaseService<T,ID> {
     T save(T t);
-    void delete(ID id);
+    void deleteById(ID id);
     T findById(ID id);
     List<T> findAll();
+    void delete(T t);
 }

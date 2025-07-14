@@ -67,12 +67,22 @@ class BaseServiceImplTest {
     }
 
     @Test
-    void testDelete() {
+    void testDeleteById() {
         doNothing().when(repository).deleteById(1);
 
-        service.delete(1);
+        service.deleteById(1);
 
         verify(repository).deleteById(1);
+    }
+
+    @Test
+    void testDelete() {
+        TestEntity entity = new TestEntity(1, "Ali");
+        doNothing().when(repository).delete(entity);
+
+        service.delete(entity);
+
+        verify(repository).delete(entity);
     }
 
     @Test

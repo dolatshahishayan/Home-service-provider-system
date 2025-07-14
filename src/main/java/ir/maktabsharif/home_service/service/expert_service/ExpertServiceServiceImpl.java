@@ -5,6 +5,7 @@ import ir.maktabsharif.home_service.exception.ExpertAlreadyInServiceException;
 import ir.maktabsharif.home_service.exception.NoExpertFoundWithServiceException;
 import ir.maktabsharif.home_service.mapper.expert_service.ExpertServiceMapper;
 import ir.maktabsharif.home_service.model.expert_service.ExpertService;
+import ir.maktabsharif.home_service.model.expert_service.ExpertServiceId;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.expert_service.ExpertServiceCriteriaRepository;
 import ir.maktabsharif.home_service.repository.expert_service.ExpertServiceRepository;
@@ -38,6 +39,7 @@ public class ExpertServiceServiceImpl extends BaseServiceImpl<ExpertService, Int
         ir.maktabsharif.home_service.model.service.Service service = serviceService.findById(serviceId);
 
         ExpertService expertService = new ExpertService();
+        expertService.setId(new ExpertServiceId(expertId, serviceId));
         expertService.setExpert(expert);
         expertService.setService(service);
         save(expertService);
@@ -49,7 +51,7 @@ public class ExpertServiceServiceImpl extends BaseServiceImpl<ExpertService, Int
         if (expertService == null) {
             throw new NoExpertFoundWithServiceException();
         }
-        delete(expertService.getId());
+        delete(expertService);
     }
 
     @Override
