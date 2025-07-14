@@ -53,7 +53,7 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
         Double finalScore = commentScore - between;
         if (expert.getScore() != null) {
             Double expertScore = expert.getScore();
-            Double finalExpertScore = (expertScore + commentScore) / 2;
+            Double finalExpertScore = (expertScore + finalScore) / 2;
             expert.setScore(finalExpertScore);
         } else {
             expert.setScore(finalScore);
