@@ -1,6 +1,5 @@
 package ir.maktabsharif.home_service.model.expert_service;
 
-import ir.maktabsharif.home_service.base.model.BaseEntity;
 import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.model.user.Expert;
 import jakarta.persistence.*;
