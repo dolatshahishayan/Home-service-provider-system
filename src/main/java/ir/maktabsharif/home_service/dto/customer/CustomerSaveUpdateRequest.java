@@ -25,6 +25,6 @@ public class CustomerSaveUpdateRequest {
     private String email;
     @NotBlank(groups = {ValidationGroup.Save.class})
     @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$",
-            message = "Password must be at least 8 characters long and contain both letters and numbers.")
+            message = "Password must be at least 8 characters long and contain both letters and numbers.",groups = {ValidationGroup.Save.class,ValidationGroup.Update.class})
     private String password;
 }
