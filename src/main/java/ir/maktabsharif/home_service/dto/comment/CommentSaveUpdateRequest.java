@@ -16,7 +16,7 @@ public class CommentSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.Update.class})
     private Integer id;
     private String context;
-    @NotNull
+    @NotNull(groups = {ValidationGroup.Save.class})
     @Min(1)
     @Max(5)
     private Double expertScore;

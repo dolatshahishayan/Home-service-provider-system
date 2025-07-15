@@ -26,7 +26,7 @@ public class OrderSaveUpdateRequest {
     private LocalDateTime startDate;
     @NotBlank(groups = {ValidationGroup.Save.class})
     private String address;
-    @NotNull
+    @NotNull(groups = {ValidationGroup.Save.class,ValidationGroup.Update.class})
     private Integer serviceId;
     private Integer expertId;
     private Double finalPrice;
