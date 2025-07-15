@@ -180,11 +180,11 @@ class OrderServiceImplTest {
     void testReduce1ScoreFromExpertPerHour_whenStartDateIsNotBeforeNow_shouldThrowCouldNotUpdateException() {
         Expert expert = new Expert();
         expert.setId(1);
-        expert.setScore(4.5); // Valid score
+        expert.setScore(4.5);
 
         Order order = new Order();
         order.setExpert(expert);
-        order.setStartDate(LocalDateTime.now().plusHours(1)); // Future date
+        order.setStartDate(LocalDateTime.now().plusHours(1));
 
         when(expertService.findById(1)).thenReturn(expert);
 
@@ -197,7 +197,7 @@ class OrderServiceImplTest {
     void testReduce1ScoreFromExpertPerHour_whenValid_shouldReturnCorrectHourDifference() {
         Expert expert = new Expert();
         expert.setId(1);
-        expert.setScore(5.0); // Valid score
+        expert.setScore(5.0);
 
         LocalDateTime startDate = LocalDateTime.now().minusHours(3);
 
@@ -209,7 +209,7 @@ class OrderServiceImplTest {
 
         long result = orderService.reduce1ScoreFromExpertPerHour(order);
 
-        assertEquals(3L, result); // 3 hours difference
+        assertEquals(3L, result);
     }
 
     @Test
@@ -265,13 +265,10 @@ class OrderServiceImplTest {
 
     @Test
     void testFindAllByExpertId_whenNoSuggestions_shouldReturnEmptyList() {
-        // Arrange
         when(suggestionService.findAllByExpertId(anyInt())).thenReturn(Collections.emptyList());
 
-        // Act
         List<OrderSummaryDTO> result = orderService.findAllByExpertId(1);
 
-        // Assert
         assertTrue(result.isEmpty());
         verify(suggestionService).findAllByExpertId(1);
         verifyNoInteractions(repository);
