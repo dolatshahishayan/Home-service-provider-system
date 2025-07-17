@@ -8,8 +8,8 @@ import ir.maktabsharif.home_service.mapper.transaction.TransactionMapper;
 import ir.maktabsharif.home_service.model.transaction.Transaction;
 import ir.maktabsharif.home_service.repository.transaction.TransactionRepository;
 import ir.maktabsharif.home_service.service.user.UserService;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

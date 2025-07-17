@@ -15,9 +15,9 @@ import ir.maktabsharif.home_service.service.order.OrderService;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
 import ir.maktabsharif.home_service.service.transaction.TransactionService;
 import ir.maktabsharif.home_service.service.user.UserService;
-import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional

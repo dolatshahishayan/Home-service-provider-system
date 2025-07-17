@@ -18,8 +18,8 @@ import ir.maktabsharif.home_service.service.customer.CustomerService;
 import ir.maktabsharif.home_service.service.expert_service.ExpertServiceService;
 import ir.maktabsharif.home_service.service.service.ServiceService;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;

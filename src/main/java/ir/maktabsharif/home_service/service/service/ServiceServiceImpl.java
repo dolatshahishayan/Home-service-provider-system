@@ -7,7 +7,7 @@ import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.service.ServiceMapper;
 import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.repository.service.ServiceRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 

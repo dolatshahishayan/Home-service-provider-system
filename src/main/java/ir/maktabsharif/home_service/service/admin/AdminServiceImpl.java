@@ -9,8 +9,8 @@ import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.user.Admin;
 import ir.maktabsharif.home_service.repository.admin.AdminRepository;
 import ir.maktabsharif.home_service.service.user.UserService;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 

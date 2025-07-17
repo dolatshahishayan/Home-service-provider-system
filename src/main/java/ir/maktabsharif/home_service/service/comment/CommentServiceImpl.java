@@ -14,8 +14,8 @@ import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.comment.CommentRepository;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.service.order.OrderService;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
