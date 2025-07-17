@@ -7,9 +7,7 @@ import ir.maktabsharif.home_service.exception.NoUserFoundWithGivenCredentialsExc
 import ir.maktabsharif.home_service.exception.UserWithSameEmailExistsException;
 import ir.maktabsharif.home_service.mapper.customer.CustomerMapper;
 import ir.maktabsharif.home_service.model.enums.Role;
-import ir.maktabsharif.home_service.model.token.EmailVerificationToken;
 import ir.maktabsharif.home_service.model.user.Customer;
-import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.repository.customer.CustomerRepository;
 import ir.maktabsharif.home_service.service.email.EmailService;
 import ir.maktabsharif.home_service.service.user.UserService;
@@ -56,15 +54,6 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
         return repository.findAll(spec);
     }
 
-    @Override
-    public void sendVerificationEmail(User user, EmailVerificationToken token) {
-        String link = "http://your-domain.com/api/auth/verify-email?token=" + token.getToken();
-        String subject = "Confirm your email address";
-        String body = "Hi " + user.getFirstName() + ",\n\nPlease confirm your email by clicking the link below:\n" + link +
-                "\n\nThis link will expire in 60 minutes.";
-
-        emailService.sendVerificationEmail(user.getEmail(), subject, body);
-    }
 
     @Override
     public Customer register(CustomerSaveUpdateRequest customerSaveUpdateRequest) {
