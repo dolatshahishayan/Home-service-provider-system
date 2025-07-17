@@ -71,8 +71,16 @@
             return;
         }
 
-        grecaptcha.execute('6LcWs34rAAAAAGeYuBlMjOzjyQ9gVxkzCwVsh5rI', {action: 'submit'}).then(async function (token) {
-            console.log("✅ reCAPTCHA token:", token);
+        const jwtToken = localStorage.getItem('token');
+        console.log("Sending request with JWT:", jwtToken);
+
+        if (!jwtToken) {
+            alert("ابتدا وارد حساب کاربری شوید.");
+            window.location.href = "/login.html";
+            return;
+        }
+
+        grecaptcha.execute('6LcWs34rAAAAAGeYuBlMjOzjyQ9gVxkzCwVsh5rI', {action: 'submit'}).then(async function (recaptchaToken) {
             const formData = new FormData(e.target);
             const payload = {
                 amount: parseFloat(formData.get("amount")),
@@ -80,22 +88,32 @@
                 cvv2: formData.get("cvv2"),
                 expirationDate: formData.get("expirationDate"),
                 otp: formData.get("otp"),
-                recaptcha: token,
+                recaptcha: recaptchaToken,
                 clientTimeLeft: timeLeft
             };
 
-            const response = await fetch("/api/v1/wallets/add-credit-to-wallet", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify(payload)
-            });
+            try {
+                const response = await fetch("/api/v1/wallets/add-credit-to-wallet", {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + jwtToken
+                    },
+                    body: JSON.stringify(payload)
+                });
 
-            if (response.ok) {
-                alert("شارژ کیف پول با موفقیت انجام شد.");
-            } else {
-                const error = await response.text();
-                alert("خطا در شارژ کیف پول: " + error);
+                if (response.ok) {
+                    alert("شارژ کیف پول با موفقیت انجام شد.");
+                } else if (response.status === 401) {
+                    alert("دسترسی غیرمجاز! لطفاً دوباره وارد شوید.");
+                    localStorage.removeItem('token');
+                    window.location.href = "/login.html";
+                } else {
+                    const error = await response.text();
+                    alert("خطا در شارژ کیف پول: " + error);
+                }
+            } catch (err) {
+                alert("خطا در ارتباط با سرور.");
             }
         });
     });

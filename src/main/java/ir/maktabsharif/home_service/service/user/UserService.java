@@ -16,4 +16,6 @@ public interface UserService extends BaseService<User, Integer> {
     User findByEmailAndPassword(LoginDTO loginDTO);
 
     List<UserSearchResponseDTO> searchUsers(UserSearchRequestDTO userSearchRequestDTO);
+
+    User findByEmail(String email);
 }

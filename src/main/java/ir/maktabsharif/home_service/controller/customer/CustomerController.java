@@ -9,12 +9,16 @@ import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.mapper.customer.CustomerMapper;
 import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.user.Customer;
+import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.service.customer.CustomerService;
+import ir.maktabsharif.home_service.service.jwt.JwtService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/customers")
@@ -24,21 +28,21 @@ public class CustomerController {
 
     private final CustomerService customerService;
     private final CustomerMapper customerMapper;
-
+    private final JwtService jwtService;
 
     @PostMapping("/save")
     @Operation(summary = "Save customer", description = "Save method for customer")
-    public ResponseEntity<CustomerFindResponse> saveCustomer(@RequestBody @Validated(ValidationGroup.Save.class) CustomerSaveUpdateRequest customer, HttpSession session) {
+    public ResponseEntity<Map<String, String>> saveCustomer(@RequestBody @Validated(ValidationGroup.Save.class) CustomerSaveUpdateRequest customer) {
         Customer register = customerService.register(customer);
-        session.setAttribute("currentUser", new UserSessionDTO(register.getId(), register.getEmail(), Role.CUSTOMER));
-        return ResponseEntity.ok(customerMapper.mapToResponse(register));
+        String token = jwtService.generateToken(new UserDetailsImpl(register));
+        return ResponseEntity.ok(Map.of("token", token));
     }
 
     @PutMapping("/update")
     @Operation(summary = "Update customer", description = "Update method for customer")
     public ResponseEntity<CustomerFindResponse> updateCustomer(@RequestBody @Validated(ValidationGroup.Update.class) CustomerSaveUpdateRequest customer, HttpSession session) {
         Customer updated = customerService.updateWithDTO(customer);
-        session.setAttribute("currentUser", new UserSessionDTO(updated.getId(), updated.getEmail(), Role.CUSTOMER));
+        session.setAttribute("currentUser", new UserSessionDTO(updated.getId(), updated.getEmail(), Role.ROLE_CUSTOMER));
         return ResponseEntity.ok(customerMapper.mapToResponse(updated));
     }
 

@@ -14,6 +14,7 @@ import ir.maktabsharif.home_service.service.email.EmailService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,11 +27,14 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
     protected final UserService userService;
     protected final WalletService walletService;
     protected final EmailService emailService;
-    public CustomerServiceImpl(CustomerRepository repository, CustomerMapper customerMapper, UserService userService, WalletService walletService, EmailService emailService) {
+    protected final PasswordEncoder passwordEncoder;
+
+    public CustomerServiceImpl(CustomerRepository repository, CustomerMapper customerMapper, UserService userService, WalletService walletService, EmailService emailService, PasswordEncoder passwordEncoder) {
         super(repository, customerMapper);
         this.userService = userService;
         this.walletService = walletService;
         this.emailService = emailService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -40,6 +44,9 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
         }
         Customer byId = findById(customerSaveUpdateRequest.getId());
         mapper.updateEntityWithDTO(customerSaveUpdateRequest, byId);
+        if (customerSaveUpdateRequest.getPassword() != null) {
+            byId.setPassword(passwordEncoder.encode(customerSaveUpdateRequest.getPassword()));
+        }
         byId.setEmail(customerSaveUpdateRequest.getEmail().toLowerCase());
         return save(byId);
     }
@@ -61,7 +68,8 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
             throw new UserWithSameEmailExistsException();
         }
         Customer customer = mapper.mapToEntity(customerSaveUpdateRequest);
-        customer.setRole(Role.CUSTOMER);
+        customer.setRole(Role.ROLE_CUSTOMER);
+        customer.setPassword(passwordEncoder.encode(customerSaveUpdateRequest.getPassword()));
         customer.setEmail(customerSaveUpdateRequest.getEmail().toLowerCase());
         customer.setRegistrationDate(LocalDateTime.now());
         customer.setEnabled(false);

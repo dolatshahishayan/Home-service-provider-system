@@ -29,7 +29,7 @@ public class AdminController {
     @Operation(summary = "Save admin",description = "Save method for admin")
     public ResponseEntity<AdminFindResponse> saveAdmin(@RequestBody @Validated(ValidationGroup.Save.class) AdminSaveUpdateRequest adminSaveUpdateRequest, HttpSession session) {
         Admin admin = adminService.saveWithDTO(adminSaveUpdateRequest);
-        session.setAttribute("currentUser", new UserSessionDTO(admin.getId(), admin.getEmail(), Role.ADMIN));
+        session.setAttribute("currentUser", new UserSessionDTO(admin.getId(), admin.getEmail(), Role.ROLE_ADMIN));
         return ResponseEntity.ok(adminMapper.mapToResponse(admin));
     }
 
@@ -37,7 +37,7 @@ public class AdminController {
     @Operation(summary = "Update admin",description = "Update method for admin")
     public ResponseEntity<AdminFindResponse> update(@RequestBody @Validated(ValidationGroup.Update.class) AdminSaveUpdateRequest adminSaveUpdateRequest, HttpSession session){
         Admin admin = adminService.updateWithDTO(adminSaveUpdateRequest);
-        session.setAttribute("currentUser", new UserSessionDTO(admin.getId(), admin.getEmail(),Role.ADMIN));
+        session.setAttribute("currentUser", new UserSessionDTO(admin.getId(), admin.getEmail(),Role.ROLE_ADMIN));
         return ResponseEntity.ok(adminMapper.mapToResponse(admin));
     }
 }

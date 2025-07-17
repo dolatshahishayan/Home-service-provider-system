@@ -10,6 +10,7 @@ import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.model.user.User;
+import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.repository.user.UserRepository;
 import ir.maktabsharif.home_service.service.customer.CustomerService;
 import ir.maktabsharif.home_service.service.expert_service.ExpertServiceService;
@@ -17,6 +18,9 @@ import ir.maktabsharif.home_service.util.specification.CustomerSpecification;
 import ir.maktabsharif.home_service.util.specification.ExpertSpecification;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +29,7 @@ import java.util.List;
 
 @Service
 @Transactional
-public class UserServiceImpl extends BaseServiceImpl<User, Integer, UserRepository, UserMapper> implements UserService {
+public class UserServiceImpl extends BaseServiceImpl<User, Integer, UserRepository, UserMapper> implements UserService, UserDetailsService {
     protected final ExpertServiceService expertServiceService;
     protected final ir.maktabsharif.home_service.service.expert.ExpertService expertService;
     protected final CustomerService customerService;
@@ -59,7 +63,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Integer, UserReposito
 
         boolean hasExpertFilters = (userSearchRequestDTO.getServiceIds() != null && !userSearchRequestDTO.getServiceIds().isEmpty()) || userSearchRequestDTO.getMinScore() != null || userSearchRequestDTO.getMaxScore() != null;
 
-        if (userSearchRequestDTO.getRole() == Role.EXPERT || (userSearchRequestDTO.getRole() == null && hasExpertFilters)) {
+        if (userSearchRequestDTO.getRole() == Role.ROLE_EXPERT || (userSearchRequestDTO.getRole() == null && hasExpertFilters)) {
             List<Integer> expertIds = expertServiceService.findExpertIdsByServiceIds(userSearchRequestDTO.getServiceIds());
 
             Specification<Expert> expertSpec = (_, _, cb) -> cb.conjunction();
@@ -79,7 +83,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Integer, UserReposito
             }
         }
 
-        if (userSearchRequestDTO.getRole() == Role.CUSTOMER || (userSearchRequestDTO.getRole() == null && !hasExpertFilters)) {
+        if (userSearchRequestDTO.getRole() == Role.ROLE_CUSTOMER || (userSearchRequestDTO.getRole() == null && !hasExpertFilters)) {
             Specification<Customer> customerSpec = CustomerSpecification.nameContains(userSearchRequestDTO.getName());
             List<Customer> customers = customerService.findAll(customerSpec);
             for (Customer customer : customers) {
@@ -89,4 +93,14 @@ public class UserServiceImpl extends BaseServiceImpl<User, Integer, UserReposito
         return results;
     }
 
+    @Override
+    public User findByEmail(String email) {
+        return repository.findByEmail(email).orElseThrow(NoUserFoundWithGivenCredentialsException::new);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = repository.findByEmail(username).orElseThrow(NoUserFoundWithGivenCredentialsException::new);
+        return new UserDetailsImpl(user);
+    }
 }

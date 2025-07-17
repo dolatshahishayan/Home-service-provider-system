@@ -129,7 +129,7 @@ class OrderServiceImplTest {
         o.setStartDate(LocalDateTime.now().plusHours(1));
         o.setCustomer(customer);
         when(repository.findById(1)).thenReturn(Optional.of(o));
-        assertThrows(CouldNotUpdateException.class, () -> orderService.updateStatusToStarted(1, new UserSessionDTO(customer.getId(),"a@b.com", Role.CUSTOMER)));
+        assertThrows(CouldNotUpdateException.class, () -> orderService.updateStatusToStarted(1, new UserSessionDTO(customer.getId(),"a@b.com", Role.ROLE_CUSTOMER)));
     }
 
     @Test

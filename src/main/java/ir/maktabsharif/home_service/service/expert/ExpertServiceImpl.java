@@ -18,6 +18,7 @@ import ir.maktabsharif.home_service.service.wallet.WalletService;
 import ir.maktabsharif.home_service.util.ImageUtil;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,14 +33,16 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
     protected final ImageUtil imageUtil;
     protected final OrderService orderService;
     protected final EmailService emailService;
+    protected final PasswordEncoder passwordEncoder;
 
-    public ExpertServiceImpl(ExpertRepository repository, ExpertMapper expertMapper, UserService userService, WalletService walletService, ImageUtil imageUtil, @Lazy OrderService orderService, EmailService emailService) {
+    public ExpertServiceImpl(ExpertRepository repository, ExpertMapper expertMapper, UserService userService, WalletService walletService, ImageUtil imageUtil, @Lazy OrderService orderService, EmailService emailService, PasswordEncoder passwordEncoder) {
         super(repository, expertMapper);
         this.userService = userService;
         this.walletService = walletService;
         this.imageUtil = imageUtil;
         this.orderService = orderService;
         this.emailService = emailService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -82,8 +85,9 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
     }
 
     private Expert getExpert(ExpertSaveUpdateRequest expertSaveUpdateRequest, Expert expert) {
-        expert.setRole(Role.EXPERT);
+        expert.setRole(Role.ROLE_EXPERT);
         expert.setEmail(expertSaveUpdateRequest.getEmail().toLowerCase());
+        expert.setPassword(passwordEncoder.encode(expertSaveUpdateRequest.getPassword()));
         expert.setRegistrationDate(LocalDateTime.now());
         save(expert);
         EmailVerificationToken token = emailService.createToken(expert, 60);
@@ -108,7 +112,7 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
     }
 
     @Override
-    public Expert updateWithDTO(ExpertSaveUpdateRequest expertSaveUpdateRequest,String imagePath) {
+    public Expert updateWithDTO(ExpertSaveUpdateRequest expertSaveUpdateRequest, String imagePath) {
         Expert expert = findById(expertSaveUpdateRequest.getId());
         if (userService.existsByEmailAndIdNot(expertSaveUpdateRequest.getEmail(), expertSaveUpdateRequest.getId())) {
             throw new UserWithSameEmailExistsException();
@@ -116,7 +120,7 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
         if (orderService.existsBySpecialistAndOrderStatusIn(expert.getId(), List.of(OrderStatus.WAITING_FOR_EXPERT_TO_VISIT, OrderStatus.STARTED))) {
             throw new ExpertHasAnActiveOrderException();
         }
-        if (imagePath!=null) {
+        if (imagePath != null) {
             byte[] bytesForExpert = imageUtil.getBytesForExpert(imagePath);
             if (!imagePath.endsWith(".jpg")) {
                 throw new ImageFormatException("Image format should be jpg");
@@ -127,6 +131,9 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
             expert.setProfilePictureData(bytesForExpert);
         }
         mapper.updateEntityWithDTO(expertSaveUpdateRequest, expert);
+        if (expert.getPassword() != null) {
+            expert.setPassword(passwordEncoder.encode(expertSaveUpdateRequest.getPassword()));
+        }
         expert.setEmail(expertSaveUpdateRequest.getEmail().toLowerCase());
         expert.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);
         return save(expert);

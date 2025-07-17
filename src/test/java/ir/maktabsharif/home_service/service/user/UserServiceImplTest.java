@@ -132,7 +132,7 @@ class UserServiceImplTest {
     @Test
     void searchUsers_ShouldReturnCustomers_WhenRoleIsCustomer() {
         UserSearchRequestDTO request = new UserSearchRequestDTO();
-        request.setRole(Role.CUSTOMER);
+        request.setRole(Role.ROLE_CUSTOMER);
         request.setName("Alice");
 
         Customer customer1 = new Customer();

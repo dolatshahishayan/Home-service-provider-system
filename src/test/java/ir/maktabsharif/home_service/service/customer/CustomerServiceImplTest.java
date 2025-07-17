@@ -96,7 +96,7 @@ class CustomerServiceImplTest {
         Customer result = customerService.register(dto);
 
         assertNotNull(result.getRegistrationDate());
-        assertEquals(Role.CUSTOMER, result.getRole());
+        assertEquals(Role.ROLE_CUSTOMER, result.getRole());
         verify(customerRepository).save(customer);
         verify(walletService).saveWithDTO(any(WalletSaveUpdateRequest.class));
     }

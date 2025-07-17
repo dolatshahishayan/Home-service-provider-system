@@ -29,7 +29,7 @@ public class ExpertController {
     @Operation(summary = "Save expert", description = "Save method for expert")
     public ResponseEntity<ExpertFindResponse> saveExpert(@RequestBody @Validated(ValidationGroup.Save.class) ExpertSaveUpdateRequest expert, @RequestParam(required = false) String imagePath, HttpSession session) {
         Expert register = expertService.register(expert, imagePath);
-        session.setAttribute("currentUser", new UserSessionDTO(register.getId(), register.getEmail(), Role.EXPERT));
+        session.setAttribute("currentUser", new UserSessionDTO(register.getId(), register.getEmail(), Role.ROLE_EXPERT));
         return ResponseEntity.ok(expertMapper.mapToResponse(register));
     }
 
@@ -44,7 +44,7 @@ public class ExpertController {
     @Operation(summary = "Update expert", description = "Update method for expert")
     public ResponseEntity<ExpertFindResponse> update(@RequestBody @Validated(ValidationGroup.Update.class) ExpertSaveUpdateRequest expertSaveUpdateRequest, @RequestParam(required = false) String imagePath, HttpSession session) {
         Expert expert = expertService.updateWithDTO(expertSaveUpdateRequest, imagePath);
-        session.setAttribute("currentUser", new UserSessionDTO(expert.getId(), expert.getEmail(), Role.EXPERT));
+        session.setAttribute("currentUser", new UserSessionDTO(expert.getId(), expert.getEmail(), Role.ROLE_EXPERT));
         return ResponseEntity.ok(expertMapper.mapToResponse(expert));
     }
 
