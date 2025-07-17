@@ -25,11 +25,9 @@
 
 <script>
     const form = document.getElementById('login-form');
-    console.log("Form loaded:", form);
     const message = document.getElementById('message');
 
     form.addEventListener('submit', async function (e) {
-        console.log("Submit event fired");
         e.preventDefault();
 
         const email = document.getElementById('email').value;
@@ -44,15 +42,13 @@
 
             if (response.ok) {
                 const data = await response.json();
-                console.log("Received JWT Token:", data.token);
                 localStorage.setItem('token', data.token);
                 window.location.href = 'payment.html';
             } else {
                 console.log("Login failed with status:", response.status);
-                message.textContent = 'Login failed. Please check your credentials.';
+                message.textContent = 'Login failed.';
             }
         } catch (error) {
-            console.log("Fetch error:", error);
             message.textContent = 'Error connecting to server.';
         }
     });
