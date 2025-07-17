@@ -16,6 +16,6 @@ public class TransactionFindResponse {
     private Double amount;
     private Integer senderId;
     private Integer receiverId;
-    private LocalDateTime timeStamp;
+    private LocalDateTime timestamp;
     private TransactionStatus status;
 }
