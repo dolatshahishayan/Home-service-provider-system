@@ -12,4 +12,5 @@ public class CustomerFindResponse {
     private Integer id;
     private String firstName;
     private String lastName;
+    private Boolean isVerified;
 }

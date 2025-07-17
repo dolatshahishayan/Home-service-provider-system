@@ -7,13 +7,16 @@ import ir.maktabsharif.home_service.exception.NoUserFoundWithGivenCredentialsExc
 import ir.maktabsharif.home_service.exception.UserWithSameEmailExistsException;
 import ir.maktabsharif.home_service.mapper.customer.CustomerMapper;
 import ir.maktabsharif.home_service.model.enums.Role;
+import ir.maktabsharif.home_service.model.token.EmailVerificationToken;
 import ir.maktabsharif.home_service.model.user.Customer;
+import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.repository.customer.CustomerRepository;
+import ir.maktabsharif.home_service.service.email.EmailService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
-import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,11 +26,13 @@ import java.util.List;
 public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, CustomerRepository, CustomerMapper> implements CustomerService {
     protected final UserService userService;
     protected final WalletService walletService;
+    protected final EmailService emailService;
 
-    public CustomerServiceImpl(CustomerRepository repository, CustomerMapper customerMapper, UserService userService, WalletService walletService) {
+    public CustomerServiceImpl(CustomerRepository repository, CustomerMapper customerMapper, UserService userService, WalletService walletService, EmailService emailService) {
         super(repository, customerMapper);
         this.userService = userService;
         this.walletService = walletService;
+        this.emailService = emailService;
     }
 
     @Override
@@ -43,12 +48,22 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
 
     @Override
     public Customer findByEmail(String email) {
-       return repository.findByEmail(email).orElseThrow(NoUserFoundWithGivenCredentialsException::new);
+        return repository.findByEmail(email).orElseThrow(NoUserFoundWithGivenCredentialsException::new);
     }
 
     @Override
     public List<Customer> findAll(Specification<Customer> spec) {
         return repository.findAll(spec);
+    }
+
+    @Override
+    public void sendVerificationEmail(User user, EmailVerificationToken token) {
+        String link = "http://your-domain.com/api/auth/verify-email?token=" + token.getToken();
+        String subject = "Confirm your email address";
+        String body = "Hi " + user.getFirstName() + ",\n\nPlease confirm your email by clicking the link below:\n" + link +
+                "\n\nThis link will expire in 60 minutes.";
+
+        emailService.sendVerificationEmail(user.getEmail(), subject, body);
     }
 
     @Override
@@ -60,6 +75,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
         customer.setRole(Role.CUSTOMER);
         customer.setEmail(customerSaveUpdateRequest.getEmail().toLowerCase());
         customer.setRegistrationDate(LocalDateTime.now());
+        customer.setIsVerified(false);
         save(customer);
         Customer byEmail = findByEmail(customer.getEmail());
         WalletSaveUpdateRequest walletSaveUpdateRequest = new WalletSaveUpdateRequest();

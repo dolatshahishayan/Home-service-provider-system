@@ -10,8 +10,8 @@ import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.expert_service.ExpertServiceCriteriaRepository;
 import ir.maktabsharif.home_service.repository.expert_service.ExpertServiceRepository;
 import ir.maktabsharif.home_service.service.service.ServiceService;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 

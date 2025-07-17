@@ -14,10 +14,10 @@ import ir.maktabsharif.home_service.service.order.OrderService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
 import ir.maktabsharif.home_service.util.ImageUtil;
-import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -69,9 +69,11 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
             }
             expert.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);
             expert.setProfilePictureData(bytesForExpert);
+            expert.setIsVerified(false);
             return getExpert(expertSaveUpdateRequest, expert);
         }
         expert.setExpertStatus(ExpertStatus.NEW);
+        expert.setIsVerified(false);
         return getExpert(expertSaveUpdateRequest, expert);
     }
 

@@ -2,7 +2,9 @@ package ir.maktabsharif.home_service.service.customer;
 
 import ir.maktabsharif.home_service.base.service.BaseService;
 import ir.maktabsharif.home_service.dto.customer.CustomerSaveUpdateRequest;
+import ir.maktabsharif.home_service.model.token.EmailVerificationToken;
 import ir.maktabsharif.home_service.model.user.Customer;
+import ir.maktabsharif.home_service.model.user.User;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
@@ -12,4 +14,5 @@ public interface CustomerService extends BaseService<Customer,Integer> {
     Customer updateWithDTO(CustomerSaveUpdateRequest customerSaveUpdateRequest);
     Customer findByEmail(String email);
     List<Customer> findAll(Specification<Customer> spec);
+    void sendVerificationEmail(User user, EmailVerificationToken token);
 }
