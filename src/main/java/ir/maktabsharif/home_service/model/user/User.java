@@ -24,5 +24,5 @@ public class User extends BaseEntity {
     private LocalDateTime registrationDate;
     @Enumerated(EnumType.STRING)
     private Role role;
-    private Boolean isVerified;
+    private Boolean enabled;
 }

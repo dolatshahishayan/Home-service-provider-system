@@ -8,8 +8,10 @@ import ir.maktabsharif.home_service.mapper.expert.ExpertMapper;
 import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.enums.Role;
+import ir.maktabsharif.home_service.model.token.EmailVerificationToken;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.expert.ExpertRepository;
+import ir.maktabsharif.home_service.service.email.EmailService;
 import ir.maktabsharif.home_service.service.order.OrderService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
@@ -29,13 +31,15 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
     protected final WalletService walletService;
     protected final ImageUtil imageUtil;
     protected final OrderService orderService;
+    protected final EmailService emailService;
 
-    public ExpertServiceImpl(ExpertRepository repository, ExpertMapper expertMapper, UserService userService, WalletService walletService, ImageUtil imageUtil, @Lazy OrderService orderService) {
+    public ExpertServiceImpl(ExpertRepository repository, ExpertMapper expertMapper, UserService userService, WalletService walletService, ImageUtil imageUtil, @Lazy OrderService orderService, EmailService emailService) {
         super(repository, expertMapper);
         this.userService = userService;
         this.walletService = walletService;
         this.imageUtil = imageUtil;
         this.orderService = orderService;
+        this.emailService = emailService;
     }
 
     @Override
@@ -69,11 +73,11 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
             }
             expert.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);
             expert.setProfilePictureData(bytesForExpert);
-            expert.setIsVerified(false);
+            expert.setEnabled(false);
             return getExpert(expertSaveUpdateRequest, expert);
         }
         expert.setExpertStatus(ExpertStatus.NEW);
-        expert.setIsVerified(false);
+        expert.setEnabled(false);
         return getExpert(expertSaveUpdateRequest, expert);
     }
 
@@ -82,6 +86,9 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
         expert.setEmail(expertSaveUpdateRequest.getEmail().toLowerCase());
         expert.setRegistrationDate(LocalDateTime.now());
         save(expert);
+        EmailVerificationToken token = emailService.createToken(expert, 60);
+        String link = emailService.buildFrontendVerificationLink(token);
+        emailService.sendVerificationEmail(expert.getEmail(), expert.getFirstName(), link);
         Expert byEmail = findByEmail(expert.getEmail());
         WalletSaveUpdateRequest walletSaveUpdateRequest = new WalletSaveUpdateRequest();
         walletSaveUpdateRequest.setUserId(byEmail.getId());

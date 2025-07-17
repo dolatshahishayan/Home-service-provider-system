@@ -78,7 +78,7 @@ public class EmailServiceImpl implements EmailService {
         }
 
         User user = token.getUser();
-        user.setIsVerified(true);
+        user.setEnabled(true);
         userService.save(user);
         token.setUsed(true);
         emailVerificationTokenRepository.save(token);

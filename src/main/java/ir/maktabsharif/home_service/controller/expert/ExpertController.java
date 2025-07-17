@@ -8,9 +8,7 @@ import ir.maktabsharif.home_service.dto.expert.ExpertSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.mapper.expert.ExpertMapper;
 import ir.maktabsharif.home_service.model.enums.Role;
-import ir.maktabsharif.home_service.model.token.EmailVerificationToken;
 import ir.maktabsharif.home_service.model.user.Expert;
-import ir.maktabsharif.home_service.service.email.EmailService;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -26,15 +24,11 @@ public class ExpertController {
 
     private final ExpertService expertService;
     private final ExpertMapper expertMapper;
-    private final EmailService emailService;
 
     @PostMapping("/save")
     @Operation(summary = "Save expert", description = "Save method for expert")
     public ResponseEntity<ExpertFindResponse> saveExpert(@RequestBody @Validated(ValidationGroup.Save.class) ExpertSaveUpdateRequest expert, @RequestParam(required = false) String imagePath, HttpSession session) {
         Expert register = expertService.register(expert, imagePath);
-        EmailVerificationToken token = emailService.createToken(register, 60);
-        String link = emailService.buildFrontendVerificationLink(token);
-        emailService.sendVerificationEmail(register.getEmail(), register.getFirstName(), link);
         session.setAttribute("currentUser", new UserSessionDTO(register.getId(), register.getEmail(), Role.EXPERT));
         return ResponseEntity.ok(expertMapper.mapToResponse(register));
     }

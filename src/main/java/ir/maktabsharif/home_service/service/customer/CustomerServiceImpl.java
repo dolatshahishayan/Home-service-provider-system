@@ -7,6 +7,7 @@ import ir.maktabsharif.home_service.exception.NoUserFoundWithGivenCredentialsExc
 import ir.maktabsharif.home_service.exception.UserWithSameEmailExistsException;
 import ir.maktabsharif.home_service.mapper.customer.CustomerMapper;
 import ir.maktabsharif.home_service.model.enums.Role;
+import ir.maktabsharif.home_service.model.token.EmailVerificationToken;
 import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.repository.customer.CustomerRepository;
 import ir.maktabsharif.home_service.service.email.EmailService;
@@ -25,7 +26,6 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
     protected final UserService userService;
     protected final WalletService walletService;
     protected final EmailService emailService;
-
     public CustomerServiceImpl(CustomerRepository repository, CustomerMapper customerMapper, UserService userService, WalletService walletService, EmailService emailService) {
         super(repository, customerMapper);
         this.userService = userService;
@@ -64,8 +64,11 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
         customer.setRole(Role.CUSTOMER);
         customer.setEmail(customerSaveUpdateRequest.getEmail().toLowerCase());
         customer.setRegistrationDate(LocalDateTime.now());
-        customer.setIsVerified(false);
+        customer.setEnabled(false);
         save(customer);
+        EmailVerificationToken token = emailService.createToken(customer, 60);
+        String link = emailService.buildFrontendVerificationLink(token);
+        emailService.sendVerificationEmail(customer.getEmail(), customer.getFirstName(), link);
         Customer byEmail = findByEmail(customer.getEmail());
         WalletSaveUpdateRequest walletSaveUpdateRequest = new WalletSaveUpdateRequest();
         walletSaveUpdateRequest.setUserId(byEmail.getId());

@@ -8,10 +8,8 @@ import ir.maktabsharif.home_service.dto.customer.CustomerSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.mapper.customer.CustomerMapper;
 import ir.maktabsharif.home_service.model.enums.Role;
-import ir.maktabsharif.home_service.model.token.EmailVerificationToken;
 import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.service.customer.CustomerService;
-import ir.maktabsharif.home_service.service.email.EmailService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,15 +24,12 @@ public class CustomerController {
 
     private final CustomerService customerService;
     private final CustomerMapper customerMapper;
-    private final EmailService emailService;
+
 
     @PostMapping("/save")
     @Operation(summary = "Save customer", description = "Save method for customer")
     public ResponseEntity<CustomerFindResponse> saveCustomer(@RequestBody @Validated(ValidationGroup.Save.class) CustomerSaveUpdateRequest customer, HttpSession session) {
         Customer register = customerService.register(customer);
-        EmailVerificationToken token = emailService.createToken(register, 60);
-        String link = emailService.buildFrontendVerificationLink(token);
-        emailService.sendVerificationEmail(register.getEmail(), register.getFirstName(), link);
         session.setAttribute("currentUser", new UserSessionDTO(register.getId(), register.getEmail(), Role.CUSTOMER));
         return ResponseEntity.ok(customerMapper.mapToResponse(register));
     }
