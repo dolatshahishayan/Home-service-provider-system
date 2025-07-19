@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.service.customer;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
+import ir.maktabsharif.home_service.dto.customer.CustomerFindResponse;
 import ir.maktabsharif.home_service.dto.customer.CustomerSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.NoUserFoundWithGivenCredentialsException;
@@ -13,6 +14,9 @@ import ir.maktabsharif.home_service.repository.customer.CustomerRepository;
 import ir.maktabsharif.home_service.service.email.EmailService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -57,22 +61,28 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
     }
 
     @Override
-    public List<Customer> findAll(Specification<Customer> spec) {
-        return repository.findAll(spec);
+    public Page<Customer> findAll(Specification<Customer> spec, Pageable pageable) {
+        return repository.findAll(spec, pageable);
     }
 
 
     @Override
     public Customer register(CustomerSaveUpdateRequest customerSaveUpdateRequest) {
-        if (userService.existsByEmail(customerSaveUpdateRequest.getEmail())) {
-            throw new UserWithSameEmailExistsException();
+        Customer customer;
+        Customer byEmail1 = findByEmail(customerSaveUpdateRequest.getEmail());
+        if (byEmail1 != null) {
+            customer = byEmail1;
+            if (customer.getIsEmailVerified()) {
+                throw new UserWithSameEmailExistsException();
+            }
+        } else {
+            customer = mapper.mapToEntity(customerSaveUpdateRequest);
         }
-        Customer customer = mapper.mapToEntity(customerSaveUpdateRequest);
         customer.setRole(Role.ROLE_CUSTOMER);
         customer.setPassword(passwordEncoder.encode(customerSaveUpdateRequest.getPassword()));
         customer.setEmail(customerSaveUpdateRequest.getEmail().toLowerCase());
         customer.setRegistrationDate(LocalDateTime.now());
-        customer.setEnabled(false);
+        customer.setIsEmailVerified(false);
         save(customer);
         EmailVerificationToken token = emailService.createToken(customer, 60);
         String link = emailService.buildFrontendVerificationLink(token);

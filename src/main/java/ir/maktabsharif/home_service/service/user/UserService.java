@@ -5,6 +5,8 @@ import ir.maktabsharif.home_service.dto.user.LoginDTO;
 import ir.maktabsharif.home_service.dto.user.UserSearchRequestDTO;
 import ir.maktabsharif.home_service.dto.user.UserSearchResponseDTO;
 import ir.maktabsharif.home_service.model.user.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -15,7 +17,7 @@ public interface UserService extends BaseService<User, Integer> {
 
     User findByEmailAndPassword(LoginDTO loginDTO);
 
-    List<UserSearchResponseDTO> searchUsers(UserSearchRequestDTO userSearchRequestDTO);
+    Page<UserSearchResponseDTO> searchUsers(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable);
 
     User findByEmail(String email);
 }

@@ -7,9 +7,9 @@ import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.service.ServiceMapper;
 import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.repository.service.ServiceRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @org.springframework.stereotype.Service
 @Transactional
@@ -60,18 +60,18 @@ public class ServiceServiceImpl extends BaseServiceImpl<Service, Integer, Servic
     }
 
     @Override
-    public List<Service> findAllAndParentServiceIsNull() {
-        List<Service> byParentServiceIsNull = repository.findByParentServiceIsNull();
-        if (byParentServiceIsNull.isEmpty()) {
+    public Page<Service> findAllAndParentServiceIsNull(Pageable pageable) {
+        Page<Service> byParentServiceIsNull = repository.findByParentServiceIsNull(pageable);
+        if (byParentServiceIsNull.getContent().isEmpty()) {
             throw new NoElementFoundException();
         }
         return byParentServiceIsNull;
     }
 
     @Override
-    public List<Service> findAllAndParentServiceIsNotNullByParentService(Service parent) {
-        List<Service> byParentService = repository.findByParentService(parent);
-        if (byParentService.isEmpty()) {
+    public Page<Service> findAllAndParentServiceIsNotNullByParentService(Service parent,Pageable pageable) {
+        Page<Service> byParentService = repository.findByParentService(parent, pageable);
+        if (byParentService.getContent().isEmpty()) {
             throw new NoElementFoundException();
         }
         return byParentService;

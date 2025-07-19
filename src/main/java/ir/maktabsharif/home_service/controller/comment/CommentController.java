@@ -5,13 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.maktabsharif.home_service.dto.ValidationGroup;
 import ir.maktabsharif.home_service.dto.comment.CommentFindResponse;
 import ir.maktabsharif.home_service.dto.comment.CommentSaveUpdateRequest;
-import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.mapper.comment.CommentMapper;
 import ir.maktabsharif.home_service.service.comment.CommentService;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,14 +22,11 @@ public class CommentController {
     private final CommentService commentService;
     private final CommentMapper commentMapper;
 
+    @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
     @PostMapping("/save")
     @Operation(summary = "Save comment", description = "Save method for comment")
-    public ResponseEntity<?> save(@RequestBody @Validated(ValidationGroup.Save.class) CommentSaveUpdateRequest commentSaveUpdateRequest, HttpSession session) {
-        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
-        if (currentUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
-        }
-        return ResponseEntity.ok(commentMapper.mapToResponse(commentService.saveWithDTO(commentSaveUpdateRequest, currentUser)));
+    public ResponseEntity<?> save(@RequestBody @Validated(ValidationGroup.Save.class) CommentSaveUpdateRequest commentSaveUpdateRequest) {
+        return ResponseEntity.ok(commentMapper.mapToResponse(commentService.saveWithDTO(commentSaveUpdateRequest)));
     }
 
     @GetMapping("/exists-by-order")
@@ -46,19 +41,17 @@ public class CommentController {
         return ResponseEntity.ok(commentMapper.mapToResponse(commentService.findByOrder(orderId)));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_EXPERT')")
     @GetMapping("/view-expert-score-by-order")
     @Operation(summary = "View expert score", description = "View expert score by order")
     public ResponseEntity<Double> viewExpertScoreByOrder(@RequestParam Integer orderId) {
         return ResponseEntity.ok(commentService.viewExpertScoreByOrder(orderId));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_EXPERT')")
     @GetMapping("/view-average-score")
     @Operation(summary = "View average score",description = "View expert average score")
-    public ResponseEntity<?> viewAverageScore(HttpSession session) {
-        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
-        if (currentUser == null) {
-            return new ResponseEntity<>("No user logged in",HttpStatus.UNAUTHORIZED);
-        }
-        return ResponseEntity.ok(commentService.viewExpertAverageScore(currentUser.getUserId()));
+    public ResponseEntity<?> viewAverageScore() {
+        return ResponseEntity.ok(commentService.viewExpertAverageScore());
     }
 }

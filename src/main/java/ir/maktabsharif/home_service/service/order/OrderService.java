@@ -6,29 +6,31 @@ import ir.maktabsharif.home_service.dto.order.OrderSummaryDTO;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface OrderService extends BaseService<Order, Integer> {
     boolean existsBySpecialistAndOrderStatusIn(Integer expertId, List<OrderStatus> statuses);
 
-    List<Order> findByServiceId(Integer serviceId);
+    Page<Order> findByServiceId(Integer serviceId, Pageable pageable);
 
-    Order saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest, Integer customerId);
+    Order saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest);
 
     void chooseExpert(Integer suggestionId);
 
-    List<OrderSummaryDTO> findAllByExpertId(Integer expertId);
+    Page<OrderSummaryDTO> findAllByExpertId(Pageable pageable);
 
-    Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest, Integer customerId);
+    Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest);
 
-    Order updateStatusToStarted(Integer orderId, UserSessionDTO currentUser);
+    Order updateStatusToStarted(Integer orderId);
 
-    Order updateStatusToDone(Integer orderId, UserSessionDTO currentUser);
+    Order updateStatusToDone(Integer orderId);
 
     long reduce1ScoreFromExpertPerHour(Order order);
 
-    List<Order> findByCustomerId(Integer customerId);
+    Page<Order> findByCustomerId(Pageable pageable);
 
-    boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId, Integer expertId);
+    boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId);
 }

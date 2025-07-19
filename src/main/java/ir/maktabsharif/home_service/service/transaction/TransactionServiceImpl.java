@@ -6,14 +6,16 @@ import ir.maktabsharif.home_service.exception.InvalidRequestException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.transaction.TransactionMapper;
 import ir.maktabsharif.home_service.model.transaction.Transaction;
+import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.repository.transaction.TransactionRepository;
 import ir.maktabsharif.home_service.service.user.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 @Service
 @Transactional
 public class TransactionServiceImpl extends BaseServiceImpl<Transaction, Integer, TransactionRepository, TransactionMapper> implements TransactionService {
@@ -34,15 +36,12 @@ public class TransactionServiceImpl extends BaseServiceImpl<Transaction, Integer
     }
 
     @Override
-    public List<TransactionFindResponse> findByUserId(Integer userId){
-        List<Transaction> bySenderIdOrReceiverId = repository.findBySenderIdOrReceiverId(userId, userId);
-        if (bySenderIdOrReceiverId.isEmpty()) {
+    public Page<TransactionFindResponse> findByUserId(Pageable pageable){
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Page<Transaction> bySenderIdOrReceiverId = repository.findBySenderIdOrReceiverId(principal.user().getId(), principal.user().getId(),pageable);
+        if (bySenderIdOrReceiverId.getContent().isEmpty()) {
             throw new NoElementFoundException();
         }
-        List<TransactionFindResponse> responses=new ArrayList<>();
-        for (Transaction transaction : bySenderIdOrReceiverId) {
-            responses.add(mapper.mapToResponse(transaction));
-        }
-        return responses;
+       return bySenderIdOrReceiverId.map(mapper::mapToResponse);
     }
 }

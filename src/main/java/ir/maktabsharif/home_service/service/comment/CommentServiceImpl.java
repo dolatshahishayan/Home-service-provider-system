@@ -2,7 +2,6 @@ package ir.maktabsharif.home_service.service.comment;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.comment.CommentSaveUpdateRequest;
-import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
 import ir.maktabsharif.home_service.exception.DuplicateInfoException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
@@ -11,9 +10,11 @@ import ir.maktabsharif.home_service.model.comment.Comment;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.user.Expert;
+import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.repository.comment.CommentRepository;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.service.order.OrderService;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,9 +33,11 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
     }
 
     @Override
-    public Comment saveWithDTO(CommentSaveUpdateRequest commentSaveUpdateRequest, UserSessionDTO currentUser) {
+    public Comment saveWithDTO(CommentSaveUpdateRequest commentSaveUpdateRequest) {
         Order order = orderService.findById(commentSaveUpdateRequest.getOrderId());
-        String currentUserEmail = currentUser.getEmail();
+        UserDetailsImpl currentUser =(UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        String currentUserEmail = currentUser.user().getEmail();
 
         if (!order.getCustomer().getEmail().equals(currentUserEmail)) {
             throw new CouldNotUpdateException("You can't register any comments for this order!");
@@ -87,8 +90,9 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
     }
 
     @Override
-    public double viewExpertAverageScore(Integer expertId) {
-        Expert expert = expertService.findById(expertId);
+    public double viewExpertAverageScore() {
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Expert expert = expertService.findById(principal.user().getId());
         return expert.getScore();
     }
 }

@@ -17,5 +17,5 @@ public class ExpertFindResponse {
     private ExpertStatus expertStatus;
     private Double score;
     private byte[] profilePictureData;
-    private Boolean enabled;
+    private Boolean isEmailVerified;
 }

@@ -2,23 +2,16 @@ package ir.maktabsharif.home_service.controller.user;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import ir.maktabsharif.home_service.dto.user.LoginDTO;
 import ir.maktabsharif.home_service.dto.user.UserSearchRequestDTO;
 import ir.maktabsharif.home_service.dto.user.UserSearchResponseDTO;
-import ir.maktabsharif.home_service.model.user.User;
-import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
-import ir.maktabsharif.home_service.service.jwt.JwtService;
 import ir.maktabsharif.home_service.service.user.UserService;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -26,26 +19,6 @@ import java.util.Map;
 @Tag(name = "Users controller", description = "Controller class for users")
 public class UserController {
     private final UserService userService;
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
-
-    @PostMapping("/login")
-    @Operation(summary = "User login", description = "Login method for user")
-    public ResponseEntity<Map<String,String>> login(@RequestBody @Validated LoginDTO loginDTO) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword())
-        );
-        User user = userService.findByEmail(loginDTO.getEmail());
-        String token = jwtService.generateToken(new UserDetailsImpl(user));
-        return ResponseEntity.ok(Map.of("token", token));
-    }
-
-    @PostMapping("/logout")
-    @Operation(summary = "User logout", description = "Logout method for user")
-    public ResponseEntity<String> logout(HttpSession session) {
-        session.invalidate();
-        return ResponseEntity.ok("Logged out successfully");
-    }
 
     @GetMapping("/exists-by-email")
     @Operation(summary = "Exists by email", description = "Checks if a user exists by email")
@@ -59,9 +32,10 @@ public class UserController {
         return ResponseEntity.ok(userService.existsByEmailAndIdNot(email, id));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping("/search-users")
     @Operation(summary = "Search users", description = "Search users by role, first name or last name, service and score interval")
-    public ResponseEntity<List<UserSearchResponseDTO>> searchUsers(@RequestBody @Validated UserSearchRequestDTO userSearchRequestDTO) {
-        return ResponseEntity.ok(userService.searchUsers(userSearchRequestDTO));
+    public ResponseEntity<Page<UserSearchResponseDTO>> searchUsers(@RequestBody @Validated UserSearchRequestDTO userSearchRequestDTO,  @RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(userService.searchUsers(userSearchRequestDTO, PageRequest.of(page, size)));
     }
 }

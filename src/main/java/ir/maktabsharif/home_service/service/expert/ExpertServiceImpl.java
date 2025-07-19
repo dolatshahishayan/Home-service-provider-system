@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.service.expert;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
+import ir.maktabsharif.home_service.dto.expert.ExpertFindResponse;
 import ir.maktabsharif.home_service.dto.expert.ExpertSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.*;
@@ -17,6 +18,8 @@ import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
 import ir.maktabsharif.home_service.util.ImageUtil;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -61,10 +64,18 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
 
     @Override
     public Expert register(ExpertSaveUpdateRequest expertSaveUpdateRequest, String imagePath) {
-        Expert expert = mapper.mapToEntity(expertSaveUpdateRequest);
-        if (userService.existsByEmail(expertSaveUpdateRequest.getEmail().toLowerCase())) {
-            throw new UserWithSameEmailExistsException();
+        Expert expert;
+        Expert byEmail = findByEmail(expertSaveUpdateRequest.getEmail());
+        if (byEmail != null) {
+            expert = byEmail;
+            if (expert.getIsEmailVerified()) {
+                throw new UserWithSameEmailExistsException();
+            }
+        } else {
+            expert = mapper.mapToEntity(expertSaveUpdateRequest);
         }
+        expert.setExpertStatus(ExpertStatus.NEW);
+        expert.setIsEmailVerified(false);
         byte[] bytesForExpert;
         if (imagePath != null) {
             bytesForExpert = imageUtil.getBytesForExpert(imagePath);
@@ -74,13 +85,11 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
             if (bytesForExpert.length > 300000) {
                 throw new ImageLengthOutOfBoundException("Image size is more than 300kb.");
             }
-            expert.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);
+
             expert.setProfilePictureData(bytesForExpert);
-            expert.setEnabled(false);
+
             return getExpert(expertSaveUpdateRequest, expert);
         }
-        expert.setExpertStatus(ExpertStatus.NEW);
-        expert.setEnabled(false);
         return getExpert(expertSaveUpdateRequest, expert);
     }
 
@@ -107,8 +116,8 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
     }
 
     @Override
-    public List<Expert> findAll(Specification<Expert> spec) {
-        return repository.findAll(spec);
+    public Page<Expert> findAll(Specification<Expert> spec, Pageable pageable) {
+        return repository.findAll(spec, pageable);
     }
 
     @Override

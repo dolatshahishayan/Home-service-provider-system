@@ -3,24 +3,25 @@ package ir.maktabsharif.home_service.service.suggestion;
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionFindResponse;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionSaveUpdateRequest;
-import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.exception.InvalidRequestException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.suggestion.SuggestionMapper;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
+import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.repository.suggestion.SuggestionRepository;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.service.expert_service.ExpertServiceService;
 import ir.maktabsharif.home_service.service.order.OrderService;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @Transactional
@@ -37,10 +38,11 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
     }
 
     @Override
-    public Suggestion registerSuggestionForOrder(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest, UserSessionDTO session) {
+    public Suggestion registerSuggestionForOrder(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest) {
         Suggestion suggestion = mapper.mapToEntity(suggestionSaveUpdateRequest);
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         suggestion.setOrder(orderService.findById(suggestionSaveUpdateRequest.getOrderId()));
-        if (!expertServiceService.existsByExpertIdAndServiceId(session.getUserId(), suggestion.getOrder().getService().getId())) {
+        if (!expertServiceService.existsByExpertIdAndServiceId(principal.user().getId(), suggestion.getOrder().getService().getId())) {
             throw new InvalidRequestException("Expert Id and Service Id are not registered");
         }
         if (!(suggestion.getOrder().getOrderStatus().equals(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION) || suggestion.getOrder().getOrderStatus().equals(OrderStatus.WAITING_TO_CHOOSE_EXPERT))) {
@@ -50,7 +52,7 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
             throw new InvalidRequestException("Price must be greater than the base price.");
         }
         suggestion.setCreationDate(LocalDateTime.now());
-        suggestion.setExpert(expertService.findById(session.getUserId()));
+        suggestion.setExpert(expertService.findById(principal.user().getId()));
         suggestion.setAccepted(false);
         Suggestion save = save(suggestion);
         if (suggestion.getOrder().getOrderStatus().equals(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION)) {
@@ -61,31 +63,32 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
     }
 
     @Override
-    public Suggestion updateWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest,UserSessionDTO session) {
+    public Suggestion updateWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest) {
         Suggestion suggestion = findById(suggestionSaveUpdateRequest.getId());
-        if (!expertServiceService.existsByExpertIdAndServiceId(session.getUserId(), suggestion.getOrder().getService().getId())) {
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!expertServiceService.existsByExpertIdAndServiceId(principal.user().getId(), suggestion.getOrder().getService().getId())) {
             throw new InvalidRequestException("Expert Id and Service Id are not registered");
         }
         mapper.updateEntityWithDTO(suggestionSaveUpdateRequest, suggestion);
-        suggestion.setExpert(expertService.findById(session.getUserId()));
+        suggestion.setExpert(expertService.findById(principal.user().getId()));
         return save(suggestion);
     }
 
     @Override
-    public List<Suggestion> findAllAndSortByPriceAsc(Integer orderId) {
+    public Page<Suggestion> findAllAndSortByPriceAsc(Integer orderId, Pageable pageable) {
         Order byId = orderService.findById(orderId);
-        List<Suggestion> allByOrderAndSortByPriceAsc = repository.findAllByOrderAndSortByPriceAsc(byId);
-        if (allByOrderAndSortByPriceAsc.isEmpty()) {
+        Page<Suggestion> allByOrderAndSortByPriceAsc = repository.findAllByOrderAndSortByPriceAsc(byId,pageable);
+        if (allByOrderAndSortByPriceAsc.getContent().isEmpty()) {
             throw new NoElementFoundException();
         }
         return allByOrderAndSortByPriceAsc;
     }
 
     @Override
-    public List<Suggestion> findAllByAndSortByExpertScoreDesc(Integer orderId) {
+    public Page<Suggestion> findAllByAndSortByExpertScoreDesc(Integer orderId,Pageable pageable) {
         Order byId = orderService.findById(orderId);
-        List<Suggestion> allByOrderAndSortByExpertScoreDesc = repository.findAllByOrderAndSortByExpertScoreDesc(byId);
-        if (allByOrderAndSortByExpertScoreDesc.isEmpty()) {
+        Page<Suggestion> allByOrderAndSortByExpertScoreDesc = repository.findAllByOrderAndSortByExpertScoreDesc(byId,pageable);
+        if (allByOrderAndSortByExpertScoreDesc.getContent().isEmpty()) {
             throw new NoElementFoundException();
         }
         return allByOrderAndSortByExpertScoreDesc;
@@ -97,16 +100,12 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
     }
 
     @Override
-    public List<SuggestionFindResponse> findAllByExpertId(Integer expertId) {
-        List<Suggestion> allByExpertId = repository.findAllByExpertId(expertId);
-        if (allByExpertId.isEmpty()) {
+    public Page<SuggestionFindResponse> findAllByExpertId(Integer expertId,Pageable pageable) {
+        Page<Suggestion> allByExpertId = repository.findAllByExpertId(expertId,pageable);
+        if (allByExpertId.getContent().isEmpty()) {
             throw new NoElementFoundException();
         }
-        List<SuggestionFindResponse> responses = new ArrayList<>();
-        for (Suggestion suggestion : allByExpertId) {
-            responses.add(mapper.mapToResponse(suggestion));
-        }
-        return responses;
+        return allByExpertId.map(mapper::mapToResponse);
     }
 
     @Override

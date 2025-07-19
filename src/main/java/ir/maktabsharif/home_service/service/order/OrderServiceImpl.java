@@ -3,8 +3,6 @@ package ir.maktabsharif.home_service.service.order;
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.order.OrderSummaryDTO;
-import ir.maktabsharif.home_service.dto.suggestion.SuggestionFindResponse;
-import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
 import ir.maktabsharif.home_service.exception.InvalidRequestException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
@@ -13,17 +11,20 @@ import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.model.user.Expert;
+import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.repository.order.OrderRepository;
 import ir.maktabsharif.home_service.service.customer.CustomerService;
 import ir.maktabsharif.home_service.service.expert_service.ExpertServiceService;
 import ir.maktabsharif.home_service.service.service.ServiceService;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -45,12 +46,13 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
-    public Order saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest, Integer customerId) {
+    public Order saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest) {
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Order order = mapper.mapToEntity(orderSaveUpdateRequest);
-        if (customerId == null) {
+        if (principal.user().getId() == null) {
             throw new InvalidRequestException("Customer Id is required");
         }
-        order.setCustomer(customerService.findById(customerId));
+        order.setCustomer(customerService.findById(principal.user().getId()));
         if (orderSaveUpdateRequest.getExpertId() != null) {
             order.setExpert(expertService.findById(orderSaveUpdateRequest.getExpertId()));
         }
@@ -91,41 +93,36 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
-    public List<OrderSummaryDTO> findAllByExpertId(Integer expertId) {
-        List<SuggestionFindResponse> allOrderIdByExpertId = suggestionService.findAllByExpertId(expertId);
-       List<Order> orders=new ArrayList<>();
-       for (SuggestionFindResponse suggestionFindResponse : allOrderIdByExpertId) {
-               orders.add(findById(suggestionFindResponse.getOrderId()));
-       }
-        List<OrderSummaryDTO> responses = new ArrayList<>();
-        for (Order order : orders) {
-            responses.add(mapper.mapToSummary(order));
-        }
-        return responses;
+    public Page<OrderSummaryDTO> findAllByExpertId(Pageable pageable) {
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Page<Order> byExpertId = repository.findByExpertId(principal.user().getId(), pageable);
+        return byExpertId.map(mapper::mapToSummary);
     }
 
     @Override
-    public boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId, Integer expertId) {
-        return suggestionService.existsByOrderIdAndExpertIdAndAcceptedTrue(orderId, expertId);
+    public boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId) {
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return suggestionService.existsByOrderIdAndExpertIdAndAcceptedTrue(orderId, principal.user().getId());
     }
 
     @Override
-    public Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest, Integer customerId) {
+    public Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest) {
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Order order = findById(orderSaveUpdateRequest.getId());
         mapper.updateEntityWithDTO(orderSaveUpdateRequest, order);
-        if (customerId == null) {
+        if (principal.user().getId() == null) {
             throw new InvalidRequestException("Customer Id is required");
         }
-        order.setCustomer(customerService.findById(customerId));
+        order.setCustomer(customerService.findById(principal.user().getId()));
         if (orderSaveUpdateRequest.getExpertId() != null) {
             order.setExpert(expertService.findById(orderSaveUpdateRequest.getExpertId()));
         }
         return save(order);
     }
 
-    private Order updateStatus(Integer orderId, OrderStatus newStatus, UserSessionDTO currentUser) {
+    private Order updateStatus(Integer orderId, OrderStatus newStatus, UserDetailsImpl currentUser) {
         Order order = findById(orderId);
-        if (!order.getCustomer().getEmail().equals(currentUser.getEmail())) {
+        if (!order.getCustomer().getEmail().equals(currentUser.user().getEmail())) {
             throw new CouldNotUpdateException("You can't update the status of this order.");
         }
         order.setOrderStatus(newStatus);
@@ -133,17 +130,19 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
-    public Order updateStatusToStarted(Integer orderId, UserSessionDTO currentUser) {
+    public Order updateStatusToStarted(Integer orderId) {
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Order order = findById(orderId);
         if (!order.getStartDate().isBefore(LocalDateTime.now())) {
             throw new CouldNotUpdateException("You can't update order status to started before the start date.");
         }
-        return updateStatus(orderId, OrderStatus.STARTED, currentUser);
+        return updateStatus(orderId, OrderStatus.STARTED, principal);
     }
 
     @Override
-    public Order updateStatusToDone(Integer orderId, UserSessionDTO currentUser) {
-        return updateStatus(orderId, OrderStatus.DONE, currentUser);
+    public Order updateStatusToDone(Integer orderId) {
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return updateStatus(orderId, OrderStatus.DONE, principal);
     }
 
     @Override
@@ -155,8 +154,9 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
-    public List<Order> findByCustomerId(Integer customerId) {
-        return repository.findByCustomerId(customerId);
+    public Page<Order> findByCustomerId(Pageable pageable) {
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return repository.findByCustomerId(principal.user().getId(),pageable);
     }
 
     @Override
@@ -166,9 +166,9 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
-    public List<Order> findByServiceId(Integer serviceId) {
-        List<Order> byServiceId = repository.findByServiceId(serviceId);
-        if (byServiceId.isEmpty()) {
+    public Page<Order> findByServiceId(Integer serviceId, Pageable pageable) {
+        Page<Order> byServiceId = repository.findByServiceId(serviceId, pageable);
+        if (byServiceId.getContent().isEmpty()) {
             throw new NoElementFoundException();
         }
         return byServiceId;

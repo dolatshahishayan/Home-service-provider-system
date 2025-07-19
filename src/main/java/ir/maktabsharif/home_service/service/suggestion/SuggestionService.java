@@ -5,21 +5,23 @@ import ir.maktabsharif.home_service.dto.suggestion.SuggestionFindResponse;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface SuggestionService extends BaseService<Suggestion, Integer> {
     void confirmSuggestionAcceptance(Integer suggestionId);
 
-    List<SuggestionFindResponse> findAllByExpertId(Integer expertId);
+    Page<SuggestionFindResponse> findAllByExpertId(Integer expertId, Pageable pageable);
 
-    Suggestion registerSuggestionForOrder(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest, UserSessionDTO session);
+    Suggestion registerSuggestionForOrder(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest);
 
-    Suggestion updateWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest, UserSessionDTO session);
+    Suggestion updateWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest);
 
-    List<Suggestion> findAllAndSortByPriceAsc(Integer orderId);
+    Page<Suggestion> findAllAndSortByPriceAsc(Integer orderId,Pageable pageable);
 
-    List<Suggestion> findAllByAndSortByExpertScoreDesc(Integer orderId);
+    Page<Suggestion> findAllByAndSortByExpertScoreDesc(Integer orderId,Pageable pageable);
 
     boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId, Integer expertId);
 }

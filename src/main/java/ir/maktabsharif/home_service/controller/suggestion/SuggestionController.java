@@ -5,19 +5,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.maktabsharif.home_service.dto.ValidationGroup;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionFindResponse;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionSaveUpdateRequest;
-import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.mapper.suggestion.SuggestionMapper;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/suggestions")
@@ -28,22 +26,19 @@ public class SuggestionController {
     private final SuggestionService suggestionService;
     private final SuggestionMapper suggestionMapper;
 
+    @PreAuthorize("hasAuthority('ROLE_EXPERT')")
     @PostMapping("/save")
     @Operation(summary = "Save suggestion", description = "Method for saving a suggestion")
-    public ResponseEntity<?> save(@RequestBody @Validated(ValidationGroup.Save.class) SuggestionSaveUpdateRequest suggestion, HttpSession session) {
-        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
-        if (currentUser == null) {
-            return new ResponseEntity<>("No user logged in", HttpStatus.UNAUTHORIZED);
-        }
-        Suggestion saved = suggestionService.registerSuggestionForOrder(suggestion, currentUser);
+    public ResponseEntity<?> save(@RequestBody @Validated(ValidationGroup.Save.class) SuggestionSaveUpdateRequest suggestion) {
+        Suggestion saved = suggestionService.registerSuggestionForOrder(suggestion);
         return ResponseEntity.ok(suggestionMapper.mapToResponse(saved));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_EXPERT')")
     @PutMapping("/update")
     @Operation(summary = "Update suggestion", description = "Method for updating a suggestion")
-    public ResponseEntity<SuggestionFindResponse> update(@RequestBody @Validated(ValidationGroup.Update.class) SuggestionSaveUpdateRequest suggestion, HttpSession session) {
-        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
-        Suggestion updated = suggestionService.updateWithDTO(suggestion, currentUser);
+    public ResponseEntity<SuggestionFindResponse> update(@RequestBody @Validated(ValidationGroup.Update.class) SuggestionSaveUpdateRequest suggestion) {
+        Suggestion updated = suggestionService.updateWithDTO(suggestion);
         return ResponseEntity.ok(suggestionMapper.mapToResponse(updated));
     }
 
@@ -56,29 +51,23 @@ public class SuggestionController {
 
     @GetMapping("/find-all-by-expert-id")
     @Operation(summary = "Find all by expert id", description = "Finds all suggestions by expert id")
-    public ResponseEntity<List<SuggestionFindResponse>> findAllByExpertId(@RequestParam Integer expertId) {
-        return ResponseEntity.ok(suggestionService.findAllByExpertId(expertId));
+    public ResponseEntity<Page<SuggestionFindResponse>> findAllByExpertId(@RequestParam Integer expertId, @RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(suggestionService.findAllByExpertId(expertId,PageRequest.of(page, size)));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
     @GetMapping("find-all-and-sort-by-price-ascending")
     @Operation(summary = "Find all and sort by price ascending", description = "Finds all suggestions sorted by price ascending")
-    public ResponseEntity<List<SuggestionFindResponse>> findAllAndSortByPriceAscending(@RequestParam Integer orderId) {
-        List<Suggestion> allAndSortByPriceAsc = suggestionService.findAllAndSortByPriceAsc(orderId);
-        List<SuggestionFindResponse> responses = new ArrayList<>();
-        for (Suggestion suggestion : allAndSortByPriceAsc) {
-            responses.add(suggestionMapper.mapToResponse(suggestion));
-        }
-        return ResponseEntity.ok(responses);
+    public ResponseEntity<Page<SuggestionFindResponse>> findAllAndSortByPriceAscending(@RequestParam Integer orderId, @RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "10") int size) {
+        Page<Suggestion> allAndSortByPriceAsc = suggestionService.findAllAndSortByPriceAsc(orderId,PageRequest.of(page, size));
+        return ResponseEntity.ok(allAndSortByPriceAsc.map(suggestionMapper::mapToResponse));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
     @GetMapping("/find-all-and-sort-by-expert-score-descending")
     @Operation(summary = "Find all and sort by expert score descending", description = "Finds all suggestions sorted by expert score descending")
-    public ResponseEntity<List<SuggestionFindResponse>> findAllAndSortByExpertScoreDescending(@RequestParam Integer orderId) {
-        List<Suggestion> allByAndSortByExpertScoreDesc = suggestionService.findAllByAndSortByExpertScoreDesc(orderId);
-        List<SuggestionFindResponse> responses = new ArrayList<>();
-        for (Suggestion suggestion : allByAndSortByExpertScoreDesc) {
-            responses.add(suggestionMapper.mapToResponse(suggestion));
-        }
-        return ResponseEntity.ok(responses);
+    public ResponseEntity<Page<SuggestionFindResponse>> findAllAndSortByExpertScoreDescending(@RequestParam Integer orderId, @RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "10") int size) {
+        Page<Suggestion> allByAndSortByExpertScoreDesc = suggestionService.findAllByAndSortByExpertScoreDesc(orderId, PageRequest.of(page, size));
+        return ResponseEntity.ok(allByAndSortByExpertScoreDesc.map(suggestionMapper::mapToResponse));
     }
 }

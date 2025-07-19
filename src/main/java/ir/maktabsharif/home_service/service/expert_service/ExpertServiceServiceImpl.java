@@ -10,6 +10,8 @@ import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.expert_service.ExpertServiceCriteriaRepository;
 import ir.maktabsharif.home_service.repository.expert_service.ExpertServiceRepository;
 import ir.maktabsharif.home_service.service.service.ServiceService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,9 +57,9 @@ public class ExpertServiceServiceImpl extends BaseServiceImpl<ExpertService, Int
     }
 
     @Override
-    public List<ExpertService> findByExpertId(Integer expertId) {
-        List<ExpertService> byExpertId = repository.findByExpertId(expertId);
-        if (byExpertId.isEmpty()) {
+    public Page<ExpertService> findByExpertId(Integer expertId, Pageable pageable) {
+        Page<ExpertService> byExpertId = repository.findByExpertId(expertId, pageable);
+        if (byExpertId.getContent().isEmpty()) {
             throw new NoExpertFoundWithServiceException();
         }
         return byExpertId;

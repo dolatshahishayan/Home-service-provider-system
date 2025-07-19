@@ -2,13 +2,12 @@ package ir.maktabsharif.home_service.service.comment;
 
 import ir.maktabsharif.home_service.base.service.BaseService;
 import ir.maktabsharif.home_service.dto.comment.CommentSaveUpdateRequest;
-import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.model.comment.Comment;
 
 public interface CommentService extends BaseService<Comment,Integer> {
     boolean existsByOrder(Integer orderId);
     Comment findByOrder(Integer orderId);
     double viewExpertScoreByOrder(Integer orderId);
-    Comment saveWithDTO(CommentSaveUpdateRequest commentSaveUpdateRequest, UserSessionDTO currentUser);
-    double viewExpertAverageScore(Integer expertId);
+    Comment saveWithDTO(CommentSaveUpdateRequest commentSaveUpdateRequest);
+    double viewExpertAverageScore();
 }

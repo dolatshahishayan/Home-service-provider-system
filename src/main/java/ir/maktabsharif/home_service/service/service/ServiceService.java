@@ -3,6 +3,8 @@ package ir.maktabsharif.home_service.service.service;
 import ir.maktabsharif.home_service.base.service.BaseService;
 import ir.maktabsharif.home_service.dto.service.ServiceSaveUpdateRequest;
 import ir.maktabsharif.home_service.model.service.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -12,6 +14,6 @@ public interface ServiceService extends BaseService<Service,Integer> {
     Service updateWithDTO(ServiceSaveUpdateRequest serviceSaveUpdateRequest);
     void updateDescription(Integer id,String description);
     void updateBasePrice(Integer id,Double basePrice);
-    List<Service> findAllAndParentServiceIsNull();
-    List<Service> findAllAndParentServiceIsNotNullByParentService(Service parent);
+    Page<Service> findAllAndParentServiceIsNull(Pageable pageable);
+    Page<Service> findAllAndParentServiceIsNotNullByParentService(Service parent,Pageable pageable);
 }

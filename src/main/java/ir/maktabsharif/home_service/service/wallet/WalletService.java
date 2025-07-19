@@ -5,7 +5,7 @@ import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
 
 public interface WalletService extends BaseService<Wallet, Integer> {
-    void addCreditToWallet(Double credit, Integer userId);
+    void addCreditToWallet(Double credit);
 
     Wallet findByUserId(Integer userId);
 
@@ -13,5 +13,5 @@ public interface WalletService extends BaseService<Wallet, Integer> {
 
     Wallet saveWithDTO(WalletSaveUpdateRequest walletSaveUpdateRequest);
 
-    Double getCurrentBalance(Integer userId);
+    Double getCurrentBalance();
 }

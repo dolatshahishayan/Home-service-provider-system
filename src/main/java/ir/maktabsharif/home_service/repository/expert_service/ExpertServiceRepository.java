@@ -1,6 +1,8 @@
 package ir.maktabsharif.home_service.repository.expert_service;
 
 import ir.maktabsharif.home_service.model.expert_service.ExpertService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -10,5 +12,5 @@ import java.util.Optional;
 public interface ExpertServiceRepository extends JpaRepository<ExpertService,Integer>, JpaSpecificationExecutor<ExpertService> {
     Optional<ExpertService> findByExpertIdAndServiceId(Integer expertId, Integer serviceId);
     boolean existsByExpertIdAndServiceId(Integer expertId, Integer serviceId);
-    List<ExpertService> findByExpertId(Integer expertId);
+    Page<ExpertService> findByExpertId(Integer expertId, Pageable  pageable);
 }

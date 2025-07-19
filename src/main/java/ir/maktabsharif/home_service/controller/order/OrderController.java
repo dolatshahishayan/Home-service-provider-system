@@ -5,19 +5,21 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.maktabsharif.home_service.dto.ValidationGroup;
 import ir.maktabsharif.home_service.dto.order.OrderFindResponse;
 import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
-import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
+import ir.maktabsharif.home_service.dto.order.OrderSummaryDTO;
 import ir.maktabsharif.home_service.mapper.order.OrderMapper;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.service.order.OrderService;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -29,22 +31,18 @@ public class OrderController {
     private final OrderService orderService;
     private final OrderMapper orderMapper;
 
+    @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
     @PostMapping("/save")
     @Operation(summary = "Save order", description = "Method for saving an order")
-    public ResponseEntity<OrderFindResponse> save(@RequestBody @Validated(ValidationGroup.Save.class) OrderSaveUpdateRequest order, HttpSession session) {
-        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
-        Order saved = orderService.saveWithDTO(order,currentUser.getUserId());
+    public ResponseEntity<OrderFindResponse> save(@RequestBody @Validated(ValidationGroup.Save.class) OrderSaveUpdateRequest order) {
+        Order saved = orderService.saveWithDTO(order);
         return ResponseEntity.ok(orderMapper.mapToResponse(saved));
     }
 
     @PutMapping("/update")
     @Operation(summary = "Update order", description = "Method for updating an order")
-    public ResponseEntity<?> update(@RequestBody @Validated(ValidationGroup.Update.class) OrderSaveUpdateRequest order, HttpSession session) {
-        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
-        if (currentUser==null) {
-            return new ResponseEntity<>("No user logged in",HttpStatus.UNAUTHORIZED);
-        }
-        Order updated = orderService.updateWithDTO(order,currentUser.getUserId());
+    public ResponseEntity<OrderFindResponse> update(@RequestBody @Validated(ValidationGroup.Update.class) OrderSaveUpdateRequest order) {
+        Order updated = orderService.updateWithDTO(order);
         return ResponseEntity.ok(orderMapper.mapToResponse(updated));
     }
 
@@ -56,15 +54,12 @@ public class OrderController {
 
     @GetMapping("/find-by-service-id")
     @Operation(summary = "Find by service id", description = "Finds orders by service id")
-    public ResponseEntity<List<OrderFindResponse>> findByServiceId(@RequestParam Integer serviceId) {
-        List<Order> orders = orderService.findByServiceId(serviceId);
-        List<OrderFindResponse> responses = new ArrayList<>();
-        for (Order order : orders) {
-            responses.add(orderMapper.mapToResponse(order));
-        }
-        return ResponseEntity.ok(responses);
+    public ResponseEntity<Page<OrderFindResponse>> findByServiceId(@RequestParam Integer serviceId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        Page<Order> orders = orderService.findByServiceId(serviceId, PageRequest.of(page, size));
+        return ResponseEntity.ok(orders.map(orderMapper::mapToResponse));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
     @PutMapping("/choose-expert")
     @Operation(summary = "Choose expert", description = "Method for choosing an expert for an order")
     public ResponseEntity<String> chooseExpert(@RequestParam Integer suggestionId) {
@@ -72,24 +67,18 @@ public class OrderController {
         return ResponseEntity.ok("Expert chosen");
     }
 
-    @GetMapping("/find-all-by-expert-id")
-    @Operation(summary = "Find all by expert id",description = "Find all orders for an expert")
-    public ResponseEntity<?> findAllByExpertId(HttpSession session) {
-        UserSessionDTO currentUser=(UserSessionDTO) session.getAttribute("currentUser");
-        if (currentUser==null) {
-            return new ResponseEntity<>("No user logged in",HttpStatus.UNAUTHORIZED);
-        }
-        return ResponseEntity.ok(orderService.findAllByExpertId(currentUser.getUserId()));
+    @PreAuthorize("hasAuthority('ROLE_EXPERT')")
+    @GetMapping("/find-all-by-expert")
+    @Operation(summary = "Find all by expert", description = "Find all orders for an expert")
+    public ResponseEntity<Page<OrderSummaryDTO>> findAllByExpert(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(orderService.findAllByExpertId(PageRequest.of(page, size)));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_EXPERT')")
     @GetMapping("/find-order-with-details")
-    @Operation(summary = "Find order with details",description = "Find order with details by order id")
-    public ResponseEntity<?> findOrderWithDetails(@RequestParam Integer orderId,HttpSession session) {
-        UserSessionDTO currentUser=(UserSessionDTO) session.getAttribute("currentUser");
-        if (currentUser==null) {
-            return new ResponseEntity<>("No user logged in",HttpStatus.UNAUTHORIZED);
-        }
-        boolean isAccepted = orderService.existsByOrderIdAndExpertIdAndAcceptedTrue(orderId, currentUser.getUserId());
+    @Operation(summary = "Find order with details", description = "Find order with details by order id")
+    public ResponseEntity<OrderFindResponse> findOrderWithDetails(@RequestParam Integer orderId) {
+        boolean isAccepted = orderService.existsByOrderIdAndExpertIdAndAcceptedTrue(orderId);
         if (!isAccepted) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
         }
@@ -97,38 +86,27 @@ public class OrderController {
         return ResponseEntity.ok(orderMapper.mapToResponse(order));
     }
 
-
-    @GetMapping("/find-all-by-customer-id")
-    @Operation(summary = "Find all by customer id",description = "Find all orders for a customer")
-    public ResponseEntity<?> findAllByCustomerId(HttpSession session) {
-        UserSessionDTO currentUser=(UserSessionDTO) session.getAttribute("currentUser");
-        System.out.println("Session ID: " + session.getId());
-        System.out.println("User in session: " + session.getAttribute("currentUser"));
-        if (currentUser==null) {
-            return new ResponseEntity<>("No user logged in",HttpStatus.UNAUTHORIZED);
-        }
-        return ResponseEntity.ok(orderService.findByCustomerId(currentUser.getUserId()));
+    @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
+    @GetMapping("/find-all-by-customer")
+    @Operation(summary = "Find all by customer", description = "Find all orders for a customer")
+    public ResponseEntity<Page<OrderFindResponse>> findAllByCustomer(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        Page<Order> byCustomerId = orderService.findByCustomerId(PageRequest.of(page, size));
+        return ResponseEntity.ok(byCustomerId.map(orderMapper::mapToResponse));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
     @PutMapping("/update-status-to-started")
-    @Operation(summary = "Update status to started",description = "Update an order's status to started")
-    public ResponseEntity<?> updateStatusToStarted(@RequestParam Integer orderId, HttpSession session) {
-        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
-        if (currentUser == null) {
-            return new ResponseEntity<>("No user logged in",HttpStatus.UNAUTHORIZED);
-        }
-        Order order = orderService.updateStatusToStarted(orderId, currentUser);
+    @Operation(summary = "Update status to started", description = "Update an order's status to started")
+    public ResponseEntity<OrderFindResponse> updateStatusToStarted(@RequestParam Integer orderId) {
+        Order order = orderService.updateStatusToStarted(orderId);
         return ResponseEntity.ok(orderMapper.mapToResponse(order));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
     @PutMapping("/update-status-to-done")
-    @Operation(summary = "Update status to done",description = "Update an order's status to done")
-    public ResponseEntity<OrderFindResponse> updateStatusToDone(@RequestParam Integer orderId, HttpSession session) {
-        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
-        if (currentUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        Order order = orderService.updateStatusToDone(orderId, currentUser);
+    @Operation(summary = "Update status to done", description = "Update an order's status to done")
+    public ResponseEntity<OrderFindResponse> updateStatusToDone(@RequestParam Integer orderId) {
+        Order order = orderService.updateStatusToDone(orderId);
         return ResponseEntity.ok(orderMapper.mapToResponse(order));
     }
 }

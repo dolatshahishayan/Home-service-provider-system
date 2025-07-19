@@ -17,6 +17,9 @@ import ir.maktabsharif.home_service.service.expert_service.ExpertServiceService;
 import ir.maktabsharif.home_service.util.specification.CustomerSpecification;
 import ir.maktabsharif.home_service.util.specification.ExpertSpecification;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -34,7 +37,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Integer, UserReposito
     protected final ir.maktabsharif.home_service.service.expert.ExpertService expertService;
     protected final CustomerService customerService;
 
-    public UserServiceImpl(UserRepository repository, UserMapper userMapper, @Lazy ExpertServiceService expertServiceService, @Lazy ir.maktabsharif.home_service.service.expert.ExpertService expertService,@Lazy CustomerService customerService) {
+    public UserServiceImpl(UserRepository repository, UserMapper userMapper, @Lazy ExpertServiceService expertServiceService, @Lazy ir.maktabsharif.home_service.service.expert.ExpertService expertService, @Lazy CustomerService customerService) {
         super(repository, userMapper);
         this.expertServiceService = expertServiceService;
         this.expertService = expertService;
@@ -58,7 +61,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Integer, UserReposito
     }
 
     @Override
-    public List<UserSearchResponseDTO> searchUsers(UserSearchRequestDTO userSearchRequestDTO) {
+    public Page<UserSearchResponseDTO> searchUsers(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable) {
         List<UserSearchResponseDTO> results = new ArrayList<>();
 
         boolean hasExpertFilters = (userSearchRequestDTO.getServiceIds() != null && !userSearchRequestDTO.getServiceIds().isEmpty()) || userSearchRequestDTO.getMinScore() != null || userSearchRequestDTO.getMaxScore() != null;
@@ -77,20 +80,20 @@ public class UserServiceImpl extends BaseServiceImpl<User, Integer, UserReposito
             if (!expertIds.isEmpty())
                 expertSpec = expertSpec.and((root, _, _) -> root.get("id").in(expertIds));
 
-            List<Expert> experts = expertService.findAll(expertSpec);
-            for (Expert expert : experts) {
-                results.add(mapper.mapExpertToSearchResponse(expert));
-            }
+            Page<Expert> experts = expertService.findAll(expertSpec, pageable);
+            experts.getContent().forEach(expert -> results.add(mapper.mapExpertToSearchResponse(expert)));
         }
 
         if (userSearchRequestDTO.getRole() == Role.ROLE_CUSTOMER || (userSearchRequestDTO.getRole() == null && !hasExpertFilters)) {
             Specification<Customer> customerSpec = CustomerSpecification.nameContains(userSearchRequestDTO.getName());
-            List<Customer> customers = customerService.findAll(customerSpec);
-            for (Customer customer : customers) {
-                results.add(mapper.mapCustomerToSearchResponse(customer));
-            }
+            Page<Customer> customers = customerService.findAll(customerSpec, pageable);
+            customers.getContent().forEach(customer -> results.add(mapper.mapCustomerToSearchResponse(customer)));
         }
-        return results;
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), results.size());
+        List<UserSearchResponseDTO> pagedList = results.subList(start, end);
+
+        return new PageImpl<>(pagedList, pageable, results.size());
     }
 
     @Override

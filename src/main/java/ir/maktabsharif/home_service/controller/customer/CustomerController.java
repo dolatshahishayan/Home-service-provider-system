@@ -5,20 +5,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.maktabsharif.home_service.dto.ValidationGroup;
 import ir.maktabsharif.home_service.dto.customer.CustomerFindResponse;
 import ir.maktabsharif.home_service.dto.customer.CustomerSaveUpdateRequest;
-import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.mapper.customer.CustomerMapper;
-import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.service.customer.CustomerService;
-import ir.maktabsharif.home_service.service.jwt.JwtService;
-import jakarta.servlet.http.HttpSession;
+import ir.maktabsharif.home_service.util.JwtUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/customers")
@@ -28,21 +25,24 @@ public class CustomerController {
 
     private final CustomerService customerService;
     private final CustomerMapper customerMapper;
-    private final JwtService jwtService;
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/save")
     @Operation(summary = "Save customer", description = "Save method for customer")
-    public ResponseEntity<Map<String, String>> saveCustomer(@RequestBody @Validated(ValidationGroup.Save.class) CustomerSaveUpdateRequest customer) {
+    public ResponseEntity<CustomerFindResponse> saveCustomer(@RequestBody @Validated(ValidationGroup.Save.class) CustomerSaveUpdateRequest customer, HttpServletResponse response) {
         Customer register = customerService.register(customer);
-        String token = jwtService.generateToken(new UserDetailsImpl(register));
-        return ResponseEntity.ok(Map.of("token", token));
+        String token = jwtUtil.generateToken(new UserDetailsImpl(register));
+        response.addHeader("Authorization", "Bearer " + token);
+        return ResponseEntity.ok(customerMapper.mapToResponse(register));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
     @PutMapping("/update")
     @Operation(summary = "Update customer", description = "Update method for customer")
-    public ResponseEntity<CustomerFindResponse> updateCustomer(@RequestBody @Validated(ValidationGroup.Update.class) CustomerSaveUpdateRequest customer, HttpSession session) {
+    public ResponseEntity<CustomerFindResponse> updateCustomer(@RequestBody @Validated(ValidationGroup.Update.class) CustomerSaveUpdateRequest customer, HttpServletResponse response) {
         Customer updated = customerService.updateWithDTO(customer);
-        session.setAttribute("currentUser", new UserSessionDTO(updated.getId(), updated.getEmail(), Role.ROLE_CUSTOMER));
+        String token = jwtUtil.generateToken(new UserDetailsImpl(updated));
+        response.addHeader("Authorization", "Bearer " + token);
         return ResponseEntity.ok(customerMapper.mapToResponse(updated));
     }
 
