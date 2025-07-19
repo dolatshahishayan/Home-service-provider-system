@@ -1,7 +1,6 @@
 package ir.maktabsharif.home_service.service.customer;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
-import ir.maktabsharif.home_service.dto.customer.CustomerFindResponse;
 import ir.maktabsharif.home_service.dto.customer.CustomerSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.NoUserFoundWithGivenCredentialsException;
@@ -15,7 +14,6 @@ import ir.maktabsharif.home_service.service.email.EmailService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @Transactional

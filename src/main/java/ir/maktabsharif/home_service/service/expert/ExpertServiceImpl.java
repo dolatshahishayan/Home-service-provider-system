@@ -1,7 +1,6 @@
 package ir.maktabsharif.home_service.service.expert;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
-import ir.maktabsharif.home_service.dto.expert.ExpertFindResponse;
 import ir.maktabsharif.home_service.dto.expert.ExpertSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.*;

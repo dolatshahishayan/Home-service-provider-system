@@ -8,8 +8,6 @@ import ir.maktabsharif.home_service.model.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 public interface UserService extends BaseService<User, Integer> {
     boolean existsByEmail(String email);
 

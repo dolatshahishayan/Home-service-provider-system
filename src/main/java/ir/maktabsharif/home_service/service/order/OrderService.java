@@ -3,7 +3,6 @@ package ir.maktabsharif.home_service.service.order;
 import ir.maktabsharif.home_service.base.service.BaseService;
 import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.order.OrderSummaryDTO;
-import ir.maktabsharif.home_service.dto.user.UserSessionDTO;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import org.springframework.data.domain.Page;
