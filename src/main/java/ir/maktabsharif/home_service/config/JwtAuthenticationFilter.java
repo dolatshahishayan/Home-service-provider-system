@@ -1,57 +1,66 @@
 package ir.maktabsharif.home_service.config;
 
-import ir.maktabsharif.home_service.service.jwt.JwtService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import ir.maktabsharif.home_service.dto.user.LoginDTO;
+import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
+import ir.maktabsharif.home_service.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.lang.NonNull;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
+    public static final PathPatternRequestMatcher loginPath = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/v1/users/login");
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ir.maktabsharif.home_service.util.JwtUtil jwtUtil;
 
-    private final JwtService jwtService;
+    protected JwtAuthenticationFilter(JwtUtil jwtUtil, AuthenticationManager authenticationManager) {
+        super(loginPath, authenticationManager);
+        this.jwtUtil = jwtUtil;
+    }
 
-    private final UserDetailsService userDetailsService;
-
-    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService) {
-        this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
+    public Authentication authenticationMapper(HttpServletRequest httpServletRequest) throws IOException {
+        LoginDTO loginDTO = objectMapper.readValue(httpServletRequest.getInputStream(), LoginDTO.class);
+        return new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword());
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
-
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, ServletException, IOException {
+        Authentication authentication = authenticationMapper(request);
+        if (authentication == null) {
+            return null;
         }
-
-        String token = authHeader.substring(7);
-        String username = jwtService.extractUsername(token);
-
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (jwtService.isTokenValid(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
+        Authentication authenticate = getAuthenticationManager().authenticate(authentication);
+        if (authenticate == null) {
+            throw new ServletException("Authentication Failed");
         }
+        return authenticate;
+    }
 
-        filterChain.doFilter(request, response);
+    @Override
+    public void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException{
+        UserDetailsImpl principal = (UserDetailsImpl) authResult.getPrincipal();
+        String token = jwtUtil.generateToken(principal);
+        response.addHeader("Authorization", "Bearer " + token);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"token\": \"" + token + "\"}");
+    }
+
+    @Override
+    public void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\": \"Invalid username or password\"}");
     }
 }

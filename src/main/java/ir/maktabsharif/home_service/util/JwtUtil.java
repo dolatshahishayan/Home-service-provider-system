@@ -1,25 +1,33 @@
-package ir.maktabsharif.home_service.service.jwt;
+package ir.maktabsharif.home_service.util;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Base64;
 import java.util.Date;
 
-@Service
-public class JwtService {
+@Component
+public class JwtUtil {
 
     private final SecretKey secretKey;
 
     private static final long EXPIRATION_MS = 24 * 60 * 60 * 1000;
 
-    public JwtService(@Value("${jwt.secret}") String base64Secret) {
+    private final UserDetailsService  userDetailsService;
+
+    public JwtUtil(@Value("${jwt.secret}") String base64Secret, UserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
         byte[] keyBytes = Base64.getDecoder().decode(base64Secret);
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
@@ -46,9 +54,15 @@ public class JwtService {
                 .getSubject();
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    public void validateToken(String token, String username, HttpServletRequest request) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        boolean valid = username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        if (valid){
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+        }
     }
 
     private boolean isTokenExpired(String token) {
