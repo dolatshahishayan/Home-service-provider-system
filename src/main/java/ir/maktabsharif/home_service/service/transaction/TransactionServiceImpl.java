@@ -2,6 +2,7 @@ package ir.maktabsharif.home_service.service.transaction;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.transaction.TransactionFindResponse;
+import ir.maktabsharif.home_service.dto.transaction.TransactionInitializerDTO;
 import ir.maktabsharif.home_service.exception.InvalidRequestException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.transaction.TransactionMapper;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+
 @Service
 @Transactional
 public class TransactionServiceImpl extends BaseServiceImpl<Transaction, Integer, TransactionRepository, TransactionMapper> implements TransactionService {
@@ -36,12 +38,25 @@ public class TransactionServiceImpl extends BaseServiceImpl<Transaction, Integer
     }
 
     @Override
-    public Page<TransactionFindResponse> findByUserId(Pageable pageable){
+    public Page<TransactionFindResponse> findByUserId(Pageable pageable) {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Page<Transaction> bySenderIdOrReceiverId = repository.findBySenderIdOrReceiverId(principal.user().getId(), principal.user().getId(),pageable);
+        Page<Transaction> bySenderIdOrReceiverId = repository.findBySenderIdOrReceiverId(principal.user().getId(), principal.user().getId(), pageable);
         if (bySenderIdOrReceiverId.getContent().isEmpty()) {
             throw new NoElementFoundException();
         }
-       return bySenderIdOrReceiverId.map(mapper::mapToResponse);
+        return bySenderIdOrReceiverId.map(mapper::mapToResponse);
+    }
+
+    @Override
+    public TransactionInitializerDTO createPendingTransaction() {
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Transaction transaction = new Transaction();
+        transaction.setSender(principal.user());
+        transaction.setReceiver(principal.user());
+        transaction.setAmount(0D);
+        transaction.setTimestamp(LocalDateTime.now());
+        transaction.setExpireDate(LocalDateTime.now().plusMinutes(10));
+        Transaction save = save(transaction);
+        return new TransactionInitializerDTO(save.getId(),save.getExpireDate());
     }
 }

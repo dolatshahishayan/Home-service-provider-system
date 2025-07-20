@@ -64,7 +64,6 @@ public class ServiceController {
         return ResponseEntity.ok(serviceService.existsByName(name));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER')")
     @GetMapping("/find-all-parentServices")
     @Operation(summary = "Find all ParentServices", description = "Finds all parent services")
     public ResponseEntity<Page<ServiceFindResponse>> findAllParentServices(@RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "10") int size) {
@@ -72,7 +71,6 @@ public class ServiceController {
         return ResponseEntity.ok(allAndParentServiceIsNull.map(serviceMapper::mapToResponse));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER')")
     @GetMapping("/find-all-subServices")
     @Operation(summary = "Find all subServices", description = "Finds all subServices")
     public ResponseEntity<Page<ServiceFindResponse>> findAllSubServices(@RequestParam Integer serviceId, @RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "10") int size) {

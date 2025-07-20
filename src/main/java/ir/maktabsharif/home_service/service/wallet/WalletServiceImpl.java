@@ -3,6 +3,7 @@ package ir.maktabsharif.home_service.service.wallet;
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.InsufficientFundsException;
+import ir.maktabsharif.home_service.exception.InvalidRequestException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.wallet.WalletMapper;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
@@ -20,6 +21,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @Transactional
@@ -46,12 +49,15 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
     }
 
     @Override
-    public void addCreditToWallet(Double credit) {
+    public void addCreditToWallet(Double credit, Integer transactionId) {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Wallet wallet = findByUserId(principal.user().getId());
         wallet.setBalance(wallet.getBalance() + credit);
         save(wallet);
-        Transaction transaction = new Transaction();
+        Transaction transaction = transactionService.findById(transactionId);
+        if (transaction.getExpireDate().isBefore(LocalDateTime.now())){
+            throw new InvalidRequestException("Time is expired");
+        }
         transaction.setSender(userService.findById(principal.user().getId()));
         transaction.setReceiver(userService.findById(principal.user().getId()));
         transaction.setAmount(credit);

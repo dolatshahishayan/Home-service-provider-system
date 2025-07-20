@@ -88,8 +88,8 @@ public class OrderController {
     @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
     @GetMapping("/find-all-by-customer")
     @Operation(summary = "Find all by customer", description = "Find all orders for a customer")
-    public ResponseEntity<Page<OrderFindResponse>> findAllByCustomer(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-        Page<Order> byCustomerId = orderService.findByCustomerId(PageRequest.of(page, size));
+    public ResponseEntity<Page<OrderFindResponse>> findAllByCustomer(@RequestParam(required = false) OrderStatus orderStatus,@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        Page<Order> byCustomerId = orderService.findByCustomerId(orderStatus,PageRequest.of(page, size));
         return ResponseEntity.ok(byCustomerId.map(orderMapper::mapToResponse));
     }
 

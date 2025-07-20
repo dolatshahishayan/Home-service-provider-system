@@ -19,6 +19,7 @@ import ir.maktabsharif.home_service.service.service.ServiceService;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -154,9 +155,15 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
-    public Page<Order> findByCustomerId(Pageable pageable) {
+    public Page<Order> findByCustomerId(OrderStatus status,Pageable pageable) {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return repository.findByCustomerId(principal.user().getId(),pageable);
+        Specification<Order> spec = (root, _, cb) -> cb.equal(root.get("customer").get("id"), principal.user().getId());
+
+        if (status != null) {
+            spec = spec.and((root, _, cb) -> cb.equal(root.get("orderStatus"), status));
+        }
+
+        return repository.findAll(spec, pageable);
     }
 
     @Override

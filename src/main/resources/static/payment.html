@@ -49,19 +49,50 @@
 <script>
     let timerElement = document.getElementById('timer');
     let timeLeft = 600;
+    let transactionId = null;
 
     const interval = setInterval(() => {
         let minutes = Math.floor(timeLeft / 60);
         let seconds = timeLeft % 60;
         timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         timeLeft--;
-
         if (timeLeft < 0) {
             clearInterval(interval);
             alert("مهلت پرداخت به پایان رسید.");
             document.getElementById("paymentForm").querySelector("button").disabled = true;
         }
     }, 1000);
+
+    async function createTransaction() {
+        const jwtToken = localStorage.getItem('token');
+        if (!jwtToken) {
+            alert("ابتدا وارد حساب کاربری شوید.");
+            window.location.href = "/login.html";
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/v1/transactions/save-initial-transaction", {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + jwtToken
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                transactionId = data.id;
+            } else if (response.status === 401) {
+                alert("دسترسی غیرمجاز! لطفاً وارد شوید.");
+                localStorage.removeItem('token');
+                window.location.href = "/login.html";
+            } else {
+                alert("خطا در شروع تراکنش");
+            }
+        } catch (err) {
+            alert("خطا در ارتباط با سرور.");
+        }
+    }
 
     document.getElementById("paymentForm").addEventListener("submit", function (e) {
         e.preventDefault();
@@ -71,17 +102,17 @@
             return;
         }
 
-        const jwtToken = localStorage.getItem('token');
-
-        if (!jwtToken) {
-            alert("ابتدا وارد حساب کاربری شوید.");
-            window.location.href = "/login.html";
+        if (!transactionId) {
+            alert("خطا در اطلاعات پرداخت. لطفاً صفحه را دوباره بارگذاری کنید.");
             return;
         }
+
+        const jwtToken = localStorage.getItem('token');
 
         grecaptcha.execute('6LcWs34rAAAAAGeYuBlMjOzjyQ9gVxkzCwVsh5rI', {action: 'submit'}).then(async function (recaptchaToken) {
             const formData = new FormData(e.target);
             const payload = {
+                transactionId: transactionId,
                 amount: parseFloat(formData.get("amount")),
                 cardNumber: formData.get("cardNumber"),
                 cvv2: formData.get("cvv2"),
@@ -116,6 +147,8 @@
             }
         });
     });
+
+    window.addEventListener('load', createTransaction);
 </script>
 
 </body>

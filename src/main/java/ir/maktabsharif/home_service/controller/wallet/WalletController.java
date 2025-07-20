@@ -47,7 +47,7 @@ public class WalletController {
         if (dto.getClientTimeLeft() <= 0) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Client time left is invalid");
         }
-        walletService.addCreditToWallet(dto.getAmount());
+        walletService.addCreditToWallet(dto.getAmount(),dto.getTransactionId());
         return ResponseEntity.ok("Added credit to wallet");
     }
 
@@ -69,7 +69,7 @@ public class WalletController {
     @PreAuthorize("hasAnyAuthority('ROLE_EXPERT','ROLE_CUSTOMER')")
     @GetMapping("/get-balance")
     @Operation(summary = "Get balance", description = "Get wallet's current balance")
-    public ResponseEntity<?> getCurrentBalance() {
+    public ResponseEntity<Double> getCurrentBalance() {
         return ResponseEntity.ok(walletService.getCurrentBalance());
     }
 }

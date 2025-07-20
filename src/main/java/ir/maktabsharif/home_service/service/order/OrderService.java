@@ -29,7 +29,7 @@ public interface OrderService extends BaseService<Order, Integer> {
 
     long reduce1ScoreFromExpertPerHour(Order order);
 
-    Page<Order> findByCustomerId(Pageable pageable);
+    Page<Order> findByCustomerId(OrderStatus status, Pageable pageable);
 
     boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId);
 }

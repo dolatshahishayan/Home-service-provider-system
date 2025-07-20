@@ -137,13 +137,15 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
                 throw new ImageLengthOutOfBoundException("Image size is more than 300kb.");
             }
             expert.setProfilePictureData(bytesForExpert);
+            if (expert.getIsEmailVerified()) {
+                expert.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);
+            }
         }
         mapper.updateEntityWithDTO(expertSaveUpdateRequest, expert);
         if (expert.getPassword() != null) {
             expert.setPassword(passwordEncoder.encode(expertSaveUpdateRequest.getPassword()));
         }
         expert.setEmail(expertSaveUpdateRequest.getEmail().toLowerCase());
-        expert.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);
         return save(expert);
     }
 }

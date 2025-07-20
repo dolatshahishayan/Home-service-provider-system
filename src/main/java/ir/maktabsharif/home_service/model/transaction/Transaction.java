@@ -28,4 +28,5 @@ public class Transaction extends BaseEntity {
     private LocalDateTime timestamp;
     @Enumerated(EnumType.STRING)
     private TransactionStatus status;
+    private LocalDateTime expireDate;
 }

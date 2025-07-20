@@ -5,7 +5,7 @@ import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
 
 public interface WalletService extends BaseService<Wallet, Integer> {
-    void addCreditToWallet(Double credit);
+    void addCreditToWallet(Double credit,Integer transactionId);
 
     Wallet findByUserId(Integer userId);
 
