@@ -6,9 +6,11 @@ import ir.maktabsharif.home_service.dto.suggestion.SuggestionSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.InvalidRequestException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.suggestion.SuggestionMapper;
+import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
+import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.repository.suggestion.SuggestionRepository;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
@@ -41,25 +43,41 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
     public Suggestion registerSuggestionForOrder(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest) {
         Suggestion suggestion = mapper.mapToEntity(suggestionSaveUpdateRequest);
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        suggestion.setOrder(orderService.findById(suggestionSaveUpdateRequest.getOrderId()));
-        if (!expertServiceService.existsByExpertIdAndServiceId(principal.user().getId(), suggestion.getOrder().getService().getId())) {
-            throw new InvalidRequestException("Expert Id and Service Id are not registered");
+        Expert byId = expertService.findById(principal.user().getId());
+        checkPriceAndOrderStatus(suggestionSaveUpdateRequest, byId, suggestion, principal);
+        suggestion.setCreationDate(LocalDateTime.now());
+        suggestion.setExpert(byId);
+        suggestion.setAccepted(false);
+        Suggestion save = save(suggestion);
+        setOrderStatusToWaitingForExpert(suggestion);
+        return save;
+    }
+
+    private void setOrderStatusToWaitingForExpert(Suggestion suggestion) {
+        if (suggestion.getOrder().getOrderStatus().equals(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION)) {
+            suggestion.getOrder().setOrderStatus(OrderStatus.WAITING_TO_CHOOSE_EXPERT);
+            orderService.save(suggestion.getOrder());
         }
+    }
+
+    private void checkPriceAndOrderStatus(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest, Expert byId, Suggestion suggestion, UserDetailsImpl principal) {
+        checkExpertStatusAndExpertWithServiceExists(suggestionSaveUpdateRequest, byId, suggestion, principal);
         if (!(suggestion.getOrder().getOrderStatus().equals(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION) || suggestion.getOrder().getOrderStatus().equals(OrderStatus.WAITING_TO_CHOOSE_EXPERT))) {
             throw new InvalidRequestException("Order is not waiting for any suggestions.");
         }
         if (suggestion.getPrice() < suggestion.getOrder().getService().getBasePrice()) {
             throw new InvalidRequestException("Price must be greater than the base price.");
         }
-        suggestion.setCreationDate(LocalDateTime.now());
-        suggestion.setExpert(expertService.findById(principal.user().getId()));
-        suggestion.setAccepted(false);
-        Suggestion save = save(suggestion);
-        if (suggestion.getOrder().getOrderStatus().equals(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION)) {
-            suggestion.getOrder().setOrderStatus(OrderStatus.WAITING_TO_CHOOSE_EXPERT);
-            orderService.save(suggestion.getOrder());
+    }
+
+    private void checkExpertStatusAndExpertWithServiceExists(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest, Expert byId, Suggestion suggestion, UserDetailsImpl principal) {
+        if (byId.getExpertStatus()!= ExpertStatus.VERIFIED){
+            throw new InvalidRequestException("Expert status must be VERIFIED");
         }
-        return save;
+        suggestion.setOrder(orderService.findById(suggestionSaveUpdateRequest.getOrderId()));
+        if (!expertServiceService.existsByExpertIdAndServiceId(principal.user().getId(), suggestion.getOrder().getService().getId())) {
+            throw new InvalidRequestException("Expert Id and Service Id are not registered");
+        }
     }
 
     @Override

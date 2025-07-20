@@ -63,37 +63,40 @@ public class UserServiceImpl extends BaseServiceImpl<User, Integer, UserReposito
     @Override
     public Page<UserSearchResponseDTO> searchUsers(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable) {
         List<UserSearchResponseDTO> results = new ArrayList<>();
-
         boolean hasExpertFilters = (userSearchRequestDTO.getServiceIds() != null && !userSearchRequestDTO.getServiceIds().isEmpty()) || userSearchRequestDTO.getMinScore() != null || userSearchRequestDTO.getMaxScore() != null;
-
         if (userSearchRequestDTO.getRole() == Role.ROLE_EXPERT || (userSearchRequestDTO.getRole() == null && hasExpertFilters)) {
-            List<Integer> expertIds = expertServiceService.findExpertIdsByServiceIds(userSearchRequestDTO.getServiceIds());
-
-            Specification<Expert> expertSpec = (_, _, cb) -> cb.conjunction();
-
-            if (userSearchRequestDTO.getName() != null && !userSearchRequestDTO.getName().isBlank())
-                expertSpec = expertSpec.and(ExpertSpecification.nameContains(userSearchRequestDTO.getName()));
-
-            if (userSearchRequestDTO.getMinScore() != null || userSearchRequestDTO.getMaxScore() != null)
-                expertSpec = expertSpec.and(ExpertSpecification.scoreBetween(userSearchRequestDTO.getMinScore(), userSearchRequestDTO.getMaxScore()));
-
-            if (!expertIds.isEmpty())
-                expertSpec = expertSpec.and((root, _, _) -> root.get("id").in(expertIds));
-
-            Page<Expert> experts = expertService.findAll(expertSpec, pageable);
-            experts.getContent().forEach(expert -> results.add(mapper.mapExpertToSearchResponse(expert)));
+            checkAndAddExpertToResults(userSearchRequestDTO, pageable, results);
         }
-
         if (userSearchRequestDTO.getRole() == Role.ROLE_CUSTOMER || (userSearchRequestDTO.getRole() == null && !hasExpertFilters)) {
-            Specification<Customer> customerSpec = CustomerSpecification.nameContains(userSearchRequestDTO.getName());
-            Page<Customer> customers = customerService.findAll(customerSpec, pageable);
-            customers.getContent().forEach(customer -> results.add(mapper.mapCustomerToSearchResponse(customer)));
+            checkAndAddCustomerToResults(userSearchRequestDTO, pageable, results);
         }
+        List<UserSearchResponseDTO> pagedList = getUserSearchResponseDTOS(pageable, results);
+        return new PageImpl<>(pagedList, pageable, results.size());
+    }
+
+    private static List<UserSearchResponseDTO> getUserSearchResponseDTOS(Pageable pageable, List<UserSearchResponseDTO> results) {
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), results.size());
-        List<UserSearchResponseDTO> pagedList = results.subList(start, end);
+        return results.subList(start, end);
+    }
 
-        return new PageImpl<>(pagedList, pageable, results.size());
+    private void checkAndAddCustomerToResults(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable, List<UserSearchResponseDTO> results) {
+        Specification<Customer> customerSpec = CustomerSpecification.nameContains(userSearchRequestDTO.getName());
+        Page<Customer> customers = customerService.findAll(customerSpec, pageable);
+        customers.getContent().forEach(customer -> results.add(mapper.mapCustomerToSearchResponse(customer)));
+    }
+
+    private void checkAndAddExpertToResults(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable, List<UserSearchResponseDTO> results) {
+        List<Integer> expertIds = expertServiceService.findExpertIdsByServiceIds(userSearchRequestDTO.getServiceIds());
+        Specification<Expert> expertSpec = (_, _, cb) -> cb.conjunction();
+        if (userSearchRequestDTO.getName() != null && !userSearchRequestDTO.getName().isBlank())
+            expertSpec = expertSpec.and(ExpertSpecification.nameContains(userSearchRequestDTO.getName()));
+        if (userSearchRequestDTO.getMinScore() != null || userSearchRequestDTO.getMaxScore() != null)
+            expertSpec = expertSpec.and(ExpertSpecification.scoreBetween(userSearchRequestDTO.getMinScore(), userSearchRequestDTO.getMaxScore()));
+        if (!expertIds.isEmpty())
+            expertSpec = expertSpec.and((root, _, _) -> root.get("id").in(expertIds));
+        Page<Expert> experts = expertService.findAll(expertSpec, pageable);
+        experts.getContent().forEach(expert -> results.add(mapper.mapExpertToSearchResponse(expert)));
     }
 
     @Override

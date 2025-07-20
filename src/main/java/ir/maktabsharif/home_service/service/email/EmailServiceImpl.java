@@ -68,19 +68,20 @@ public class EmailServiceImpl implements EmailService {
     public void verifyToken(String tokenValue) {
         EmailVerificationToken token = emailVerificationTokenRepository.findByToken(tokenValue)
                 .orElseThrow(NoElementFoundException::new);
-
         if (token.getUsed()) {
             throw new InvalidRequestException("Token already used");
         }
-
         if (LocalDateTime.now().isAfter(token.getExpiresAt())) {
             throw new InvalidRequestException("Token expired");
         }
+        setUserEmailToVerified(token);
+        token.setUsed(true);
+        emailVerificationTokenRepository.save(token);
+    }
 
+    private void setUserEmailToVerified(EmailVerificationToken token) {
         User user = token.getUser();
         user.setIsEmailVerified(true);
         userService.save(user);
-        token.setUsed(true);
-        emailVerificationTokenRepository.save(token);
     }
 }

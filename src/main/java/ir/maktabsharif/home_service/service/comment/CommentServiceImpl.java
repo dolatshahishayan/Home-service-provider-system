@@ -4,9 +4,11 @@ import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.comment.CommentSaveUpdateRequest;
 import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
 import ir.maktabsharif.home_service.exception.DuplicateInfoException;
+import ir.maktabsharif.home_service.exception.InvalidRequestException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.comment.CommentMapper;
 import ir.maktabsharif.home_service.model.comment.Comment;
+import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.user.Expert;
@@ -35,10 +37,8 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
     @Override
     public Comment saveWithDTO(CommentSaveUpdateRequest commentSaveUpdateRequest) {
         Order order = orderService.findById(commentSaveUpdateRequest.getOrderId());
-        UserDetailsImpl currentUser =(UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
+        UserDetailsImpl currentUser = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String currentUserEmail = currentUser.user().getEmail();
-
         if (!order.getCustomer().getEmail().equals(currentUserEmail)) {
             throw new CouldNotUpdateException("You can't register any comments for this order!");
         }
@@ -49,6 +49,10 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
         if (order.getOrderStatus() != OrderStatus.PAYED) {
             throw new CouldNotUpdateException("You can't register any comments for this order because the order has not been finished yet!");
         }
+        return setExpertScore(order, commentSaveUpdateRequest);
+    }
+
+    private Comment setExpertScore(Order order, CommentSaveUpdateRequest commentSaveUpdateRequest) {
         long between = orderService.reduce1ScoreFromExpertPerHour(order);
         Comment comment = mapper.mapToEntity(commentSaveUpdateRequest);
         Expert expert = order.getExpert();
@@ -62,8 +66,12 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
             expert.setScore(finalScore);
         }
         Expert saved = expertService.save(expert);
-        if (saved.getScore() < 0) {
-            expertService.updateStatusToUnverified(saved.getId());
+        return saveComment(order, saved, comment);
+    }
+
+    private Comment saveComment(Order order, Expert expert, Comment comment) {
+        if (expert.getScore() < 0) {
+            expertService.updateStatusToUnverified(expert.getId());
         }
         comment.setOrder(order);
         comment.setRegistrationDate(LocalDateTime.now());
@@ -86,6 +94,11 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
     @Override
     public double viewExpertScoreByOrder(Integer orderId) {
         Comment byOrder = findByOrder(orderId);
+        if (byOrder.getOrder().getExpert() != null) {
+            if (byOrder.getOrder().getExpert().getExpertStatus() != ExpertStatus.VERIFIED) {
+                throw new InvalidRequestException("Expert status must be VERIFIED");
+            }
+        }
         return byOrder.getExpertScore();
     }
 
@@ -93,6 +106,9 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
     public double viewExpertAverageScore() {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Expert expert = expertService.findById(principal.user().getId());
+        if (expert.getExpertStatus() != ExpertStatus.VERIFIED) {
+            throw new InvalidRequestException("Expert status must be VERIFIED");
+        }
         return expert.getScore();
     }
 }

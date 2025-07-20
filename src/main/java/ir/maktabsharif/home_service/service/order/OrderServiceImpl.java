@@ -7,6 +7,7 @@ import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
 import ir.maktabsharif.home_service.exception.InvalidRequestException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.mapper.order.OrderMapper;
+import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
@@ -24,8 +25,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -40,7 +41,7 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     public OrderServiceImpl(OrderRepository repository, OrderMapper orderMapper, SuggestionService suggestionService, ExpertServiceService expertServiceService, CustomerService customerService, ir.maktabsharif.home_service.service.expert.ExpertService expertService, ServiceService serviceService) {
         super(repository, orderMapper);
         this.suggestionService = suggestionService;
-        expert_ServiceService = expertServiceService;
+        this.expert_ServiceService = expertServiceService;
         this.customerService = customerService;
         this.expertService = expertService;
         this.serviceService = serviceService;
@@ -50,6 +51,13 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     public Order saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest) {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Order order = mapper.mapToEntity(orderSaveUpdateRequest);
+        checkPriceAndsetExpertIfNotNull(orderSaveUpdateRequest, principal, order);
+        order.setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION);
+        order.setCreationDate(LocalDateTime.now());
+        return save(order);
+    }
+
+    private void checkPriceAndsetExpertIfNotNull(OrderSaveUpdateRequest orderSaveUpdateRequest, UserDetailsImpl principal, Order order) {
         if (principal.user().getId() == null) {
             throw new InvalidRequestException("Customer Id is required");
         }
@@ -61,9 +69,6 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
         if (order.getProposedPrice() < order.getService().getBasePrice()) {
             throw new InvalidRequestException("Proposed price must be greater than the service price");
         }
-        order.setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION);
-        order.setCreationDate(LocalDateTime.now());
-        return save(order);
     }
 
     @Override
@@ -96,6 +101,10 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     @Override
     public Page<OrderSummaryDTO> findAllByExpertId(Pageable pageable) {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Expert byId = expertService.findById(principal.user().getId());
+        if (byId.getExpertStatus()!= ExpertStatus.VERIFIED){
+            throw new InvalidRequestException("Expert status must be VERIFIED");
+        }
         Page<Order> byExpertId = repository.findByExpertId(principal.user().getId(), pageable);
         return byExpertId.map(mapper::mapToSummary);
     }
@@ -151,7 +160,7 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
         if (!order.getStartDate().isBefore(LocalDateTime.now())) {
             throw new CouldNotUpdateException("It's not the order's date.");
         }
-        return ChronoUnit.HOURS.between(order.getStartDate(), LocalDateTime.now());
+        return Duration.between(order.getStartDate(), LocalDateTime.now()).toHours();
     }
 
     @Override

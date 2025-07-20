@@ -28,7 +28,7 @@ public class TransactionController {
     }
 
     @PostMapping("/save-initial-transaction")
-    @Operation(summary = "Save initial transaction",description = "Saves an initial tranaction")
+    @Operation(summary = "Save initial transaction",description = "Saves an initial transaction")
     public ResponseEntity<TransactionInitializerDTO> saveInitialTransaction() {
         return ResponseEntity.ok(transactionService.createPendingTransaction());
     }

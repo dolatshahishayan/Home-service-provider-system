@@ -34,7 +34,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**", "/api/v1/admins/save", "/api/v1/customers/save", "/api/v1/experts/save","/api/v1/users/login","/verify-email.html","/login.html","/payment.html").permitAll()
+                        .requestMatchers("/api/v1/auth/**", "/api/v1/admins/save", "/api/v1/customers/save", "/api/v1/experts/save", "/api/v1/users/login", "/verify-email.html", "/login.html", "/payment.html").permitAll()
                         .anyRequest().authenticated()
                 ).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -44,7 +44,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService) {
-        JwtAuthenticationProvider authenticationProvider = new JwtAuthenticationProvider(userDetailsService,passwordEncoder());
+        JwtAuthenticationProvider authenticationProvider = new JwtAuthenticationProvider(userDetailsService, passwordEncoder());
         ProviderManager providerManager = new ProviderManager(authenticationProvider);
         providerManager.setEraseCredentialsAfterAuthentication(true);
         return providerManager;

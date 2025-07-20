@@ -37,9 +37,7 @@ public class ExpertServiceServiceImpl extends BaseServiceImpl<ExpertService, Int
             throw new ExpertAlreadyInServiceException();
         }
         Expert expert = expertService.findById(expertId);
-
         ir.maktabsharif.home_service.model.service.Service service = serviceService.findById(serviceId);
-
         ExpertService expertService = new ExpertService();
         expertService.setId(new ExpertServiceId(expertId, serviceId));
         expertService.setExpert(expert);

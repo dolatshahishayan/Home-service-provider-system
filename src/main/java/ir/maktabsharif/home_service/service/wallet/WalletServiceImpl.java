@@ -10,6 +10,7 @@ import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.enums.TransactionStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.transaction.Transaction;
+import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
 import ir.maktabsharif.home_service.repository.wallet.WalletRepository;
@@ -55,13 +56,17 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
         wallet.setBalance(wallet.getBalance() + credit);
         save(wallet);
         Transaction transaction = transactionService.findById(transactionId);
-        if (transaction.getExpireDate().isBefore(LocalDateTime.now())){
+        if (transaction.getExpireDate().isBefore(LocalDateTime.now())) {
             throw new InvalidRequestException("Time is expired");
         }
-        transaction.setSender(userService.findById(principal.user().getId()));
-        transaction.setReceiver(userService.findById(principal.user().getId()));
+        getTransaction(transaction, principal.user(), principal.user(), credit, TransactionStatus.COMPLETED);
+    }
+
+    private void getTransaction(Transaction transaction, User sender, User receiver, Double credit, TransactionStatus completed) {
+        transaction.setSender(userService.findById(sender.getId()));
+        transaction.setReceiver(userService.findById(receiver.getId()));
         transaction.setAmount(credit);
-        transaction.setStatus(TransactionStatus.COMPLETED);
+        transaction.setStatus(completed);
         transactionService.saveTransaction(transaction);
     }
 
@@ -69,34 +74,27 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
     public Wallet payFromWallet(Integer orderId) {
         Order order = orderService.findById(orderId);
         Wallet wallet = findByUserId(order.getCustomer().getId());
-        Double price = order.getFinalPrice();
-        if (wallet.getBalance() < price) {
+        if (wallet.getBalance() < order.getFinalPrice()) {
             Transaction transaction = new Transaction();
-            transaction.setSender(userService.findById(order.getCustomer().getId()));
-            transaction.setReceiver(userService.findById(order.getExpert().getId()));
-            transaction.setAmount(price);
-            transaction.setStatus(TransactionStatus.FAILED);
-            transactionService.saveTransaction(transaction);
-            throw new InsufficientFundsException("Insufficient funds. Please deposit " + (price - wallet.getBalance()) + " to your wallet.");
+            getTransaction(transaction, order.getCustomer(), order.getExpert(), order.getFinalPrice(), TransactionStatus.FAILED);
+            throw new InsufficientFundsException("Insufficient funds. Please deposit " + (order.getFinalPrice() - wallet.getBalance()) + " to your wallet.");
         }
-        Double newBalance = wallet.getBalance() - price;
-        wallet.setBalance(newBalance);
-        Wallet saved = save(wallet);
+        double expertShare = (order.getFinalPrice() * 70) / 100;
+        Transaction transaction = new Transaction();
+        getTransaction(transaction, order.getCustomer(), order.getExpert(), expertShare, TransactionStatus.COMPLETED);
+        return getExpertAndOrder(wallet, order.getFinalPrice(), order);
+    }
 
+    private Wallet getExpertAndOrder(Wallet customerWallet, Double price, Order order) {
+        Double newBalance = customerWallet.getBalance() - price;
+        customerWallet.setBalance(newBalance);
+        Wallet saved = save(customerWallet);
         double expertShare = (price * 70) / 100;
         Wallet expertWallet = findByUserId(order.getExpert().getId());
         expertWallet.setBalance(expertWallet.getBalance() + expertShare);
         save(expertWallet);
         order.setOrderStatus(OrderStatus.PAYED);
         orderService.save(order);
-
-
-        Transaction transaction = new Transaction();
-        transaction.setAmount(expertShare);
-        transaction.setSender(order.getCustomer());
-        transaction.setReceiver(order.getExpert());
-        transaction.setStatus(TransactionStatus.COMPLETED);
-        transactionService.saveTransaction(transaction);
         return saved;
     }
 

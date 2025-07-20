@@ -5,6 +5,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,7 +25,7 @@ public class JwtUtil {
 
     private static final long EXPIRATION_MS = 24 * 60 * 60 * 1000;
 
-    private final UserDetailsService  userDetailsService;
+    private final UserDetailsService userDetailsService;
 
     public JwtUtil(@Value("${jwt.secret}") String base64Secret, UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
@@ -41,7 +42,7 @@ public class JwtUtil {
                         .orElse("ROLE_USER"))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
-                .signWith(secretKey,SignatureAlgorithm.HS256)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -57,7 +58,7 @@ public class JwtUtil {
     public void validateToken(String token, String username, HttpServletRequest request) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         boolean valid = username.equals(userDetails.getUsername()) && !isTokenExpired(token);
-        if (valid){
+        if (valid) {
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

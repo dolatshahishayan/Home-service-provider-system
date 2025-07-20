@@ -69,20 +69,32 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
            throw new UserWithSameEmailExistsException();
        }
         Customer customer = mapper.mapToEntity(customerSaveUpdateRequest);
+        getCustomer(customerSaveUpdateRequest, customer);
+        save(customer);
+        sendVerificationEmail(customer);
+        createWalletForCustomer(customer);
+        return customer;
+    }
+
+    private void getCustomer(CustomerSaveUpdateRequest customerSaveUpdateRequest, Customer customer) {
         customer.setRole(Role.ROLE_CUSTOMER);
         customer.setPassword(passwordEncoder.encode(customerSaveUpdateRequest.getPassword()));
         customer.setEmail(customerSaveUpdateRequest.getEmail().toLowerCase());
         customer.setRegistrationDate(LocalDateTime.now());
         customer.setIsEmailVerified(false);
-        save(customer);
-        EmailVerificationToken token = emailService.createToken(customer, 60);
-        String link = emailService.buildFrontendVerificationLink(token);
-        emailService.sendVerificationEmail(customer.getEmail(), customer.getFirstName(), link);
+    }
+
+    private void createWalletForCustomer(Customer customer) {
         Customer byEmail = findByEmail(customer.getEmail());
         WalletSaveUpdateRequest walletSaveUpdateRequest = new WalletSaveUpdateRequest();
         walletSaveUpdateRequest.setUserId(byEmail.getId());
         walletService.saveWithDTO(walletSaveUpdateRequest);
-        return customer;
+    }
+
+    private void sendVerificationEmail(Customer customer) {
+        EmailVerificationToken token = emailService.createToken(customer, 60);
+        String link = emailService.buildFrontendVerificationLink(token);
+        emailService.sendVerificationEmail(customer.getEmail(), customer.getFirstName(), link);
     }
 
 }
