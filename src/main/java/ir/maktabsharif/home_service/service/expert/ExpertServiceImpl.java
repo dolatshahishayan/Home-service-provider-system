@@ -69,7 +69,6 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
         Expert expert = mapper.mapToEntity(expertSaveUpdateRequest);
         expert.setExpertStatus(ExpertStatus.NEW);
         expert.setIsEmailVerified(false);
-        byte[] bytesForExpert;
         if (imagePath != null) {
             return getExpertWithPicture(expertSaveUpdateRequest, imagePath, expert);
         }

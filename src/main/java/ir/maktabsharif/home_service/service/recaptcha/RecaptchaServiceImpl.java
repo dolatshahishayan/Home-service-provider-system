@@ -39,7 +39,6 @@ public class RecaptchaServiceImpl implements RecaptchaService {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(verifyUrl, HttpMethod.POST, request, new ParameterizedTypeReference<>() {});
-        Map<String, Object> body = response.getBody();
-        return body;
+        return response.getBody();
     }
 }
