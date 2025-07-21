@@ -15,21 +15,21 @@ public interface OrderService extends BaseService<Order, Integer> {
 
     Page<Order> findByServiceId(Integer serviceId, Pageable pageable);
 
-    Order saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest);
+    Order saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest,Integer userId);
 
     void chooseExpert(Integer suggestionId);
 
-    Page<OrderSummaryDTO> findAllByExpertId(Pageable pageable);
+    Page<OrderSummaryDTO> findAllByExpertId(Pageable pageable,Integer userId);
 
-    Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest);
+    Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest,Integer userId);
 
-    Order updateStatusToStarted(Integer orderId);
+    Order updateStatusToStarted(Integer orderId,Integer userId);
 
-    Order updateStatusToDone(Integer orderId);
+    Order updateStatusToDone(Integer orderId,Integer userId);
 
     long reduce1ScoreFromExpertPerHour(Order order);
 
-    Page<Order> findByCustomerId(OrderStatus status, Pageable pageable);
+    Page<Order> findByCustomerId(OrderStatus status, Pageable pageable,Integer userId);
 
-    boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId);
+    boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId,Integer userId);
 }

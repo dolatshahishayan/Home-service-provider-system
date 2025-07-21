@@ -8,6 +8,6 @@ public interface CommentService extends BaseService<Comment,Integer> {
     boolean existsByOrder(Integer orderId);
     Comment findByOrder(Integer orderId);
     double viewExpertScoreByOrder(Integer orderId);
-    Comment saveWithDTO(CommentSaveUpdateRequest commentSaveUpdateRequest);
-    double viewExpertAverageScore();
+    Comment saveWithDTO(CommentSaveUpdateRequest commentSaveUpdateRequest,Integer userId);
+    double viewExpertAverageScore(Integer userId);
 }

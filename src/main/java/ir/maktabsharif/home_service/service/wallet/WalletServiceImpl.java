@@ -11,7 +11,6 @@ import ir.maktabsharif.home_service.model.enums.TransactionStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.transaction.Transaction;
 import ir.maktabsharif.home_service.model.user.User;
-import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
 import ir.maktabsharif.home_service.repository.wallet.WalletRepository;
 import ir.maktabsharif.home_service.service.order.OrderService;
@@ -19,7 +18,6 @@ import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
 import ir.maktabsharif.home_service.service.transaction.TransactionService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,16 +48,16 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
     }
 
     @Override
-    public void addCreditToWallet(Double credit, Integer transactionId) {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Wallet wallet = findByUserId(principal.user().getId());
+    public void addCreditToWallet(Double credit, Integer transactionId,Integer userId) {
+        User principal = userService.findById(userId);
+        Wallet wallet = findByUserId(principal.getId());
         wallet.setBalance(wallet.getBalance() + credit);
         save(wallet);
         Transaction transaction = transactionService.findById(transactionId);
         if (transaction.getExpireDate().isBefore(LocalDateTime.now())) {
             throw new InvalidRequestException("Time is expired");
         }
-        getTransaction(transaction, principal.user(), principal.user(), credit, TransactionStatus.COMPLETED);
+        getTransaction(transaction, principal, principal, credit, TransactionStatus.COMPLETED);
     }
 
     private void getTransaction(Transaction transaction, User sender, User receiver, Double credit, TransactionStatus completed) {
@@ -104,9 +102,9 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
     }
 
     @Override
-    public Double getCurrentBalance() {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Wallet wallet = findByUserId(principal.user().getId());
+    public Double getCurrentBalance(Integer userId) {
+        User principal = userService.findById(userId);
+        Wallet wallet = findByUserId(principal.getId());
         return wallet.getBalance();
     }
 }

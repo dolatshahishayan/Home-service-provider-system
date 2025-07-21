@@ -12,16 +12,16 @@ import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.model.user.Expert;
-import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
+import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.repository.order.OrderRepository;
 import ir.maktabsharif.home_service.service.customer.CustomerService;
 import ir.maktabsharif.home_service.service.expert_service.ExpertServiceService;
 import ir.maktabsharif.home_service.service.service.ServiceService;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
+import ir.maktabsharif.home_service.service.user.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,31 +37,33 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     protected final CustomerService customerService;
     protected final ir.maktabsharif.home_service.service.expert.ExpertService expertService;
     protected final ServiceService serviceService;
+    private final UserService userService;
 
-    public OrderServiceImpl(OrderRepository repository, OrderMapper orderMapper, SuggestionService suggestionService, ExpertServiceService expertServiceService, CustomerService customerService, ir.maktabsharif.home_service.service.expert.ExpertService expertService, ServiceService serviceService) {
+    public OrderServiceImpl(OrderRepository repository, OrderMapper orderMapper, SuggestionService suggestionService, ExpertServiceService expertServiceService, CustomerService customerService, ir.maktabsharif.home_service.service.expert.ExpertService expertService, ServiceService serviceService, UserService userService) {
         super(repository, orderMapper);
         this.suggestionService = suggestionService;
         this.expert_ServiceService = expertServiceService;
         this.customerService = customerService;
         this.expertService = expertService;
         this.serviceService = serviceService;
+        this.userService = userService;
     }
 
     @Override
-    public Order saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest) {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public Order saveWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest,Integer userId) {
+        User currentUser = userService.findById(userId);
         Order order = mapper.mapToEntity(orderSaveUpdateRequest);
-        checkPriceAndsetExpertIfNotNull(orderSaveUpdateRequest, principal, order);
+        checkPriceAndSetExpertIfNotNull(orderSaveUpdateRequest, currentUser, order);
         order.setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION);
         order.setCreationDate(LocalDateTime.now());
         return save(order);
     }
 
-    private void checkPriceAndsetExpertIfNotNull(OrderSaveUpdateRequest orderSaveUpdateRequest, UserDetailsImpl principal, Order order) {
-        if (principal.user().getId() == null) {
+    private void checkPriceAndSetExpertIfNotNull(OrderSaveUpdateRequest orderSaveUpdateRequest, User principal, Order order) {
+        if (principal.getId() == null) {
             throw new InvalidRequestException("Customer Id is required");
         }
-        order.setCustomer(customerService.findById(principal.user().getId()));
+        order.setCustomer(customerService.findById(principal.getId()));
         if (orderSaveUpdateRequest.getExpertId() != null) {
             order.setExpert(expertService.findById(orderSaveUpdateRequest.getExpertId()));
         }
@@ -99,40 +101,40 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
-    public Page<OrderSummaryDTO> findAllByExpertId(Pageable pageable) {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Expert byId = expertService.findById(principal.user().getId());
+    public Page<OrderSummaryDTO> findAllByExpertId(Pageable pageable,Integer userId) {
+        User principal = userService.findById(userId);
+        Expert byId = expertService.findById(principal.getId());
         if (byId.getExpertStatus()!= ExpertStatus.VERIFIED){
             throw new InvalidRequestException("Expert status must be VERIFIED");
         }
-        Page<Order> byExpertId = repository.findByExpertId(principal.user().getId(), pageable);
+        Page<Order> byExpertId = repository.findByExpertId(principal.getId(), pageable);
         return byExpertId.map(mapper::mapToSummary);
     }
 
     @Override
-    public boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId) {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return suggestionService.existsByOrderIdAndExpertIdAndAcceptedTrue(orderId, principal.user().getId());
+    public boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId,Integer userId) {
+        User principal = userService.findById(userId);
+        return suggestionService.existsByOrderIdAndExpertIdAndAcceptedTrue(orderId, principal.getId());
     }
 
     @Override
-    public Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest) {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest,Integer userId) {
+        User principal = userService.findById(userId);
         Order order = findById(orderSaveUpdateRequest.getId());
         mapper.updateEntityWithDTO(orderSaveUpdateRequest, order);
-        if (principal.user().getId() == null) {
+        if (principal.getId() == null) {
             throw new InvalidRequestException("Customer Id is required");
         }
-        order.setCustomer(customerService.findById(principal.user().getId()));
+        order.setCustomer(customerService.findById(principal.getId()));
         if (orderSaveUpdateRequest.getExpertId() != null) {
             order.setExpert(expertService.findById(orderSaveUpdateRequest.getExpertId()));
         }
         return save(order);
     }
 
-    private Order updateStatus(Integer orderId, OrderStatus newStatus, UserDetailsImpl currentUser) {
+    private Order updateStatus(Integer orderId, OrderStatus newStatus, User currentUser) {
         Order order = findById(orderId);
-        if (!order.getCustomer().getEmail().equals(currentUser.user().getEmail())) {
+        if (!order.getCustomer().getEmail().equals(currentUser.getEmail())) {
             throw new CouldNotUpdateException("You can't update the status of this order.");
         }
         order.setOrderStatus(newStatus);
@@ -140,8 +142,8 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
-    public Order updateStatusToStarted(Integer orderId) {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public Order updateStatusToStarted(Integer orderId,Integer userId) {
+        User principal = userService.findById(userId);
         Order order = findById(orderId);
         if (!order.getStartDate().isBefore(LocalDateTime.now())) {
             throw new CouldNotUpdateException("You can't update order status to started before the start date.");
@@ -150,8 +152,8 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
-    public Order updateStatusToDone(Integer orderId) {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public Order updateStatusToDone(Integer orderId,Integer userId) {
+        User principal = userService.findById(userId);
         return updateStatus(orderId, OrderStatus.DONE, principal);
     }
 
@@ -164,9 +166,9 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
-    public Page<Order> findByCustomerId(OrderStatus status,Pageable pageable) {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Specification<Order> spec = (root, _, cb) -> cb.equal(root.get("customer").get("id"), principal.user().getId());
+    public Page<Order> findByCustomerId(OrderStatus status,Pageable pageable,Integer userId) {
+        User principal = userService.findById(userId);
+        Specification<Order> spec = (root, _, cb) -> cb.equal(root.get("customer").get("id"), principal.getId());
 
         if (status != null) {
             spec = spec.and((root, _, cb) -> cb.equal(root.get("orderStatus"), status));

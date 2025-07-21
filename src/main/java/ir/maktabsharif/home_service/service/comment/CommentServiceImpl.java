@@ -12,11 +12,11 @@ import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.user.Expert;
-import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
+import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.repository.comment.CommentRepository;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.service.order.OrderService;
-import org.springframework.security.core.context.SecurityContextHolder;
+import ir.maktabsharif.home_service.service.user.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,18 +27,20 @@ import java.time.LocalDateTime;
 public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, CommentRepository, CommentMapper> implements CommentService {
     protected final OrderService orderService;
     protected final ExpertService expertService;
+    private final UserService userService;
 
-    public CommentServiceImpl(CommentRepository repository, CommentMapper commentMapper, OrderService orderService, ExpertService expertService) {
+    public CommentServiceImpl(CommentRepository repository, CommentMapper commentMapper, OrderService orderService, ExpertService expertService, UserService userService) {
         super(repository, commentMapper);
         this.orderService = orderService;
         this.expertService = expertService;
+        this.userService = userService;
     }
 
     @Override
-    public Comment saveWithDTO(CommentSaveUpdateRequest commentSaveUpdateRequest) {
+    public Comment saveWithDTO(CommentSaveUpdateRequest commentSaveUpdateRequest,Integer userId) {
         Order order = orderService.findById(commentSaveUpdateRequest.getOrderId());
-        UserDetailsImpl currentUser = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String currentUserEmail = currentUser.user().getEmail();
+        User currentUser = userService.findById(userId);
+        String currentUserEmail = currentUser.getEmail();
         if (!order.getCustomer().getEmail().equals(currentUserEmail)) {
             throw new CouldNotUpdateException("You can't register any comments for this order!");
         }
@@ -103,9 +105,9 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
     }
 
     @Override
-    public double viewExpertAverageScore() {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Expert expert = expertService.findById(principal.user().getId());
+    public double viewExpertAverageScore(Integer userId) {
+        User currentUser = (userService.findById(userId));
+        Expert expert = expertService.findById(currentUser.getId());
         if (expert.getExpertStatus() != ExpertStatus.VERIFIED) {
             throw new InvalidRequestException("Expert status must be VERIFIED");
         }

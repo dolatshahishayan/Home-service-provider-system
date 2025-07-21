@@ -4,12 +4,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.maktabsharif.home_service.dto.transaction.TransactionFindResponse;
 import ir.maktabsharif.home_service.dto.transaction.TransactionInitializerDTO;
+import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.service.transaction.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,13 +26,15 @@ public class TransactionController {
     @GetMapping("/find-by-user")
     @Operation(summary = "Find by user",description = "Finds all transactions by user")
     public ResponseEntity<Page<TransactionFindResponse>> findTransactionsByUser(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(transactionService.findByUserId(PageRequest.of(page, size)));
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(transactionService.findByUserId(PageRequest.of(page, size),principal.user().getId()));
     }
 
     @PostMapping("/save-initial-transaction")
     @Operation(summary = "Save initial transaction",description = "Saves an initial transaction")
     public ResponseEntity<TransactionInitializerDTO> saveInitialTransaction() {
-        return ResponseEntity.ok(transactionService.createPendingTransaction());
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(transactionService.createPendingTransaction(principal.user().getId()));
     }
 
 }

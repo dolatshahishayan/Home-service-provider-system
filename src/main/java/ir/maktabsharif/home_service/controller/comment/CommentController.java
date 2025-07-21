@@ -6,10 +6,12 @@ import ir.maktabsharif.home_service.dto.ValidationGroup;
 import ir.maktabsharif.home_service.dto.comment.CommentFindResponse;
 import ir.maktabsharif.home_service.dto.comment.CommentSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.comment.CommentMapper;
+import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +28,8 @@ public class CommentController {
     @PostMapping("/save")
     @Operation(summary = "Save comment", description = "Save method for comment")
     public ResponseEntity<?> save(@RequestBody @Validated(ValidationGroup.Save.class) CommentSaveUpdateRequest commentSaveUpdateRequest) {
-        return ResponseEntity.ok(commentMapper.mapToResponse(commentService.saveWithDTO(commentSaveUpdateRequest)));
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(commentMapper.mapToResponse(commentService.saveWithDTO(commentSaveUpdateRequest,principal.user().getId())));
     }
 
     @GetMapping("/exists-by-order")
@@ -52,6 +55,7 @@ public class CommentController {
     @GetMapping("/view-average-score")
     @Operation(summary = "View average score",description = "View expert average score")
     public ResponseEntity<?> viewAverageScore() {
-        return ResponseEntity.ok(commentService.viewExpertAverageScore());
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(commentService.viewExpertAverageScore(principal.user().getId()));
     }
 }

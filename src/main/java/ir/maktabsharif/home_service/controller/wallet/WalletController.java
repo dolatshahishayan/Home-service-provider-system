@@ -7,6 +7,7 @@ import ir.maktabsharif.home_service.dto.payment.PaymentRequestDTO;
 import ir.maktabsharif.home_service.dto.wallet.WalletFindResponse;
 import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.wallet.WalletMapper;
+import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
 import ir.maktabsharif.home_service.service.recaptcha.RecaptchaService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,13 +43,11 @@ public class WalletController {
         if (!recaptchaService.isValid(dto.getRecaptcha())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Captcha is not valid");
         }
-        if (dto.getCardNumber().length() != 16) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Card number is not valid");
-        }
         if (dto.getClientTimeLeft() <= 0) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Client time left is invalid");
         }
-        walletService.addCreditToWallet(dto.getAmount(),dto.getTransactionId());
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        walletService.addCreditToWallet(dto.getAmount(), dto.getTransactionId(), principal.user().getId());
         return ResponseEntity.ok("Added credit to wallet");
     }
 
@@ -70,6 +70,7 @@ public class WalletController {
     @GetMapping("/get-balance")
     @Operation(summary = "Get balance", description = "Get wallet's current balance")
     public ResponseEntity<Double> getCurrentBalance() {
-        return ResponseEntity.ok(walletService.getCurrentBalance());
+        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(walletService.getCurrentBalance(principal.user().getId()));
     }
 }
