@@ -11,11 +11,13 @@ import ir.maktabsharif.home_service.model.comment.Comment;
 import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
+import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.repository.comment.CommentRepository;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.service.order.OrderService;
+import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,12 +30,14 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
     protected final OrderService orderService;
     protected final ExpertService expertService;
     private final UserService userService;
+    private final SuggestionService suggestionService;
 
-    public CommentServiceImpl(CommentRepository repository, CommentMapper commentMapper, OrderService orderService, ExpertService expertService, UserService userService) {
+    public CommentServiceImpl(CommentRepository repository, CommentMapper commentMapper, OrderService orderService, ExpertService expertService, UserService userService, SuggestionService suggestionService) {
         super(repository, commentMapper);
         this.orderService = orderService;
         this.expertService = expertService;
         this.userService = userService;
+        this.suggestionService = suggestionService;
     }
 
     @Override
@@ -55,7 +59,8 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
     }
 
     private Comment setExpertScore(Order order, CommentSaveUpdateRequest commentSaveUpdateRequest) {
-        long between = orderService.reduce1ScoreFromExpertPerHour(order);
+        Suggestion byOrderId = suggestionService.findByOrderId(order.getId());
+        long between = orderService.reduce1ScoreFromExpertPerHour(byOrderId);
         Comment comment = mapper.mapToEntity(commentSaveUpdateRequest);
         Expert expert = order.getExpert();
         Double commentScore = comment.getExpertScore();

@@ -9,8 +9,12 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface SuggestionRepository extends JpaRepository<Suggestion, Integer>, JpaSpecificationExecutor<Suggestion> {
     Page<Suggestion> findAllByExpertId(Integer expertId, Pageable pageable);
+
+    Optional<Suggestion> findByOrderId(Integer orderId);
 
     @Query("select s from Suggestion s where s.order = :order order by s.price asc")
     Page<Suggestion> findAllByOrderAndSortByPriceAsc(@Param("order") Order order,Pageable pageable);

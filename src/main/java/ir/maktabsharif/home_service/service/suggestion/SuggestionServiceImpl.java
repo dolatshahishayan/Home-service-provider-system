@@ -132,4 +132,9 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
         suggestion.setAccepted(true);
         save(suggestion);
     }
+
+    @Override
+    public Suggestion findByOrderId(Integer orderId) {
+        return repository.findByOrderId(orderId).orElseThrow(NoElementFoundException::new);
+    }
 }

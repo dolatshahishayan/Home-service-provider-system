@@ -158,11 +158,11 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
-    public long reduce1ScoreFromExpertPerHour(Order order) {
-        if (!order.getStartDate().isBefore(LocalDateTime.now())) {
+    public long reduce1ScoreFromExpertPerHour(Suggestion suggestion) {
+        if (!suggestion.getStartDate().isBefore(LocalDateTime.now())) {
             throw new CouldNotUpdateException("It's not the order's date.");
         }
-        return Duration.between(order.getStartDate(), LocalDateTime.now()).toHours();
+        return Duration.between(suggestion.getStartDate(), LocalDateTime.now()).toHours();
     }
 
     @Override

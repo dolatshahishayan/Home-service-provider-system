@@ -5,6 +5,7 @@ import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.order.OrderSummaryDTO;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
+import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -27,7 +28,7 @@ public interface OrderService extends BaseService<Order, Integer> {
 
     Order updateStatusToDone(Integer orderId,Integer userId);
 
-    long reduce1ScoreFromExpertPerHour(Order order);
+    long reduce1ScoreFromExpertPerHour(Suggestion suggestion);
 
     Page<Order> findByCustomerId(OrderStatus status, Pageable pageable,Integer userId);
 
