@@ -65,14 +65,26 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
 
     @Override
     public Customer register(CustomerSaveUpdateRequest customerSaveUpdateRequest) {
-       if (userService.existsByEmail(customerSaveUpdateRequest.getEmail())) {
-           throw new UserWithSameEmailExistsException();
-       }
-        Customer customer = mapper.mapToEntity(customerSaveUpdateRequest);
+        Customer customer;
+        Customer byEmail = findByEmail(customerSaveUpdateRequest.getEmail());
+        customer = getCustomerAndCheckVerified(customerSaveUpdateRequest, byEmail);
         getCustomer(customerSaveUpdateRequest, customer);
         save(customer);
         sendVerificationEmail(customer);
         createWalletForCustomer(customer);
+        return customer;
+    }
+
+    private Customer getCustomerAndCheckVerified(CustomerSaveUpdateRequest customerSaveUpdateRequest, Customer byEmail) {
+        Customer customer;
+        if (byEmail != null) {
+            customer = byEmail;
+            if (customer.getIsEmailVerified()) {
+                throw new UserWithSameEmailExistsException();
+            }
+        } else {
+            customer = mapper.mapToEntity(customerSaveUpdateRequest);
+        }
         return customer;
     }
 

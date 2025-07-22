@@ -65,6 +65,12 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
         Expert expert = order.getExpert();
         Double commentScore = comment.getExpertScore();
         Double finalScore = commentScore - between;
+        setExpertScore(expert, finalScore);
+        Expert saved = expertService.save(expert);
+        return saveComment(order, saved, comment);
+    }
+
+    private static void setExpertScore(Expert expert, Double finalScore) {
         if (expert.getScore() != null) {
             Double expertScore = expert.getScore();
             Double finalExpertScore = (expertScore + finalScore) / 2;
@@ -72,8 +78,6 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
         } else {
             expert.setScore(finalScore);
         }
-        Expert saved = expertService.save(expert);
-        return saveComment(order, saved, comment);
     }
 
     private Comment saveComment(Order order, Expert expert, Comment comment) {

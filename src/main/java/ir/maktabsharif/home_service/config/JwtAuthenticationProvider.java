@@ -5,12 +5,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.List;
 
 public class JwtAuthenticationProvider implements AuthenticationProvider {
     private final UserDetailsService userDetailsService;
@@ -29,7 +26,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         if (!passwordEncoder.matches(rawPassword, userDetails.getPassword())) {
             throw new BadCredentialsException("Invalid password");
         }
-        return UsernamePasswordAuthenticationToken.authenticated(userDetails,null,List.of(new SimpleGrantedAuthority("ROLE_AUTHOR")));
+        return UsernamePasswordAuthenticationToken.authenticated(userDetails,null,userDetails.getAuthorities());
     }
 
     @Override

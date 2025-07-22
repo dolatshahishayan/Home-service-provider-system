@@ -63,10 +63,16 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
 
     @Override
     public Expert register(ExpertSaveUpdateRequest expertSaveUpdateRequest, String imagePath) {
-        if (userService.existsByEmail(expertSaveUpdateRequest.getEmail())) {
-            throw new UserWithSameEmailExistsException();
+        Expert expert;
+        Expert byEmail=findByEmail(expertSaveUpdateRequest.getEmail());
+        if (byEmail!=null) {
+            expert=byEmail;
+            if (expert.getIsEmailVerified()){
+                throw new UserWithSameEmailExistsException();
+            }
+        }else {
+            expert = mapper.mapToEntity(expertSaveUpdateRequest);
         }
-        Expert expert = mapper.mapToEntity(expertSaveUpdateRequest);
         expert.setExpertStatus(ExpertStatus.NEW);
         expert.setIsEmailVerified(false);
         if (imagePath != null) {
