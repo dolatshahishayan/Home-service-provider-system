@@ -2,6 +2,7 @@ package ir.maktabsharif.home_service.service.order;
 
 import ir.maktabsharif.home_service.base.service.BaseService;
 import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
+import ir.maktabsharif.home_service.dto.order.OrderSearchRequest;
 import ir.maktabsharif.home_service.dto.order.OrderSummaryDTO;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
@@ -29,6 +30,8 @@ public interface OrderService extends BaseService<Order, Integer> {
     Order updateStatusToDone(Integer orderId,Integer userId);
 
     long reduce1ScoreFromExpertPerHour(Suggestion suggestion);
+
+    Page<OrderSummaryDTO> searchOrders(OrderSearchRequest request, Pageable pageable);
 
     Page<Order> findByCustomerId(OrderStatus status, Pageable pageable,Integer userId);
 

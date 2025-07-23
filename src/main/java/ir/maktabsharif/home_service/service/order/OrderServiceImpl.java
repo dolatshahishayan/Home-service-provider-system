@@ -2,6 +2,7 @@ package ir.maktabsharif.home_service.service.order;
 
 import ir.maktabsharif.home_service.base.service.BaseServiceImpl;
 import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
+import ir.maktabsharif.home_service.dto.order.OrderSearchRequest;
 import ir.maktabsharif.home_service.dto.order.OrderSummaryDTO;
 import ir.maktabsharif.home_service.exception.CouldNotUpdateException;
 import ir.maktabsharif.home_service.exception.InvalidRequestException;
@@ -19,6 +20,7 @@ import ir.maktabsharif.home_service.service.expert_service.ExpertServiceService;
 import ir.maktabsharif.home_service.service.service.ServiceService;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
 import ir.maktabsharif.home_service.service.user.UserService;
+import ir.maktabsharif.home_service.util.specification.OrderSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -163,6 +165,12 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
             throw new CouldNotUpdateException("It's not the order's date.");
         }
         return Duration.between(suggestion.getStartDate(), LocalDateTime.now()).toHours();
+    }
+
+    @Override
+    public Page<OrderSummaryDTO> searchOrders(OrderSearchRequest request, Pageable pageable) {
+        Specification<Order> orderSpecification = OrderSpecification.buildSearchSpec(request);
+        return repository.findAll(orderSpecification, pageable).map(mapper::mapToSummary);
     }
 
     @Override

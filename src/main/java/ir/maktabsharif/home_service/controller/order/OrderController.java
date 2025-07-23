@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.maktabsharif.home_service.dto.ValidationGroup;
 import ir.maktabsharif.home_service.dto.order.OrderFindResponse;
 import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
+import ir.maktabsharif.home_service.dto.order.OrderSearchRequest;
 import ir.maktabsharif.home_service.dto.order.OrderSummaryDTO;
 import ir.maktabsharif.home_service.mapper.order.OrderMapper;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
@@ -70,6 +71,13 @@ public class OrderController {
         return ResponseEntity.ok("Expert chosen");
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/search-orders")
+    @Operation(summary = "Search orders",description = "Search order by filters")
+    public ResponseEntity<Page<OrderSummaryDTO>> searchOrders(@RequestBody OrderSearchRequest orderSearchRequest,@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(orderService.searchOrders(orderSearchRequest,PageRequest.of(page, size)));
+    }
+
     @PreAuthorize("hasAuthority('ROLE_EXPERT')")
     @GetMapping("/find-all-by-expert")
     @Operation(summary = "Find all by expert", description = "Find all orders for an expert")
@@ -78,7 +86,7 @@ public class OrderController {
         return ResponseEntity.ok(orderService.findAllByExpertId(PageRequest.of(page, size),principal.user().getId()));
     }
 
-    @PreAuthorize("hasAuthority('ROLE_EXPERT')")
+    @PreAuthorize("hasAnyAuthority('ROLE_EXPERT','ROLE_ADMIN')")
     @GetMapping("/find-order-with-details")
     @Operation(summary = "Find order with details", description = "Find order with details by order id")
     public ResponseEntity<OrderFindResponse> findOrderWithDetails(@RequestParam Integer orderId) {
