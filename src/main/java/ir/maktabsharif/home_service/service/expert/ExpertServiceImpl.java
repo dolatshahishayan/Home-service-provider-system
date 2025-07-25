@@ -11,10 +11,10 @@ import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.token.EmailVerificationToken;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.expert.ExpertRepository;
-import ir.maktabsharif.home_service.service.email.EmailService;
 import ir.maktabsharif.home_service.service.order.OrderService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
+import ir.maktabsharif.home_service.util.EmailUtil;
 import ir.maktabsharif.home_service.util.ImageUtil;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -34,16 +34,16 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
     protected final WalletService walletService;
     protected final ImageUtil imageUtil;
     protected final OrderService orderService;
-    protected final EmailService emailService;
+    protected final EmailUtil emailUtil;
     protected final PasswordEncoder passwordEncoder;
 
-    public ExpertServiceImpl(ExpertRepository repository, ExpertMapper expertMapper, UserService userService, WalletService walletService, ImageUtil imageUtil, @Lazy OrderService orderService, EmailService emailService, PasswordEncoder passwordEncoder) {
+    public ExpertServiceImpl(ExpertRepository repository, ExpertMapper expertMapper, UserService userService, WalletService walletService, ImageUtil imageUtil, @Lazy OrderService orderService, EmailUtil emailUtil, PasswordEncoder passwordEncoder) {
         super(repository, expertMapper);
         this.userService = userService;
         this.walletService = walletService;
         this.imageUtil = imageUtil;
         this.orderService = orderService;
-        this.emailService = emailService;
+        this.emailUtil = emailUtil;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -113,9 +113,9 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
     }
 
     private void sendVerificationEmail(Expert expert) {
-        EmailVerificationToken token = emailService.createToken(expert, 60);
-        String link = emailService.buildFrontendVerificationLink(token);
-        emailService.sendVerificationEmail(expert.getEmail(), expert.getFirstName(), link);
+        EmailVerificationToken token = emailUtil.createToken(expert, 60);
+        String link = emailUtil.buildFrontendVerificationLink(token);
+        emailUtil.sendVerificationEmail(expert.getEmail(), expert.getFirstName(), link);
     }
 
     @Override

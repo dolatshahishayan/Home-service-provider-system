@@ -1,4 +1,4 @@
-package ir.maktabsharif.home_service.service.email;
+package ir.maktabsharif.home_service.util;
 
 import ir.maktabsharif.home_service.exception.InvalidRequestException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 @Service
 @Transactional
-public class EmailServiceImpl implements EmailService {
+public class EmailUtil {
     private final JavaMailSender mailSender;
     @Value("${from.email}")
     private String from;
@@ -26,13 +26,12 @@ public class EmailServiceImpl implements EmailService {
 
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
     private final UserService userService;
-    public EmailServiceImpl(JavaMailSender mailSender, EmailVerificationTokenRepository emailVerificationTokenRepository, UserService userService) {
+    public EmailUtil(JavaMailSender mailSender, EmailVerificationTokenRepository emailVerificationTokenRepository, UserService userService) {
         this.mailSender = mailSender;
         this.emailVerificationTokenRepository = emailVerificationTokenRepository;
         this.userService = userService;
     }
 
-    @Override
     public void sendVerificationEmail(String to, String firstName, String verificationLink){
         String subject = "Confirm Your Account";
         String text = "Hello " + firstName + ",\n\n" +
@@ -49,12 +48,10 @@ public class EmailServiceImpl implements EmailService {
         mailSender.send(message);
     }
 
-    @Override
     public String buildFrontendVerificationLink(EmailVerificationToken token) {
         return frontendUrl + "/verify-email.html?token=" + token.getToken();
     }
 
-    @Override
     public EmailVerificationToken createToken(User user, int minutesValid) {
         EmailVerificationToken token = new EmailVerificationToken();
         token.setToken(UUID.randomUUID().toString());
@@ -64,7 +61,6 @@ public class EmailServiceImpl implements EmailService {
         return emailVerificationTokenRepository.save(token);
     }
 
-    @Override
     public void verifyToken(String tokenValue) {
         EmailVerificationToken token = emailVerificationTokenRepository.findByToken(tokenValue)
                 .orElseThrow(NoElementFoundException::new);

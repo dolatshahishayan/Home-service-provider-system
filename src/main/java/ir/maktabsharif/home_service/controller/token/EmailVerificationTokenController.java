@@ -3,7 +3,7 @@ package ir.maktabsharif.home_service.controller.token;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.maktabsharif.home_service.dto.user.VerificationRequest;
-import ir.maktabsharif.home_service.service.email.EmailService;
+import ir.maktabsharif.home_service.util.EmailUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Authentication controller",description = "Controller class for authentication")
 public class EmailVerificationTokenController {
 
-    private final EmailService emailService;
+    private final EmailUtil emailUtil;
 
     @PostMapping("/verify-email")
     @Operation(summary = "Verify email",description = "Method for verifying email")
     public ResponseEntity<String> verifyEmail(@RequestBody VerificationRequest verificationRequest) {
-        emailService.verifyToken(verificationRequest.getToken());
+        emailUtil.verifyToken(verificationRequest.getToken());
         return ResponseEntity.ok("Email verified");
     }
 }

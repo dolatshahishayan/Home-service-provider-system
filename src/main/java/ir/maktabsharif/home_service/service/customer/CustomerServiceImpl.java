@@ -10,9 +10,9 @@ import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.token.EmailVerificationToken;
 import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.repository.customer.CustomerRepository;
-import ir.maktabsharif.home_service.service.email.EmailService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
+import ir.maktabsharif.home_service.util.EmailUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -27,14 +27,14 @@ import java.time.LocalDateTime;
 public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, CustomerRepository, CustomerMapper> implements CustomerService {
     protected final UserService userService;
     protected final WalletService walletService;
-    protected final EmailService emailService;
+    protected final EmailUtil emailUtil;
     protected final PasswordEncoder passwordEncoder;
 
-    public CustomerServiceImpl(CustomerRepository repository, CustomerMapper customerMapper, UserService userService, WalletService walletService, EmailService emailService, PasswordEncoder passwordEncoder) {
+    public CustomerServiceImpl(CustomerRepository repository, CustomerMapper customerMapper, UserService userService, WalletService walletService, EmailUtil emailUtil, PasswordEncoder passwordEncoder) {
         super(repository, customerMapper);
         this.userService = userService;
         this.walletService = walletService;
-        this.emailService = emailService;
+        this.emailUtil = emailUtil;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -104,9 +104,9 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
     }
 
     private void sendVerificationEmail(Customer customer) {
-        EmailVerificationToken token = emailService.createToken(customer, 60);
-        String link = emailService.buildFrontendVerificationLink(token);
-        emailService.sendVerificationEmail(customer.getEmail(), customer.getFirstName(), link);
+        EmailVerificationToken token = emailUtil.createToken(customer, 60);
+        String link = emailUtil.buildFrontendVerificationLink(token);
+        emailUtil.sendVerificationEmail(customer.getEmail(), customer.getFirstName(), link);
     }
 
 }

@@ -9,8 +9,8 @@ import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.wallet.WalletMapper;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
-import ir.maktabsharif.home_service.service.recaptcha.RecaptchaService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
+import ir.maktabsharif.home_service.util.RecaptchaUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +27,7 @@ public class WalletController {
 
     private final WalletService walletService;
     private final WalletMapper walletMapper;
-    private final RecaptchaService recaptchaService;
+    private final RecaptchaUtil recaptchaUtil;
 
     @PostMapping("/save")
     @Operation(summary = "Save wallet", description = "Method for saving a wallet")
@@ -40,7 +40,7 @@ public class WalletController {
     @PutMapping("/add-credit-to-wallet")
     @Operation(summary = "Add credit to wallet", description = "Method for adding credit to wallet")
     public ResponseEntity<String> addCreditToWallet(@RequestBody PaymentRequestDTO dto) {
-        if (!recaptchaService.isValid(dto.getRecaptcha())) {
+        if (!recaptchaUtil.isValid(dto.getRecaptcha())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Captcha is not valid");
         }
         if (dto.getClientTimeLeft() <= 0) {

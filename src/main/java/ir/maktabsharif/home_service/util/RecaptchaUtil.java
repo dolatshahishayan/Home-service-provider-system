@@ -1,4 +1,4 @@
-package ir.maktabsharif.home_service.service.recaptcha;
+package ir.maktabsharif.home_service.util;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -11,14 +11,13 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Map;
 
 @Service
-public class RecaptchaServiceImpl implements RecaptchaService {
+public class RecaptchaUtil{
 
     @Value("${recaptcha.secret}")
     private String recaptchaSecret;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Override
     public boolean isValid(String token) {
         System.out.println("⚡️ Recaptcha validation started...");
         String verifyUrl = "https://www.google.com/recaptcha/api/siteverify";
