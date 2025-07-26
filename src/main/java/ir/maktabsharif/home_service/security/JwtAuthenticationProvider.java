@@ -1,4 +1,4 @@
-package ir.maktabsharif.home_service.config;
+package ir.maktabsharif.home_service.security;
 
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;

@@ -11,6 +11,7 @@ import ir.maktabsharif.home_service.mapper.order.OrderMapper;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
+import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,12 +33,13 @@ public class OrderController {
 
     private final OrderService orderService;
     private final OrderMapper orderMapper;
+    private final SecurityContextUtil securityContextUtil;
 
     @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
     @PostMapping("/save")
     @Operation(summary = "Save order", description = "Method for saving an order")
     public ResponseEntity<OrderFindResponse> save(@RequestBody @Validated(ValidationGroup.Save.class) OrderSaveUpdateRequest order) {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl principal = securityContextUtil.getCurrentUser();
         Order saved = orderService.saveWithDTO(order,principal.user().getId());
         return ResponseEntity.ok(orderMapper.mapToResponse(saved));
     }
@@ -45,7 +47,7 @@ public class OrderController {
     @PutMapping("/update")
     @Operation(summary = "Update order", description = "Method for updating an order")
     public ResponseEntity<OrderFindResponse> update(@RequestBody @Validated(ValidationGroup.Update.class) OrderSaveUpdateRequest order) {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl principal = securityContextUtil.getCurrentUser();
         Order updated = orderService.updateWithDTO(order,principal.user().getId());
         return ResponseEntity.ok(orderMapper.mapToResponse(updated));
     }
@@ -82,7 +84,7 @@ public class OrderController {
     @GetMapping("/find-all-by-expert")
     @Operation(summary = "Find all by expert", description = "Find all orders for an expert")
     public ResponseEntity<Page<OrderSummaryDTO>> findAllByExpert(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl principal = securityContextUtil.getCurrentUser();
         return ResponseEntity.ok(orderService.findAllByExpertId(PageRequest.of(page, size),principal.user().getId()));
     }
 
@@ -90,7 +92,7 @@ public class OrderController {
     @GetMapping("/find-order-with-details")
     @Operation(summary = "Find order with details", description = "Find order with details by order id")
     public ResponseEntity<OrderFindResponse> findOrderWithDetails(@RequestParam Integer orderId) {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl principal = securityContextUtil.getCurrentUser();
         boolean isAccepted = orderService.existsByOrderIdAndExpertIdAndAcceptedTrue(orderId,principal.user().getId());
         if (!isAccepted) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
@@ -103,7 +105,7 @@ public class OrderController {
     @GetMapping("/find-all-by-customer")
     @Operation(summary = "Find all by customer", description = "Find all orders for a customer")
     public ResponseEntity<Page<OrderFindResponse>> findAllByCustomer(@RequestParam(required = false) OrderStatus orderStatus,@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl principal = securityContextUtil.getCurrentUser();
         Page<Order> byCustomerId = orderService.findByCustomerId(orderStatus,PageRequest.of(page, size),principal.user().getId());
         return ResponseEntity.ok(byCustomerId.map(orderMapper::mapToResponse));
     }
@@ -112,7 +114,7 @@ public class OrderController {
     @PutMapping("/update-status-to-started")
     @Operation(summary = "Update status to started", description = "Update an order's status to started")
     public ResponseEntity<OrderFindResponse> updateStatusToStarted(@RequestParam Integer orderId) {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl principal = securityContextUtil.getCurrentUser();
         Order order = orderService.updateStatusToStarted(orderId,principal.user().getId());
         return ResponseEntity.ok(orderMapper.mapToResponse(order));
     }
@@ -121,7 +123,7 @@ public class OrderController {
     @PutMapping("/update-status-to-done")
     @Operation(summary = "Update status to done", description = "Update an order's status to done")
     public ResponseEntity<OrderFindResponse> updateStatusToDone(@RequestParam Integer orderId) {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl principal = securityContextUtil.getCurrentUser();
         Order order = orderService.updateStatusToDone(orderId,principal.user().getId());
         return ResponseEntity.ok(orderMapper.mapToResponse(order));
     }

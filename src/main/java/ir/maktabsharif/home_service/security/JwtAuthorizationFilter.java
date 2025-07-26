@@ -1,4 +1,4 @@
-package ir.maktabsharif.home_service.config;
+package ir.maktabsharif.home_service.security;
 
 import ir.maktabsharif.home_service.util.JwtUtil;
 import jakarta.servlet.FilterChain;

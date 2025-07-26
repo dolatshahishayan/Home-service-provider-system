@@ -1,4 +1,4 @@
-package ir.maktabsharif.home_service.config;
+package ir.maktabsharif.home_service.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ir.maktabsharif.home_service.dto.user.LoginDTO;

@@ -7,12 +7,15 @@ import ir.maktabsharif.home_service.dto.suggestion.SuggestionFindResponse;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.suggestion.SuggestionMapper;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
+import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
+import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,12 +27,14 @@ public class SuggestionController {
 
     private final SuggestionService suggestionService;
     private final SuggestionMapper suggestionMapper;
+    private final SecurityContextUtil securityContextUtil;
 
     @PreAuthorize("hasAuthority('ROLE_EXPERT')")
     @PostMapping("/save")
     @Operation(summary = "Save suggestion", description = "Method for saving a suggestion")
     public ResponseEntity<?> save(@RequestBody @Validated(ValidationGroup.Save.class) SuggestionSaveUpdateRequest suggestion) {
-        Suggestion saved = suggestionService.registerSuggestionForOrder(suggestion);
+        UserDetailsImpl principal = securityContextUtil.getCurrentUser();
+        Suggestion saved = suggestionService.registerSuggestionForOrder(suggestion,principal);
         return ResponseEntity.ok(suggestionMapper.mapToResponse(saved));
     }
 

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Tag(name = "Authentication controller",description = "Controller class for authentication")
-public class EmailVerificationTokenController {
+public class EmailController {
 
     private final EmailUtil emailUtil;
 

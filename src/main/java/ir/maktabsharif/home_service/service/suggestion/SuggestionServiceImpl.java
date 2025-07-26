@@ -40,9 +40,8 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
     }
 
     @Override
-    public Suggestion registerSuggestionForOrder(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest) {
+    public Suggestion registerSuggestionForOrder(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest,UserDetailsImpl principal) {
         Suggestion suggestion = mapper.mapToEntity(suggestionSaveUpdateRequest);
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Expert byId = expertService.findById(principal.user().getId());
         checkPriceAndOrderStatus(suggestionSaveUpdateRequest, byId, suggestion, principal);
         suggestion.setCreationDate(LocalDateTime.now());

@@ -28,6 +28,5 @@ public class OrderSaveUpdateRequest {
     private String address;
     @NotNull(groups = {ValidationGroup.Save.class,ValidationGroup.Update.class})
     private Integer serviceId;
-    private Integer expertId;
     private Double finalPrice;
 }

@@ -9,6 +9,7 @@ import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.wallet.WalletMapper;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.model.wallet.Wallet;
+import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
 import ir.maktabsharif.home_service.util.RecaptchaUtil;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class WalletController {
     private final WalletService walletService;
     private final WalletMapper walletMapper;
     private final RecaptchaUtil recaptchaUtil;
+    private final SecurityContextUtil securityContextUtil;
 
     @PostMapping("/save")
     @Operation(summary = "Save wallet", description = "Method for saving a wallet")
@@ -46,7 +48,7 @@ public class WalletController {
         if (dto.getClientTimeLeft() <= 0) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Client time left is invalid");
         }
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl principal = securityContextUtil.getCurrentUser();
         walletService.addCreditToWallet(dto.getAmount(), dto.getTransactionId(), principal.user().getId());
         return ResponseEntity.ok("Added credit to wallet");
     }
@@ -70,7 +72,7 @@ public class WalletController {
     @GetMapping("/get-balance")
     @Operation(summary = "Get balance", description = "Get wallet's current balance")
     public ResponseEntity<Double> getCurrentBalance() {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl principal = securityContextUtil.getCurrentUser();
         return ResponseEntity.ok(walletService.getCurrentBalance(principal.user().getId()));
     }
 }

@@ -7,11 +7,11 @@ import ir.maktabsharif.home_service.dto.comment.CommentFindResponse;
 import ir.maktabsharif.home_service.dto.comment.CommentSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.comment.CommentMapper;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
+import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,12 +23,13 @@ public class CommentController {
 
     private final CommentService commentService;
     private final CommentMapper commentMapper;
+    private final SecurityContextUtil  securityContextUtil;
 
     @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
     @PostMapping("/save")
     @Operation(summary = "Save comment", description = "Save method for comment")
     public ResponseEntity<?> save(@RequestBody @Validated(ValidationGroup.Save.class) CommentSaveUpdateRequest commentSaveUpdateRequest) {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl principal = securityContextUtil.getCurrentUser();
         return ResponseEntity.ok(commentMapper.mapToResponse(commentService.saveWithDTO(commentSaveUpdateRequest,principal.user().getId())));
     }
 
@@ -55,7 +56,7 @@ public class CommentController {
     @GetMapping("/view-average-score")
     @Operation(summary = "View average score",description = "View expert average score")
     public ResponseEntity<?> viewAverageScore() {
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl principal = securityContextUtil.getCurrentUser();
         return ResponseEntity.ok(commentService.viewExpertAverageScore(principal.user().getId()));
     }
 }
