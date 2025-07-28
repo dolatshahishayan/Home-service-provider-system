@@ -19,7 +19,6 @@ import ir.maktabsharif.home_service.service.order.OrderService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,14 +79,13 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
     }
 
     @Override
-    public Suggestion updateWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest) {
+    public Suggestion updateWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest,Integer userId) {
         Suggestion suggestion = findById(suggestionSaveUpdateRequest.getId());
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!expertServiceService.existsByExpertIdAndServiceId(principal.user().getId(), suggestion.getOrder().getService().getId())) {
+        if (!expertServiceService.existsByExpertIdAndServiceId(userId, suggestion.getOrder().getService().getId())) {
             throw new InvalidRequestException("Expert Id and Service Id are not registered");
         }
         mapper.updateEntityWithDTO(suggestionSaveUpdateRequest, suggestion);
-        suggestion.setExpert(expertService.findById(principal.user().getId()));
+        suggestion.setExpert(expertService.findById(userId));
         return save(suggestion);
     }
 

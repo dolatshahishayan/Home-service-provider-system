@@ -6,121 +6,151 @@ import ir.maktabsharif.home_service.exception.NoUserFoundWithGivenCredentialsExc
 import ir.maktabsharif.home_service.exception.UserWithSameEmailExistsException;
 import ir.maktabsharif.home_service.mapper.customer.CustomerMapper;
 import ir.maktabsharif.home_service.model.enums.Role;
+import ir.maktabsharif.home_service.model.token.EmailVerificationToken;
 import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.repository.customer.CustomerRepository;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
+import ir.maktabsharif.home_service.util.EmailUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class CustomerServiceImplTest {
 
-    @Mock private UserService userService;
-    @Mock private CustomerRepository customerRepository;
-    @Mock private CustomerMapper customerMapper;
-    @Mock private WalletService walletService;
+    @InjectMocks
+    private CustomerServiceImpl customerService;
 
-    @InjectMocks private CustomerServiceImpl customerService;
+    @Mock
+    private CustomerRepository customerRepository;
+    @Mock
+    private CustomerMapper customerMapper;
+    @Mock
+    private UserService userService;
+    @Mock
+    private WalletService walletService;
+    @Mock
+    private EmailUtil emailUtil;
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @Test
-    void updateWithDTO_shouldThrow_whenEmailIsUsedByOther() {
+    void testFindByEmail_found() {
+        Customer customer = new Customer();
+        when(customerRepository.findByEmail("a@test.com")).thenReturn(Optional.of(customer));
+
+        Customer result = customerService.findByEmail("a@test.com");
+
+        assertEquals(customer, result);
+    }
+
+    @Test
+    void testFindByEmail_notFound() {
+        when(customerRepository.findByEmail("notfound@test.com")).thenReturn(Optional.empty());
+
+        assertThrows(NoUserFoundWithGivenCredentialsException.class,
+                () -> customerService.findByEmail("notfound@test.com"));
+    }
+
+    @Test
+    void testUpdateWithDTO_success() {
         CustomerSaveUpdateRequest dto = new CustomerSaveUpdateRequest();
         dto.setId(1);
-        dto.setEmail("duplicate@example.com");
+        dto.setEmail("new@email.com");
+        dto.setPassword("newPass");
 
-        when(userService.existsByEmailAndIdNot("duplicate@example.com", 1)).thenReturn(true);
+        Customer customer = new Customer();
+        when(customerRepository.findById(1)).thenReturn(Optional.of(customer));
+        when(userService.existsByEmailAndIdNot("new@email.com", 1)).thenReturn(false);
+        when(passwordEncoder.encode("newPass")).thenReturn("hashed");
+
+        Customer updated = new Customer();
+        when(customerRepository.save(any())).thenReturn(updated);
+
+        Customer result = customerService.updateWithDTO(dto);
+
+        assertEquals(updated, result);
+        verify(customerMapper).updateEntityWithDTO(dto, customer);
+        assertEquals("hashed", customer.getPassword());
+        assertEquals("new@email.com", customer.getEmail());
+    }
+
+    @Test
+    void testUpdateWithDTO_duplicateEmail() {
+        CustomerSaveUpdateRequest dto = new CustomerSaveUpdateRequest();
+        dto.setId(1);
+        dto.setEmail("exists@email.com");
+
+        when(userService.existsByEmailAndIdNot("exists@email.com", 1)).thenReturn(true);
 
         assertThrows(UserWithSameEmailExistsException.class, () -> customerService.updateWithDTO(dto));
     }
 
     @Test
-    void updateWithDTO_shouldUpdate_whenEmailIsUnique() {
+    void testRegister_newCustomer() {
         CustomerSaveUpdateRequest dto = new CustomerSaveUpdateRequest();
-        dto.setId(1);
-        dto.setEmail("unique@example.com");
+        dto.setEmail("customer@test.com");
+        dto.setPassword("1234");
+
+        when(customerRepository.findByEmail("customer@test.com")).thenReturn(Optional.empty());
 
         Customer customer = new Customer();
-        customer.setId(1);
+        when(passwordEncoder.encode("1234")).thenReturn("hashed");
 
-        when(userService.existsByEmailAndIdNot("unique@example.com", 1)).thenReturn(false);
-        when(customerRepository.findById(1)).thenReturn(Optional.of(customer));
+        EmailVerificationToken token = new EmailVerificationToken();
+        when(emailUtil.createToken(any(), eq(60))).thenReturn(token);
+        when(emailUtil.buildFrontendVerificationLink(token)).thenReturn("https://link");
 
-        doAnswer(invocation -> {
-            Customer target = invocation.getArgument(1);
-            target.setFirstName("Ali");
-            target.setLastName("Test");
-            return null;
-        }).when(customerMapper).updateEntityWithDTO(any(), any());
+        when(customerRepository.save(any())).thenReturn(customer);
+        when(customerRepository.findByEmail("customer@test.com")).thenReturn(Optional.of(customer));
 
-        customerService.updateWithDTO(dto);
-
-        assertEquals("unique@example.com", customer.getEmail());
-        verify(customerRepository).save(customer);
-    }
-
-    @Test
-    void register_shouldThrow_whenEmailExists() {
-        CustomerSaveUpdateRequest dto = new CustomerSaveUpdateRequest();
-        dto.setEmail("exists@example.com");
-
-        when(userService.existsByEmail("exists@example.com")).thenReturn(true);
-
-        assertThrows(UserWithSameEmailExistsException.class, () -> customerService.register(dto));
-    }
-
-    @Test
-    void register_shouldSave_whenEmailIsUnique() {
-        CustomerSaveUpdateRequest dto = new CustomerSaveUpdateRequest();
-        dto.setEmail("new@example.com");
-
-        Customer customer = new Customer();
-        customer.setEmail("new@example.com");
-        customer.setId(5);
-
-        when(userService.existsByEmail("new@example.com")).thenReturn(false);
-        when(customerMapper.mapToEntity(dto)).thenReturn(customer);
-        when(customerRepository.findByEmail("new@example.com")).thenReturn(Optional.of(customer));
-
+        customer.setIsEmailVerified(false);
         Customer result = customerService.register(dto);
 
-        assertNotNull(result.getRegistrationDate());
-        assertEquals(Role.ROLE_CUSTOMER, result.getRole());
-        verify(customerRepository).save(customer);
+        assertEquals(customer, result);
+        assertEquals("customer@test.com", customer.getEmail());
+        assertEquals("hashed", customer.getPassword());
+        assertEquals(Role.ROLE_CUSTOMER, customer.getRole());
+        assertFalse(customer.getIsEmailVerified());
+
+        verify(emailUtil).sendVerificationEmail(eq("customer@test.com"), any(), eq("https://link"));
         verify(walletService).saveWithDTO(any(WalletSaveUpdateRequest.class));
     }
 
     @Test
-    void findByEmail_shouldReturnCustomer_whenEmailExists() {
+    void testRegister_existingVerifiedCustomer_throwsException() {
+        CustomerSaveUpdateRequest dto = new CustomerSaveUpdateRequest();
+        dto.setEmail("verified@test.com");
+
         Customer customer = new Customer();
-        when(customerRepository.findByEmail("found@example.com")).thenReturn(Optional.of(customer));
+        customer.setIsEmailVerified(true);
+        when(customerRepository.findByEmail("verified@test.com")).thenReturn(Optional.of(customer));
 
-        Customer result = customerService.findByEmail("found@example.com");
-        assertSame(customer, result);
+        assertThrows(UserWithSameEmailExistsException.class, () -> customerService.register(dto));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
-    void findByEmail_shouldThrow_whenNotFound() {
-        when(customerRepository.findByEmail("notfound@example.com")).thenReturn(Optional.empty());
-        assertThrows(NoUserFoundWithGivenCredentialsException.class, () -> customerService.findByEmail("notfound@example.com"));
-    }
+    void testFindAll_withSpec() {
+        Specification<Customer> spec = mock(Specification.class);
+        Pageable pageable = mock(Pageable.class);
+        Page<Customer> page = mock(Page.class);
 
-    @Test
-    void findAll_shouldReturnListFromRepository() {
-        Specification<Customer> spec = (root, query, cb) -> null;
-        when(customerRepository.findAll(spec)).thenReturn(Collections.emptyList());
+        when(customerRepository.findAll(spec, pageable)).thenReturn(page);
 
-        assertTrue(customerService.findAll(spec).isEmpty());
+        Page<Customer> result = customerService.findAll(spec, pageable);
+
+        assertEquals(page, result);
     }
 }

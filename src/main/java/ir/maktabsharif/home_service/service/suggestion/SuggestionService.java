@@ -17,7 +17,7 @@ public interface SuggestionService extends BaseService<Suggestion, Integer> {
 
     Suggestion registerSuggestionForOrder(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest, UserDetailsImpl principal);
 
-    Suggestion updateWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest);
+    Suggestion updateWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest,Integer userId);
 
     Page<Suggestion> findAllAndSortByPriceAsc(Integer orderId,Pageable pageable);
 

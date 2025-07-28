@@ -1,8 +1,10 @@
 package ir.maktabsharif.home_service.service.admin;
 
 import ir.maktabsharif.home_service.dto.admin.AdminSaveUpdateRequest;
+import ir.maktabsharif.home_service.exception.NoElementFoundException;
 import ir.maktabsharif.home_service.exception.UserWithSameEmailExistsException;
 import ir.maktabsharif.home_service.mapper.admin.AdminMapper;
+import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.user.Admin;
 import ir.maktabsharif.home_service.repository.admin.AdminRepository;
 import ir.maktabsharif.home_service.service.user.UserService;
@@ -11,86 +13,118 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class AdminServiceImplTest {
 
-    @Mock
-    private UserService userService;
+    @InjectMocks
+    private AdminServiceImpl adminService;
 
     @Mock
     private AdminRepository adminRepository;
 
     @Mock
-    private AdminMapper mapper;
+    private AdminMapper adminMapper;
 
-    @InjectMocks
-    private AdminServiceImpl adminService;
+    @Mock
+    private UserService userService;
 
-    @Test
-    void saveWithDTO_ShouldThrowException_WhenEmailExists() {
-        AdminSaveUpdateRequest dto = new AdminSaveUpdateRequest();
-        dto.setEmail("admin@example.com");
-
-        when(userService.existsByEmail(dto.getEmail())).thenReturn(true);
-
-        assertThrows(UserWithSameEmailExistsException.class, () -> adminService.saveWithDTO(dto));
-    }
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @Test
-    void saveWithDTO_ShouldSaveAdmin_WhenEmailIsUnique() {
-        AdminSaveUpdateRequest dto = new AdminSaveUpdateRequest();
-        dto.setEmail("newadmin@example.com");
-
-        Admin mockAdmin = new Admin();
-
-        when(userService.existsByEmail(dto.getEmail())).thenReturn(false);
-        when(mapper.mapToEntity(dto)).thenReturn(mockAdmin);
-
-        adminService.saveWithDTO(dto);
-
-        verify(adminRepository).save(mockAdmin);
-        assertNotNull(mockAdmin.getRegistrationDate());
-    }
-
-    @Test
-    void updateWithDTO_ShouldThrowException_WhenEmailUsedByAnotherUser() {
-        AdminSaveUpdateRequest dto = new AdminSaveUpdateRequest();
-        dto.setEmail("admin@example.com");
-        dto.setId(1);
-
-        when(userService.existsByEmailAndIdNot(dto.getEmail(), dto.getId())).thenReturn(true);
-
-        assertThrows(UserWithSameEmailExistsException.class, () -> adminService.updateWithDTO(dto));
-    }
-
-    @Test
-    void updateWithDTO_ShouldUpdateAdmin_WhenEmailValid() {
-        AdminSaveUpdateRequest dto = new AdminSaveUpdateRequest();
-        dto.setEmail("admin@example.com");
-        dto.setId(1);
+    void saveWithDTO_shouldSaveAdminSuccessfully() {
+        AdminSaveUpdateRequest request = new AdminSaveUpdateRequest();
+        request.setEmail("admin@example.com");
+        request.setPassword("1234");
 
         Admin admin = new Admin();
+        when(userService.existsByEmail(request.getEmail())).thenReturn(false);
+        when(adminMapper.mapToEntity(request)).thenReturn(admin);
+        when(passwordEncoder.encode(request.getPassword())).thenReturn("encoded123");
+        when(adminRepository.save(admin)).thenReturn(admin);
 
-        when(userService.existsByEmailAndIdNot(dto.getEmail(), dto.getId())).thenReturn(false);
-        doNothing().when(mapper).updateEntityWithDTO(dto, admin);
-        when(adminRepository.findById(dto.getId())).thenReturn(Optional.of(admin));
-        adminService.updateWithDTO(dto);
+        Admin result = adminService.saveWithDTO(request);
 
+        assertEquals("encoded123", result.getPassword());
+        assertEquals(Role.ROLE_ADMIN, result.getRole());
+        assertTrue(result.getIsEmailVerified());
+        assertEquals("admin@example.com", result.getEmail());
+        assertNotNull(result.getRegistrationDate());
         verify(adminRepository).save(admin);
     }
 
     @Test
-    void findByEmail_ShouldFindAdmin_WhenEmailExists() {
-        Admin admin = new Admin();
-        when(adminRepository.findByEmail("exists@example.com")).thenReturn(Optional.of(admin));
-        adminService.findByEmail("exists@example.com");
-        verify(adminRepository).findByEmail("exists@example.com");
+    void saveWithDTO_shouldThrowIfEmailExists() {
+        AdminSaveUpdateRequest request = new AdminSaveUpdateRequest();
+        request.setEmail("admin@example.com");
+
+        when(userService.existsByEmail(request.getEmail())).thenReturn(true);
+
+        assertThrows(UserWithSameEmailExistsException.class, () -> adminService.saveWithDTO(request));
+        verify(adminRepository, never()).save(any());
     }
+
+    @Test
+    void updateWithDTO_shouldUpdateAdminSuccessfully() {
+        AdminSaveUpdateRequest request = new AdminSaveUpdateRequest();
+        request.setId(1);
+        request.setEmail("admin@example.com");
+        request.setPassword("newPass");
+
+        Admin existingAdmin = new Admin();
+        existingAdmin.setId(1);
+        existingAdmin.setEmail("old@example.com");
+
+        when(userService.existsByEmailAndIdNot("admin@example.com", 1)).thenReturn(false);
+        when(adminRepository.findById(1)).thenReturn(Optional.of(existingAdmin));
+        when(passwordEncoder.encode("newPass")).thenReturn("encodedPass");
+        doAnswer(invocation -> {
+            AdminSaveUpdateRequest dto = invocation.getArgument(0);
+            Admin admin = invocation.getArgument(1);
+            admin.setEmail(dto.getEmail());
+            return null;
+        }).when(adminMapper).updateEntityWithDTO(eq(request), any(Admin.class));
+        when(adminRepository.save(existingAdmin)).thenReturn(existingAdmin);
+
+        Admin result = adminService.updateWithDTO(request);
+
+        assertEquals("encodedPass", result.getPassword());
+        assertEquals("admin@example.com", result.getEmail());
+    }
+
+    @Test
+    void updateWithDTO_shouldThrowIfEmailAlreadyExists() {
+        AdminSaveUpdateRequest request = new AdminSaveUpdateRequest();
+        request.setEmail("admin@example.com");
+        request.setId(1);
+
+        when(userService.existsByEmailAndIdNot(request.getEmail(), request.getId())).thenReturn(true);
+
+        assertThrows(UserWithSameEmailExistsException.class, () -> adminService.updateWithDTO(request));
+        verify(adminRepository, never()).save(any());
+    }
+
+    @Test
+    void findByEmail_shouldReturnAdmin() {
+        Admin admin = new Admin();
+        when(adminRepository.findByEmail("admin@example.com")).thenReturn(Optional.of(admin));
+
+        Admin result = adminService.findByEmail("admin@example.com");
+
+        assertEquals(admin, result);
+    }
+
+    @Test
+    void findByEmail_shouldThrowIfNotFound() {
+        when(adminRepository.findByEmail("admin@example.com")).thenReturn(Optional.empty());
+
+        assertThrows(NoElementFoundException.class, () -> adminService.findByEmail("admin@example.com"));
+    }
+
 }

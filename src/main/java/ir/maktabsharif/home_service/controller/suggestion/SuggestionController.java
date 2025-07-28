@@ -41,7 +41,8 @@ public class SuggestionController {
     @PutMapping("/update")
     @Operation(summary = "Update suggestion", description = "Method for updating a suggestion")
     public ResponseEntity<SuggestionFindResponse> update(@RequestBody @Validated(ValidationGroup.Update.class) SuggestionSaveUpdateRequest suggestion) {
-        Suggestion updated = suggestionService.updateWithDTO(suggestion);
+        UserDetailsImpl principal = securityContextUtil.getCurrentUser();
+        Suggestion updated = suggestionService.updateWithDTO(suggestion,principal.user().getId());
         return ResponseEntity.ok(suggestionMapper.mapToResponse(updated));
     }
 

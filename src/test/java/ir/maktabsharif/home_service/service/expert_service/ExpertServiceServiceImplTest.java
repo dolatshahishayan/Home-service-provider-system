@@ -3,149 +3,142 @@ package ir.maktabsharif.home_service.service.expert_service;
 import ir.maktabsharif.home_service.exception.ExpertAlreadyInServiceException;
 import ir.maktabsharif.home_service.exception.NoExpertFoundWithServiceException;
 import ir.maktabsharif.home_service.model.expert_service.ExpertService;
-import ir.maktabsharif.home_service.model.expert_service.ExpertServiceId;
 import ir.maktabsharif.home_service.model.service.Service;
-import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.repository.expert_service.ExpertServiceCriteriaRepository;
 import ir.maktabsharif.home_service.repository.expert_service.ExpertServiceRepository;
+import ir.maktabsharif.home_service.service.service.ServiceService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class ExpertServiceServiceImplTest {
 
-    @Mock
-    private ExpertServiceRepository repository;
+    @InjectMocks
+    private ExpertServiceServiceImpl expertServiceService;
 
     @Mock
     private ir.maktabsharif.home_service.service.expert.ExpertService expertService;
-
     @Mock
-    private ir.maktabsharif.home_service.service.service.ServiceService serviceService;
+    private ExpertServiceRepository expertServiceRepository;
 
     @Mock
     private ExpertServiceCriteriaRepository expertServiceCriteriaRepository;
 
-    @InjectMocks
-    private ExpertServiceServiceImpl service;
+    @Mock
+    private ServiceService serviceService;
+
 
     @Test
-    void addExpertToService_shouldThrow_whenExpertAlreadyExistsInService() {
-        Integer expertId = 1;
-        Integer serviceId = 2;
+    void addExpertToService_shouldAddSuccessfully() {
+        Service service = new Service();
+        ExpertService expertService = new ExpertService();
 
-        when(repository.existsByExpertIdAndServiceId(expertId, serviceId)).thenReturn(true);
+        when(expertServiceRepository.existsByExpertIdAndServiceId(1, 2)).thenReturn(false);
+        when(serviceService.findById(2)).thenReturn(service);
+
+        expertServiceService.addExpertToService(1, 2);
+
+        verify(expertServiceRepository).save(any(ExpertService.class));
+    }
+
+    @Test
+    void addExpertToService_shouldThrowWhenAlreadyExists() {
+        when(expertServiceRepository.existsByExpertIdAndServiceId(1, 2)).thenReturn(true);
 
         assertThrows(ExpertAlreadyInServiceException.class, () ->
-                service.addExpertToService(expertId, serviceId)
-        );
+                expertServiceService.addExpertToService(1, 2));
     }
 
     @Test
-    void addExpertToService_shouldSave_whenExpertNotExistsInService() {
-        Integer expertId = 1;
-        Integer serviceId = 2;
+    void removeExpertFromService_shouldDeleteSuccessfully() {
+        ExpertService entity = new ExpertService();
+        when(expertServiceRepository.findByExpertIdAndServiceId(1, 2)).thenReturn(Optional.of(entity));
 
-        Expert expert = new Expert();
-        Service myService = new Service();
+        expertServiceService.removeExpertFromService(1, 2);
 
-        when(repository.existsByExpertIdAndServiceId(expertId, serviceId)).thenReturn(false);
-        when(expertService.findById(expertId)).thenReturn(expert);
-        when(serviceService.findById(serviceId)).thenReturn(myService);
-
-        service.addExpertToService(expertId, serviceId);
-
-        verify(repository).save(any(ExpertService.class));
+        verify(expertServiceRepository).delete(entity);
     }
 
-
     @Test
-    void removeExpertFromService_shouldThrow_whenExpertServiceNotFound() {
-        when(repository.findByExpertIdAndServiceId(1, 2)).thenReturn(Optional.empty());
+    void removeExpertFromService_shouldThrowWhenNotFound() {
+        when(expertServiceRepository.findByExpertIdAndServiceId(1, 2)).thenReturn(Optional.empty());
 
         assertThrows(NoExpertFoundWithServiceException.class, () ->
-                service.removeExpertFromService(1, 2)
-        );
+                expertServiceService.removeExpertFromService(1, 2));
     }
 
     @Test
-    void removeExpertFromService_shouldDelete_whenExpertServiceExists() {
-        ExpertService expertService = new ExpertService();
-        expertService.setId(new ExpertServiceId(1,2));
+    void findByExpertId_shouldReturnPage() {
+        ExpertService entity = new ExpertService();
+        Page<ExpertService> page = new PageImpl<>(List.of(entity));
+        Pageable pageable = PageRequest.of(0, 10);
 
-        when(repository.findByExpertIdAndServiceId(1, 2)).thenReturn(Optional.of(expertService));
+        when(expertServiceRepository.findByExpertId(1, pageable)).thenReturn(page);
 
-        service.removeExpertFromService(1, 2);
+        Page<ExpertService> result = expertServiceService.findByExpertId(1, pageable);
 
-        verify(repository).delete(expertService);
+        assertEquals(1, result.getContent().size());
     }
 
-
     @Test
-    void findByExpertId_shouldThrow_whenListEmpty() {
-        when(repository.findByExpertId(1)).thenReturn(Collections.emptyList());
+    void findByExpertId_shouldThrowIfEmpty() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<ExpertService> emptyPage = new PageImpl<>(List.of());
+
+        when(expertServiceRepository.findByExpertId(1, pageable)).thenReturn(emptyPage);
 
         assertThrows(NoExpertFoundWithServiceException.class, () ->
-                service.findByExpertId(1)
-        );
-    }
-
-
-    @Test
-    void findByExpertId_shouldReturnList_whenExists() {
-        List<ExpertService> expertServices = List.of(new ExpertService());
-
-        when(repository.findByExpertId(1)).thenReturn(expertServices);
-
-        List<ExpertService> result = service.findByExpertId(1);
-
-        assertEquals(1, result.size());
-    }
-
-
-    @Test
-    void findByExpertIdAndServiceId_shouldReturnFromRepository() {
-        ExpertService expertService = new ExpertService();
-
-        when(repository.findByExpertIdAndServiceId(1, 2)).thenReturn(Optional.of(expertService));
-
-        ExpertService result = service.findByExpertIdAndServiceId(1, 2);
-
-        assertSame(expertService, result);
+                expertServiceService.findByExpertId(1, pageable));
     }
 
     @Test
-    void findExpertIdsByServiceIds_ShouldReturnExpertIds() {
-        List<Integer> serviceIds = List.of(1, 2, 3);
-        List<Integer> expectedExpertIds = List.of(10, 20, 30);
+    void findExpertIdsByServiceIds_shouldReturnIds() {
+        List<Integer> ids = List.of(1, 2, 3);
+        when(expertServiceCriteriaRepository.findExpertIdsByServiceIds(ids)).thenReturn(ids);
 
-        when(expertServiceCriteriaRepository.findExpertIdsByServiceIds(serviceIds)).thenReturn(expectedExpertIds);
+        List<Integer> result = expertServiceService.findExpertIdsByServiceIds(ids);
 
-        List<Integer> actualExpertIds = service.findExpertIdsByServiceIds(serviceIds);
+        assertEquals(ids, result);
+    }
 
-        assertEquals(expectedExpertIds, actualExpertIds);
+    @Test
+    void findByExpertIdAndServiceId_shouldReturnEntity() {
+        ExpertService entity = new ExpertService();
+        when(expertServiceRepository.findByExpertIdAndServiceId(1, 2)).thenReturn(Optional.of(entity));
 
-        verify(expertServiceCriteriaRepository).findExpertIdsByServiceIds(serviceIds);
+        ExpertService result = expertServiceService.findByExpertIdAndServiceId(1, 2);
+
+        assertEquals(entity, result);
+    }
+
+    @Test
+    void findByExpertIdAndServiceId_shouldThrowIfNotFound() {
+        when(expertServiceRepository.findByExpertIdAndServiceId(1, 2)).thenReturn(Optional.empty());
+
+        assertThrows(NoExpertFoundWithServiceException.class, () ->
+                expertServiceService.findByExpertIdAndServiceId(1, 2));
     }
 
     @Test
     void existsByExpertIdAndServiceId_shouldReturnTrueOrFalse() {
-        when(repository.existsByExpertIdAndServiceId(1, 2)).thenReturn(true);
+        when(expertServiceRepository.existsByExpertIdAndServiceId(1, 2)).thenReturn(true);
 
-        assertTrue(service.existsByExpertIdAndServiceId(1, 2));
+        assertTrue(expertServiceService.existsByExpertIdAndServiceId(1, 2));
 
-        when(repository.existsByExpertIdAndServiceId(1, 2)).thenReturn(false);
+        when(expertServiceRepository.existsByExpertIdAndServiceId(1, 2)).thenReturn(false);
 
-        assertFalse(service.existsByExpertIdAndServiceId(1, 2));
+        assertFalse(expertServiceService.existsByExpertIdAndServiceId(1, 2));
     }
 }
