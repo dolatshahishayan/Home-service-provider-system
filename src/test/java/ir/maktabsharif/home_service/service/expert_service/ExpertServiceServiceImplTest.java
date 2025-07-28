@@ -43,7 +43,6 @@ class ExpertServiceServiceImplTest {
     @Test
     void addExpertToService_shouldAddSuccessfully() {
         Service service = new Service();
-        ExpertService expertService = new ExpertService();
 
         when(expertServiceRepository.existsByExpertIdAndServiceId(1, 2)).thenReturn(false);
         when(serviceService.findById(2)).thenReturn(service);
