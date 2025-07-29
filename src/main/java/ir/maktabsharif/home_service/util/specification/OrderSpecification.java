@@ -29,6 +29,12 @@ public class OrderSpecification {
                 predicates.add(cb.equal(root.get("service").get("id"), request.getServiceId()));
             }
 
+            if (request.getUserId() != null) {
+                Predicate byCustomer = cb.equal(root.get("customer").get("id"), request.getUserId());
+                Predicate byExpert = cb.equal(root.get("expert").get("id"), request.getUserId());
+                predicates.add(cb.or(byCustomer, byExpert));
+            }
+
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }

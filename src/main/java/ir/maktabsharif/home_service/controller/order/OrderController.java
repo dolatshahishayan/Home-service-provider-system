@@ -87,7 +87,7 @@ public class OrderController {
         return ResponseEntity.ok(orderService.findAllByExpertId(PageRequest.of(page, size),principal.user().getId()));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_EXPERT','ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_EXPERT')")
     @GetMapping("/find-order-with-details")
     @Operation(summary = "Find order with details", description = "Find order with details by order id")
     public ResponseEntity<OrderFindResponse> findOrderWithDetails(@RequestParam Integer orderId) {
@@ -98,6 +98,14 @@ public class OrderController {
         }
         Order order = orderService.findById(orderId);
         return ResponseEntity.ok(orderMapper.mapToResponse(order));
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/find-order-with-details-for-admin")
+    @Operation(summary = "Find order for admin",description = "Find order with details for admin")
+    public ResponseEntity<OrderFindResponse> findOrderWithDetailsForAdmin(@RequestParam Integer orderId) {
+        Order byId = orderService.findById(orderId);
+        return ResponseEntity.ok(orderMapper.mapToResponse(byId));
     }
 
     @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")

@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderSearchRequest {
+    private Integer userId;
     private LocalDateTime fromDate;
     private LocalDateTime toDate;
     private OrderStatus status;
