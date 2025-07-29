@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -66,7 +67,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
     @Override
     public Customer register(CustomerSaveUpdateRequest customerSaveUpdateRequest) {
         Customer customer;
-        Customer byEmail = findByEmail(customerSaveUpdateRequest.getEmail());
+        Optional<Customer> byEmail = repository.findByEmail(customerSaveUpdateRequest.getEmail());
         customer = getCustomerAndCheckVerified(customerSaveUpdateRequest, byEmail);
         getCustomer(customerSaveUpdateRequest, customer);
         save(customer);
@@ -75,10 +76,10 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
         return customer;
     }
 
-    private Customer getCustomerAndCheckVerified(CustomerSaveUpdateRequest customerSaveUpdateRequest, Customer byEmail) {
+    private Customer getCustomerAndCheckVerified(CustomerSaveUpdateRequest customerSaveUpdateRequest, Optional<Customer> byEmail) {
         Customer customer;
-        if (byEmail != null) {
-            customer = byEmail;
+        if (byEmail .isPresent()) {
+            customer = byEmail.get();
             if (customer.getIsEmailVerified()) {
                 throw new UserWithSameEmailExistsException();
             }

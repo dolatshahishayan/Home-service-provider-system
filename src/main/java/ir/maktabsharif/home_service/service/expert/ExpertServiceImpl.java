@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -64,9 +65,9 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
     @Override
     public Expert register(ExpertSaveUpdateRequest expertSaveUpdateRequest, String imagePath) {
         Expert expert;
-        Expert byEmail=findByEmail(expertSaveUpdateRequest.getEmail());
-        if (byEmail!=null) {
-            expert=byEmail;
+        Optional<Expert> byEmail=repository.findByEmail(expertSaveUpdateRequest.getEmail());
+        if (byEmail.isPresent()) {
+            expert=byEmail.get();
             if (expert.getIsEmailVerified()){
                 throw new UserWithSameEmailExistsException();
             }
