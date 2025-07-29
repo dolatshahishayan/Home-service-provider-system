@@ -2,11 +2,15 @@ package ir.maktabsharif.home_service.util;
 
 import ir.maktabsharif.home_service.exception.InvalidRequestException;
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
+import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import ir.maktabsharif.home_service.model.token.EmailVerificationToken;
+import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.repository.token.EmailVerificationTokenRepository;
+import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -26,10 +30,12 @@ public class EmailUtil {
 
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
     private final UserService userService;
-    public EmailUtil(JavaMailSender mailSender, EmailVerificationTokenRepository emailVerificationTokenRepository, UserService userService) {
+    private final ExpertService expertService;
+    public EmailUtil(JavaMailSender mailSender, EmailVerificationTokenRepository emailVerificationTokenRepository, UserService userService,@Lazy ExpertService expertService) {
         this.mailSender = mailSender;
         this.emailVerificationTokenRepository = emailVerificationTokenRepository;
         this.userService = userService;
+        this.expertService = expertService;
     }
 
     public void sendVerificationEmail(String to, String firstName, String verificationLink){
@@ -78,6 +84,13 @@ public class EmailUtil {
     private void setUserEmailToVerified(EmailVerificationToken token) {
         User user = token.getUser();
         user.setIsEmailVerified(true);
+        if (user instanceof Expert e){
+            if (e.getProfilePictureData()!=null) {
+                e.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);
+                expertService.save(e);
+                return;
+            }
+        }
         userService.save(user);
     }
 }
