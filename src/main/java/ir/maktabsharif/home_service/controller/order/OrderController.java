@@ -100,8 +100,8 @@ public class OrderController {
         return ResponseEntity.ok(orderMapper.mapToResponse(order));
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @GetMapping("/find-order-with-details-for-admin")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER')")
+    @GetMapping("/find-order-with-details-for-admin-and-customer")
     @Operation(summary = "Find order for admin",description = "Find order with details for admin")
     public ResponseEntity<OrderFindResponse> findOrderWithDetailsForAdmin(@RequestParam Integer orderId) {
         Order byId = orderService.findById(orderId);
