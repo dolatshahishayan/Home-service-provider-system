@@ -9,8 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class CommentSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.Update.class})
     private Integer id;
@@ -21,6 +20,16 @@ public class CommentSaveUpdateRequest {
     private Double expertScore;
     @NotNull
     private Integer orderId;
+
+    public CommentSaveUpdateRequest() {
+    }
+
+    public CommentSaveUpdateRequest(Integer id, String context, Double expertScore, Integer orderId) {
+        this.id = id;
+        this.context = context;
+        this.expertScore = expertScore;
+        this.orderId = orderId;
+    }
 
     public @NotNull(groups = {ValidationGroup.Update.class}) Integer getId() {
         return id;

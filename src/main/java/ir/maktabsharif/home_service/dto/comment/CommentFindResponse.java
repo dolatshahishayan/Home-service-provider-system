@@ -6,13 +6,22 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class CommentFindResponse {
     private Integer id;
     private String context;
     private Double expertScore;
     private Integer orderId;
+
+    public CommentFindResponse() {
+    }
+
+    public CommentFindResponse(Integer id, String context, Double expertScore, Integer orderId) {
+        this.id = id;
+        this.context = context;
+        this.expertScore = expertScore;
+        this.orderId = orderId;
+    }
 
     public Integer getId() {
         return id;

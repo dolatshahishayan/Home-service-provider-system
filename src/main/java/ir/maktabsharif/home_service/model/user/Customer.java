@@ -6,6 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 @Entity
 
-@NoArgsConstructor
 public class Customer extends User{
+    public Customer() {}
 }

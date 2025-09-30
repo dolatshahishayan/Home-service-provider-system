@@ -10,8 +10,6 @@ import lombok.Setter;
 @Entity
 @Table(name = "expert_service")
 
-@NoArgsConstructor
-@AllArgsConstructor
 public class ExpertService{
 
     @EmbeddedId
@@ -24,6 +22,15 @@ public class ExpertService{
     @ManyToOne
     @MapsId("serviceId")
     private Service service;
+
+    public ExpertService() {
+    }
+
+    public ExpertService(ExpertServiceId id, Expert expert, Service service) {
+        this.id = id;
+        this.expert = expert;
+        this.service = service;
+    }
 
     public ExpertServiceId getId() {
         return id;

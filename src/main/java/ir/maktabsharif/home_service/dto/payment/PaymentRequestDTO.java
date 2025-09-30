@@ -6,8 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class PaymentRequestDTO {
     private Integer transactionId;
     private Double amount;
@@ -17,6 +16,20 @@ public class PaymentRequestDTO {
     private String otp;
     private String recaptcha;
     private int clientTimeLeft;
+
+    public PaymentRequestDTO() {
+    }
+
+    public PaymentRequestDTO(Integer transactionId, Double amount, String cardNumber, String cvv2, String expirationDate, String otp, String recaptcha, int clientTimeLeft) {
+        this.transactionId = transactionId;
+        this.amount = amount;
+        this.cardNumber = cardNumber;
+        this.cvv2 = cvv2;
+        this.expirationDate = expirationDate;
+        this.otp = otp;
+        this.recaptcha = recaptcha;
+        this.clientTimeLeft = clientTimeLeft;
+    }
 
     public Integer getTransactionId() {
         return transactionId;

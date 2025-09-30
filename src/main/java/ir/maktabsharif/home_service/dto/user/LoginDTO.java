@@ -6,13 +6,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class LoginDTO {
     @NotBlank
     private String email;
     @NotBlank
     private String password;
+
+    public LoginDTO() {
+    }
+
+    public LoginDTO(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
 
     public @NotBlank String getEmail() {
         return email;

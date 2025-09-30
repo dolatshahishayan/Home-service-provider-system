@@ -10,8 +10,6 @@ import lombok.Setter;
 
 import java.util.List;
 
-@NoArgsConstructor
-@AllArgsConstructor
 public class UserSearchRequestDTO {
     private Role role;
     private String name;
@@ -22,6 +20,17 @@ public class UserSearchRequestDTO {
     @Min(1)
     @Max(5)
     private Double maxScore;
+
+    public UserSearchRequestDTO() {
+    }
+
+    public UserSearchRequestDTO(Role role, String name, List<Integer> serviceIds, Double minScore, Double maxScore) {
+        this.role = role;
+        this.name = name;
+        this.serviceIds = serviceIds;
+        this.minScore = minScore;
+        this.maxScore = maxScore;
+    }
 
     public Role getRole() {
         return role;

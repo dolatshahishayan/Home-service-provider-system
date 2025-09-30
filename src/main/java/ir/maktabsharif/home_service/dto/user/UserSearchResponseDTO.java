@@ -6,8 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class UserSearchResponseDTO {
     private Integer id;
     private String firstName;
@@ -16,6 +15,19 @@ public class UserSearchResponseDTO {
     private Role role;
     private Double score;
     private String expertStatus;
+
+    public UserSearchResponseDTO() {
+    }
+
+    public UserSearchResponseDTO(Integer id, String firstName, String lastName, String email, Role role, Double score, String expertStatus) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.role = role;
+        this.score = score;
+        this.expertStatus = expertStatus;
+    }
 
     public Integer getId() {
         return id;

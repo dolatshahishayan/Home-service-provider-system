@@ -9,14 +9,24 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class TransactionFindResponse {
     private Double amount;
     private Integer senderId;
     private Integer receiverId;
     private LocalDateTime timestamp;
     private TransactionStatus status;
+
+    public TransactionFindResponse() {
+    }
+
+    public TransactionFindResponse(Double amount, Integer senderId, Integer receiverId, LocalDateTime timestamp, TransactionStatus status) {
+        this.amount = amount;
+        this.senderId = senderId;
+        this.receiverId = receiverId;
+        this.timestamp = timestamp;
+        this.status = status;
+    }
 
     public Double getAmount() {
         return amount;

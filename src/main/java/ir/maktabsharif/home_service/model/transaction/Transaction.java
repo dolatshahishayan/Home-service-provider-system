@@ -13,8 +13,7 @@ import java.time.LocalDateTime;
 
 @Entity
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class Transaction {
     @Id
     @SequenceGenerator(name = "my_entity_seq_generator", allocationSize = 1)
@@ -29,6 +28,19 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private TransactionStatus status;
     private LocalDateTime expireDate;
+
+    public Transaction() {
+    }
+
+    public Transaction(Integer id, Double amount, User sender, User receiver, LocalDateTime timestamp, TransactionStatus status, LocalDateTime expireDate) {
+        this.id = id;
+        this.amount = amount;
+        this.sender = sender;
+        this.receiver = receiver;
+        this.timestamp = timestamp;
+        this.status = status;
+        this.expireDate = expireDate;
+    }
 
     public Integer getId() {
         return id;

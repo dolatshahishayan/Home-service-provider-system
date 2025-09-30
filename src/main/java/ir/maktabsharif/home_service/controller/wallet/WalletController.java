@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/wallets")
-@RequiredArgsConstructor
 @Tag(name = "Wallets controller", description = "Controller class for wallets")
 public class WalletController {
 
@@ -29,6 +28,13 @@ public class WalletController {
     private final WalletMapper walletMapper;
     private final RecaptchaUtil recaptchaUtil;
     private final SecurityContextUtil securityContextUtil;
+
+    public WalletController(WalletService walletService, WalletMapper walletMapper, RecaptchaUtil recaptchaUtil, SecurityContextUtil securityContextUtil) {
+        this.walletService = walletService;
+        this.walletMapper = walletMapper;
+        this.recaptchaUtil = recaptchaUtil;
+        this.securityContextUtil = securityContextUtil;
+    }
 
     @PostMapping("/save")
     @Operation(summary = "Save wallet", description = "Method for saving a wallet")

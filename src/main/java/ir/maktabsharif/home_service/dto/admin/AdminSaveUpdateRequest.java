@@ -9,8 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class AdminSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.Update.class})
     private Integer id;
@@ -23,6 +22,17 @@ public class AdminSaveUpdateRequest {
     private String email;
     @NotBlank(groups = {ValidationGroup.Save.class})
     private String password;
+
+    public AdminSaveUpdateRequest() {
+    }
+
+    public AdminSaveUpdateRequest(Integer id, String firstName, String lastName, String email, String password) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+    }
 
     public @NotNull(groups = {ValidationGroup.Update.class}) Integer getId() {
         return id;

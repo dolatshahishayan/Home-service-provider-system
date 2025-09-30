@@ -5,14 +5,24 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class ServiceFindResponse {
     private Integer id;
     private String name;
     private Double basePrice;
     private String description;
     private Integer parentServiceId;
+
+    public ServiceFindResponse() {
+    }
+
+    public ServiceFindResponse(Integer id, String name, Double basePrice, String description, Integer parentServiceId) {
+        this.id = id;
+        this.name = name;
+        this.basePrice = basePrice;
+        this.description = description;
+        this.parentServiceId = parentServiceId;
+    }
 
     public Integer getId() {
         return id;

@@ -20,13 +20,18 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/suggestions")
-@RequiredArgsConstructor
 @Tag(name = "Suggestions controller", description = "Controller class for suggestions")
 public class SuggestionController {
 
     private final SuggestionService suggestionService;
     private final SuggestionMapper suggestionMapper;
     private final SecurityContextUtil securityContextUtil;
+
+    public SuggestionController(SuggestionService suggestionService, SuggestionMapper suggestionMapper, SecurityContextUtil securityContextUtil) {
+        this.suggestionService = suggestionService;
+        this.suggestionMapper = suggestionMapper;
+        this.securityContextUtil = securityContextUtil;
+    }
 
     @PreAuthorize("hasAuthority('ROLE_EXPERT')")
     @PostMapping("/save")

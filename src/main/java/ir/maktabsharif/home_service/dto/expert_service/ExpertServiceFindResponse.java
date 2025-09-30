@@ -6,11 +6,18 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class ExpertServiceFindResponse {
     private Integer expertId;
     private Integer serviceId;
+
+    public ExpertServiceFindResponse() {
+    }
+
+    public ExpertServiceFindResponse(Integer expertId, Integer serviceId) {
+        this.expertId = expertId;
+        this.serviceId = serviceId;
+    }
 
     public Integer getExpertId() {
         return expertId;

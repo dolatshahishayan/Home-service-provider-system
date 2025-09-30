@@ -12,8 +12,6 @@ import java.time.LocalDateTime;
 
 @Entity
 
-@NoArgsConstructor
-@AllArgsConstructor
 public class EmailVerificationToken {
     @Id
     @SequenceGenerator(name = "my_entity_seq_generator", allocationSize = 1)
@@ -25,6 +23,18 @@ public class EmailVerificationToken {
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
     private Boolean used = false;
+
+    public EmailVerificationToken() {
+    }
+
+    public EmailVerificationToken(Integer id, String token, User user, LocalDateTime createdAt, LocalDateTime expiresAt, Boolean used) {
+        this.id = id;
+        this.token = token;
+        this.user = user;
+        this.createdAt = createdAt;
+        this.expiresAt = expiresAt;
+        this.used = used;
+    }
 
     public Integer getId() {
         return id;

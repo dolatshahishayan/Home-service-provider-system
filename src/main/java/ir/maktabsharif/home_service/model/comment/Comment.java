@@ -11,8 +11,6 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 @Entity
 
-@NoArgsConstructor
-@AllArgsConstructor
 public class Comment{
 
     @Id
@@ -28,6 +26,17 @@ public class Comment{
     private Order order;
 
     private LocalDateTime registrationDate;
+
+    public Comment() {
+    }
+
+    public Comment(Integer id, String context, Double expertScore, Order order, LocalDateTime registrationDate) {
+        this.id = id;
+        this.context = context;
+        this.expertScore = expertScore;
+        this.order = order;
+        this.registrationDate = registrationDate;
+    }
 
     public Integer getId() {
         return id;

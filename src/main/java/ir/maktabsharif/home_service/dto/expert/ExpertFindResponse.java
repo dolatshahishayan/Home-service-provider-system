@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class ExpertFindResponse {
     private Integer id;
     private String firstName;
@@ -17,6 +16,19 @@ public class ExpertFindResponse {
     private Double score;
     private byte[] profilePictureData;
     private Boolean isEmailVerified;
+
+    public ExpertFindResponse() {
+    }
+
+    public ExpertFindResponse(Integer id, String firstName, String lastName, ExpertStatus expertStatus, Double score, byte[] profilePictureData, Boolean isEmailVerified) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.expertStatus = expertStatus;
+        this.score = score;
+        this.profilePictureData = profilePictureData;
+        this.isEmailVerified = isEmailVerified;
+    }
 
     public Integer getId() {
         return id;

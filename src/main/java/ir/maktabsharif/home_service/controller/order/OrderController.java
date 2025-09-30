@@ -26,13 +26,18 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/orders")
-@RequiredArgsConstructor
 @Tag(name = "Orders controller", description = "Controller class for orders")
 public class OrderController {
 
     private final OrderService orderService;
     private final OrderMapper orderMapper;
     private final SecurityContextUtil securityContextUtil;
+
+    public OrderController(OrderService orderService, OrderMapper orderMapper, SecurityContextUtil securityContextUtil) {
+        this.orderService = orderService;
+        this.orderMapper = orderMapper;
+        this.securityContextUtil = securityContextUtil;
+    }
 
     @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
     @PostMapping("/save")

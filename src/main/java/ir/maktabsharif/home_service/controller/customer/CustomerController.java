@@ -19,13 +19,18 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/customers")
-@RequiredArgsConstructor
 @Tag(name = "Customers controller", description = "Controller class for customers")
 public class CustomerController {
 
     private final CustomerService customerService;
     private final CustomerMapper customerMapper;
     private final JwtUtil jwtUtil;
+
+    public CustomerController(CustomerService customerService, CustomerMapper customerMapper, JwtUtil jwtUtil) {
+        this.customerService = customerService;
+        this.customerMapper = customerMapper;
+        this.jwtUtil = jwtUtil;
+    }
 
     @PostMapping("/save")
     @Operation(summary = "Save customer", description = "Save method for customer")

@@ -16,8 +16,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "orders")
 
-@NoArgsConstructor
-@AllArgsConstructor
 public class Order  {
     @Id
     @SequenceGenerator(name = "my_entity_seq_generator", allocationSize = 1)
@@ -46,6 +44,23 @@ public class Order  {
     private LocalDateTime creationDate;
 
     private Double finalPrice;
+
+    public Order() {
+    }
+
+    public Order(Integer id, String description, Double proposedPrice, LocalDateTime startDate, String address, OrderStatus orderStatus, Customer customer, Service service, Expert expert, LocalDateTime creationDate, Double finalPrice) {
+        this.id = id;
+        this.description = description;
+        this.proposedPrice = proposedPrice;
+        this.startDate = startDate;
+        this.address = address;
+        this.orderStatus = orderStatus;
+        this.customer = customer;
+        this.service = service;
+        this.expert = expert;
+        this.creationDate = creationDate;
+        this.finalPrice = finalPrice;
+    }
 
     public Integer getId() {
         return id;

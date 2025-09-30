@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
-@NoArgsConstructor
-@AllArgsConstructor
 public class ExpertSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.Update.class})
     private Integer id;
@@ -27,6 +25,18 @@ public class ExpertSaveUpdateRequest {
             message = "Password must be at least 8 characters long and contain both letters and numbers.",groups = {ValidationGroup.Save.class,ValidationGroup.Update.class})
     private String password;
     private Double score;
+
+    public ExpertSaveUpdateRequest() {
+    }
+
+    public ExpertSaveUpdateRequest(Integer id, String firstName, String lastName, String email, String password, Double score) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.score = score;
+    }
 
     public @NotNull(groups = {ValidationGroup.Update.class}) Integer getId() {
         return id;

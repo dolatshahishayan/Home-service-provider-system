@@ -1,7 +1,6 @@
 package ir.maktabsharif.home_service.base.service;
 
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

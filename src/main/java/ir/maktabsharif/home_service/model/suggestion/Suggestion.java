@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
 
 @Entity
 
-@NoArgsConstructor
-@AllArgsConstructor
 public class Suggestion {
     @Id
     @SequenceGenerator(name = "my_entity_seq_generator", allocationSize = 1)
@@ -36,6 +34,21 @@ public class Suggestion {
     private Double workDuration;
 
     private Boolean accepted;
+
+    public Suggestion() {
+    }
+
+    public Suggestion(Integer id, Expert expert, Order order, String description, LocalDateTime creationDate, LocalDateTime startDate, Double price, Double workDuration, Boolean accepted) {
+        this.id = id;
+        this.expert = expert;
+        this.order = order;
+        this.description = description;
+        this.creationDate = creationDate;
+        this.startDate = startDate;
+        this.price = price;
+        this.workDuration = workDuration;
+        this.accepted = accepted;
+    }
 
     public Integer getId() {
         return id;

@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class WalletSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.Update.class})
     private Integer id;
@@ -17,6 +16,15 @@ public class WalletSaveUpdateRequest {
     private Double balance;
     @NotNull(groups = {ValidationGroup.Save.class})
     private Integer userId;
+
+    public WalletSaveUpdateRequest() {
+    }
+
+    public WalletSaveUpdateRequest(Integer id, Double balance, Integer userId) {
+        this.id = id;
+        this.balance = balance;
+        this.userId = userId;
+    }
 
     public @NotNull(groups = {ValidationGroup.Update.class}) Integer getId() {
         return id;

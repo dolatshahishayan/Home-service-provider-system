@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
-@NoArgsConstructor
-@AllArgsConstructor
 public class ServiceSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.Update.class})
     private Integer id;
@@ -21,6 +19,17 @@ public class ServiceSaveUpdateRequest {
     @NotBlank(groups = {ValidationGroup.Save.class})
     private String description;
     private Integer parentServiceId;
+
+    public ServiceSaveUpdateRequest() {
+    }
+
+    public ServiceSaveUpdateRequest(Integer id, String name, Double basePrice, String description, Integer parentServiceId) {
+        this.id = id;
+        this.name = name;
+        this.basePrice = basePrice;
+        this.description = description;
+        this.parentServiceId = parentServiceId;
+    }
 
     public @NotNull(groups = {ValidationGroup.Update.class}) Integer getId() {
         return id;

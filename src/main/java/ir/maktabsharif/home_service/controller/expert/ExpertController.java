@@ -19,13 +19,18 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/experts")
-@RequiredArgsConstructor
 @Tag(name = "Experts controller", description = "Controller class for experts")
 public class ExpertController {
 
     private final ExpertService expertService;
     private final ExpertMapper expertMapper;
     private final JwtUtil jwtUtil;
+
+    public ExpertController(ExpertService expertService, ExpertMapper expertMapper, JwtUtil jwtUtil) {
+        this.expertService = expertService;
+        this.expertMapper = expertMapper;
+        this.jwtUtil = jwtUtil;
+    }
 
     @PostMapping("/save")
     @Operation(summary = "Save expert", description = "Save method for expert")

@@ -18,12 +18,16 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/services")
-@RequiredArgsConstructor
 @Tag(name = "Services controller", description = "Controller class for services")
 public class ServiceController {
 
     private final ServiceService serviceService;
     private final ServiceMapper serviceMapper;
+
+    public ServiceController(ServiceService serviceService, ServiceMapper serviceMapper) {
+        this.serviceService = serviceService;
+        this.serviceMapper = serviceMapper;
+    }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping("/save")

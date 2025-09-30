@@ -7,14 +7,24 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class OrderSummaryDTO {
     private Integer id;
     private Integer serviceId;
     private Integer customerId;
     private LocalDateTime startDate;
     private String address;
+
+    public OrderSummaryDTO() {
+    }
+
+    public OrderSummaryDTO(Integer id, Integer serviceId, Integer customerId, LocalDateTime startDate, String address) {
+        this.id = id;
+        this.serviceId = serviceId;
+        this.customerId = customerId;
+        this.startDate = startDate;
+        this.address = address;
+    }
 
     public Integer getId() {
         return id;

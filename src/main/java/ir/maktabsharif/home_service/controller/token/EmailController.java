@@ -13,11 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@RequiredArgsConstructor
 @Tag(name = "Authentication controller",description = "Controller class for authentication")
 public class EmailController {
 
     private final EmailUtil emailUtil;
+
+    public EmailController(EmailUtil emailUtil) {
+        this.emailUtil = emailUtil;
+    }
 
     @PostMapping("/verify-email")
     @Operation(summary = "Verify email",description = "Method for verifying email")

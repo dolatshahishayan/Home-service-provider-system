@@ -9,14 +9,24 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class OrderSearchRequest {
     private Integer userId;
     private LocalDateTime fromDate;
     private LocalDateTime toDate;
     private OrderStatus status;
     private Integer serviceId;
+
+    public OrderSearchRequest(Integer userId, LocalDateTime fromDate, LocalDateTime toDate, OrderStatus status, Integer serviceId) {
+        this.userId = userId;
+        this.fromDate = fromDate;
+        this.toDate = toDate;
+        this.status = status;
+        this.serviceId = serviceId;
+    }
+
+    public OrderSearchRequest() {
+    }
 
     public Integer getUserId() {
         return userId;

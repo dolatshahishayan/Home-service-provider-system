@@ -13,8 +13,7 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class User{
     @Id
     @SequenceGenerator(name = "my_entity_seq_generator", allocationSize = 1)
@@ -28,6 +27,20 @@ public class User{
     @Enumerated(EnumType.STRING)
     private Role role;
     private Boolean isEmailVerified;
+
+    public User() {
+    }
+
+    public User(Integer id, String firstName, String lastName, String email, String password, LocalDateTime registrationDate, Role role, Boolean isEmailVerified) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.registrationDate = registrationDate;
+        this.role = role;
+        this.isEmailVerified = isEmailVerified;
+    }
 
     public Integer getId() {
         return id;

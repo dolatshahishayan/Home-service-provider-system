@@ -9,12 +9,20 @@ import lombok.Setter;
 import java.io.Serializable;
 
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class UserSessionDTO implements Serializable {
     private Integer userId;
     private String email;
     private Role role;
+
+    public UserSessionDTO() {
+    }
+
+    public UserSessionDTO(Integer userId, String email, Role role) {
+        this.userId = userId;
+        this.email = email;
+        this.role = role;
+    }
 
     public Integer getUserId() {
         return userId;

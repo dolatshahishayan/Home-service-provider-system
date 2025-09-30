@@ -10,8 +10,6 @@ import lombok.Setter;
 
 @Entity
 
-@NoArgsConstructor
-@AllArgsConstructor
 public class Wallet  {
     @Id
     @SequenceGenerator(name = "my_entity_seq_generator", allocationSize = 1)
@@ -21,6 +19,15 @@ public class Wallet  {
 
     @OneToOne
     private User user;
+
+    public Wallet() {
+    }
+
+    public Wallet(Integer id, Double balance, User user) {
+        this.id = id;
+        this.balance = balance;
+        this.user = user;
+    }
 
     public Integer getId() {
         return id;

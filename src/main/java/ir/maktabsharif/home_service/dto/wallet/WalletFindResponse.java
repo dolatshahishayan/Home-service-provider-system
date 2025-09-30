@@ -6,12 +6,20 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class WalletFindResponse {
     private Integer id;
     private Double balance;
     private Integer userId;
+
+    public WalletFindResponse() {
+    }
+
+    public WalletFindResponse(Integer id, Double balance, Integer userId) {
+        this.id = id;
+        this.balance = balance;
+        this.userId = userId;
+    }
 
     public Integer getId() {
         return id;

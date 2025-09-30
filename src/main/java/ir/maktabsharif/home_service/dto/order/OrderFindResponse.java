@@ -8,8 +8,6 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
-@AllArgsConstructor
 public class OrderFindResponse {
     private Integer id;
     private String description;
@@ -22,6 +20,23 @@ public class OrderFindResponse {
     private Integer expertId;
     private LocalDateTime creationDate;
     private Double finalPrice;
+
+    public OrderFindResponse() {
+    }
+
+    public OrderFindResponse(Integer id, String description, Double proposedPrice, LocalDateTime startDate, String address, OrderStatus orderStatus, Integer customerId, Integer serviceId, Integer expertId, LocalDateTime creationDate, Double finalPrice) {
+        this.id = id;
+        this.description = description;
+        this.proposedPrice = proposedPrice;
+        this.startDate = startDate;
+        this.address = address;
+        this.orderStatus = orderStatus;
+        this.customerId = customerId;
+        this.serviceId = serviceId;
+        this.expertId = expertId;
+        this.creationDate = creationDate;
+        this.finalPrice = finalPrice;
+    }
 
     public Integer getId() {
         return id;

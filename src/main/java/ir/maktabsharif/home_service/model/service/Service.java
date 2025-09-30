@@ -9,8 +9,7 @@ import lombok.Setter;
 
 @Entity
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class Service {
     @Id
     @SequenceGenerator(name = "my_entity_seq_generator", allocationSize = 1)
@@ -24,6 +23,17 @@ public class Service {
     private String description;
     @ManyToOne
     private Service parentService;
+
+    public Service() {
+    }
+
+    public Service(Integer id, String name, Double basePrice, String description, Service parentService) {
+        this.id = id;
+        this.name = name;
+        this.basePrice = basePrice;
+        this.description = description;
+        this.parentService = parentService;
+    }
 
     public Integer getId() {
         return id;

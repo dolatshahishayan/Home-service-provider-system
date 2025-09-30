@@ -17,13 +17,18 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/comments")
-@RequiredArgsConstructor
 @Tag(name = "Comments controller", description = "Controller class for comments")
 public class CommentController {
 
     private final CommentService commentService;
     private final CommentMapper commentMapper;
     private final SecurityContextUtil  securityContextUtil;
+
+    public CommentController(CommentService commentService, CommentMapper commentMapper, SecurityContextUtil securityContextUtil) {
+        this.commentService = commentService;
+        this.commentMapper = commentMapper;
+        this.securityContextUtil = securityContextUtil;
+    }
 
     @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
     @PostMapping("/save")

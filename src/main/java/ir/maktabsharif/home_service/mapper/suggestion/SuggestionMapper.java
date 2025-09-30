@@ -9,7 +9,7 @@ import org.mapstruct.*;
 public interface SuggestionMapper {
     Suggestion mapToEntity(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest);
     void updateEntityWithDTO(SuggestionSaveUpdateRequest suggestionSaveUpdateRequest, @MappingTarget Suggestion suggestion);
-    @Mapping(source = "expert.id", target = "expertId")
+    @Mapping(source = "expert.id",target = "expertId")
     @Mapping(source = "order.id", target = "orderId")
     SuggestionFindResponse mapToResponse(Suggestion suggestion);
 }

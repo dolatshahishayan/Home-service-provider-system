@@ -12,8 +12,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class OrderSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.Update.class})
     private Integer id;
@@ -29,6 +28,20 @@ public class OrderSaveUpdateRequest {
     private Integer serviceId;
     private Integer expertId;
     private Double finalPrice;
+
+    public OrderSaveUpdateRequest() {
+    }
+
+    public OrderSaveUpdateRequest(Integer id, String description, Double proposedPrice, LocalDateTime startDate, String address, Integer serviceId, Integer expertId, Double finalPrice) {
+        this.id = id;
+        this.description = description;
+        this.proposedPrice = proposedPrice;
+        this.startDate = startDate;
+        this.address = address;
+        this.serviceId = serviceId;
+        this.expertId = expertId;
+        this.finalPrice = finalPrice;
+    }
 
     public @NotNull(groups = {ValidationGroup.Update.class}) Integer getId() {
         return id;

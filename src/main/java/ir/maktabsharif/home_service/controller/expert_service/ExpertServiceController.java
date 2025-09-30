@@ -15,12 +15,16 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/expert-services")
-@RequiredArgsConstructor
 @Tag(name = "Expert-services controller", description = "Controller class for expert-services")
 public class ExpertServiceController {
 
     private final ExpertServiceService expertServiceService;
     private final ExpertServiceMapper expertServiceMapper;
+
+    public ExpertServiceController(ExpertServiceService expertServiceService, ExpertServiceMapper expertServiceMapper) {
+        this.expertServiceService = expertServiceService;
+        this.expertServiceMapper = expertServiceMapper;
+    }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping("/add-expert-to-service")

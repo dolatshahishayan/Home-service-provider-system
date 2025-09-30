@@ -10,8 +10,7 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class SuggestionSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.Update.class})
     private Integer id;
@@ -26,6 +25,19 @@ public class SuggestionSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.Save.class})
     private LocalDateTime startDate;
     private Boolean accepted;
+
+    public SuggestionSaveUpdateRequest() {
+    }
+
+    public SuggestionSaveUpdateRequest(Integer id, Integer orderId, String description, Double price, Double workDuration, LocalDateTime startDate, Boolean accepted) {
+        this.id = id;
+        this.orderId = orderId;
+        this.description = description;
+        this.price = price;
+        this.workDuration = workDuration;
+        this.startDate = startDate;
+        this.accepted = accepted;
+    }
 
     public @NotNull(groups = {ValidationGroup.Update.class}) Integer getId() {
         return id;
