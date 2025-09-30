@@ -1,13 +1,10 @@
 package ir.maktabsharif.home_service.dto.admin;
 
 import ir.maktabsharif.home_service.dto.ValidationGroup;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 
 public class AdminSaveUpdateRequest {

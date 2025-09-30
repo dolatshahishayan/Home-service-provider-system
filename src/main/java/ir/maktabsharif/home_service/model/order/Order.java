@@ -1,15 +1,11 @@
 package ir.maktabsharif.home_service.model.order;
 
-import ir.maktabsharif.home_service.base.model.BaseEntity;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.model.user.Expert;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import javax.persistence.*;
+
 
 import java.time.LocalDateTime;
 

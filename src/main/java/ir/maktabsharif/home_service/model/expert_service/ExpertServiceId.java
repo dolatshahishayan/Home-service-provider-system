@@ -1,10 +1,7 @@
 package ir.maktabsharif.home_service.model.expert_service;
 
-import jakarta.persistence.Embeddable;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import javax.persistence.*;
+
 
 import java.io.Serializable;
 

@@ -53,7 +53,7 @@ class AdminServiceImplTest {
 
         assertEquals("encoded123", result.getPassword());
         assertEquals(Role.ROLE_ADMIN, result.getRole());
-        assertTrue(result.getIsEmailVerified());
+        assertTrue(result.getEmailVerified());
         assertEquals("admin@example.com", result.getEmail());
         assertNotNull(result.getRegistrationDate());
         verify(adminRepository).save(admin);

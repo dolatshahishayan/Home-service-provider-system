@@ -1,8 +1,6 @@
 package ir.maktabsharif.home_service.base.model;
 
-import jakarta.persistence.*;
-import lombok.*;
-
+import javax.persistence.*;
 import java.io.Serializable;
 @MappedSuperclass
 public class BaseEntity implements Serializable {

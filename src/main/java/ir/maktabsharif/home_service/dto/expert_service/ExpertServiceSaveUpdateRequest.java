@@ -1,11 +1,8 @@
 package ir.maktabsharif.home_service.dto.expert_service;
 
 import ir.maktabsharif.home_service.dto.ValidationGroup;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import javax.validation.constraints.*;
+
 
 public class ExpertServiceSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.Save.class,ValidationGroup.Update.class})

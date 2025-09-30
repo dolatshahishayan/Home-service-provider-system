@@ -1,13 +1,8 @@
 package ir.maktabsharif.home_service.dto.comment;
 
 import ir.maktabsharif.home_service.dto.ValidationGroup;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import javax.validation.constraints.*;
 
 
 public class CommentSaveUpdateRequest {

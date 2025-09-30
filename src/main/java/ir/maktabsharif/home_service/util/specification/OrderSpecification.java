@@ -2,16 +2,16 @@ package ir.maktabsharif.home_service.util.specification;
 
 import ir.maktabsharif.home_service.dto.order.OrderSearchRequest;
 import ir.maktabsharif.home_service.model.order.Order;
-import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
+import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class OrderSpecification {
     public static Specification<Order> buildSearchSpec(OrderSearchRequest request) {
         return (root, cq, cb) -> {
-            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+            List<Predicate> predicates = new ArrayList<>();
 
             if (request.getFromDate() != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("startDate"), request.getFromDate()));

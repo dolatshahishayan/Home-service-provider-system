@@ -1,9 +1,7 @@
 package ir.maktabsharif.home_service.model.user;
 
-import jakarta.persistence.Entity;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import javax.persistence.*;
+
 @Entity
 
 public class Customer extends User{

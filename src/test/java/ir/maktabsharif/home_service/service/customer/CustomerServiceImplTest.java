@@ -115,14 +115,14 @@ class CustomerServiceImplTest {
         when(customerRepository.save(any())).thenReturn(customer);
         when(customerRepository.findByEmail("customer@test.com")).thenReturn(Optional.of(customer));
 
-        customer.setIsEmailVerified(false);
+        customer.setEmailVerified(false);
         Customer result = customerService.register(dto);
 
         assertEquals(customer, result);
         assertEquals("customer@test.com", customer.getEmail());
         assertEquals("hashed", customer.getPassword());
         assertEquals(Role.ROLE_CUSTOMER, customer.getRole());
-        assertFalse(customer.getIsEmailVerified());
+        assertFalse(customer.getEmailVerified());
 
         verify(emailUtil).sendVerificationEmail(eq("customer@test.com"), any(), eq("https://link"));
         verify(walletService).saveWithDTO(any(WalletSaveUpdateRequest.class));
@@ -134,7 +134,7 @@ class CustomerServiceImplTest {
         dto.setEmail("verified@test.com");
 
         Customer customer = new Customer();
-        customer.setIsEmailVerified(true);
+        customer.setEmailVerified(true);
         when(customerRepository.findByEmail("verified@test.com")).thenReturn(Optional.of(customer));
 
         assertThrows(UserWithSameEmailExistsException.class, () -> customerService.register(dto));

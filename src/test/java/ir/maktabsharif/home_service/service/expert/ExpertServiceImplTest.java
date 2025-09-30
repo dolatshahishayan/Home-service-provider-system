@@ -84,7 +84,7 @@ class ExpertServiceImplTest {
 
         Expert expert = new Expert();
         expert.setEmail("a@b.com");
-        expert.setIsEmailVerified(false);
+        expert.setEmailVerified(false);
         byte[] imageData = new byte[100];
         EmailVerificationToken token = new EmailVerificationToken();
 
@@ -106,7 +106,7 @@ class ExpertServiceImplTest {
         ExpertSaveUpdateRequest dto = new ExpertSaveUpdateRequest();
         dto.setEmail("a@b.com");
         Expert expert = new Expert();
-        expert.setIsEmailVerified(false);
+        expert.setEmailVerified(false);
 
         when(repository.findByEmail("a@b.com")).thenReturn(Optional.of(expert));
         when(imageUtil.getBytesForExpert("img.png")).thenReturn(new byte[100]);
@@ -120,7 +120,7 @@ class ExpertServiceImplTest {
         ExpertSaveUpdateRequest dto = new ExpertSaveUpdateRequest();
         dto.setEmail("a@b.com");
         Expert expert = new Expert();
-        expert.setIsEmailVerified(false);
+        expert.setEmailVerified(false);
         byte[] bigImage = new byte[400000];
         when(repository.findByEmail("a@b.com")).thenReturn(Optional.of(expert));
         when(imageUtil.getBytesForExpert("image.jpg")).thenReturn(bigImage);
@@ -168,7 +168,7 @@ class ExpertServiceImplTest {
 
         Expert expert = new Expert();
         expert.setId(1);
-        expert.setIsEmailVerified(true);
+        expert.setEmailVerified(true);
 
         when(repository.findById(1)).thenReturn(Optional.of(expert));
         when(repository.save(any())).thenReturn(expert);
@@ -219,7 +219,7 @@ class ExpertServiceImplTest {
 
         Expert expert = new Expert();
         expert.setId(1);
-        expert.setIsEmailVerified(true);
+        expert.setEmailVerified(true);
 
         when(repository.findById(1)).thenReturn(Optional.of(expert));
         when(imageUtil.getBytesForExpert("image.jpg")).thenReturn(new byte[100]);
