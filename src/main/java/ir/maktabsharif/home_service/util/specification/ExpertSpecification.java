@@ -6,7 +6,7 @@ import org.springframework.data.jpa.domain.Specification;
 public class ExpertSpecification {
 
     public static Specification<Expert> nameContains(String name) {
-        return (root, _, cb) -> {
+        return (root, cq, cb) -> {
             if (name == null || name.isBlank()) return null;
             String pattern = "%" + name.toLowerCase() + "%";
             return cb.or(
@@ -17,7 +17,7 @@ public class ExpertSpecification {
     }
 
     public static Specification<Expert> scoreBetween(Double min, Double max) {
-        return (root, _, cb) -> {
+        return (root, cq, cb) -> {
             if (min == null && max == null) return null;
             if (min != null && max != null)
                 return cb.between(root.get("score"), min, max);

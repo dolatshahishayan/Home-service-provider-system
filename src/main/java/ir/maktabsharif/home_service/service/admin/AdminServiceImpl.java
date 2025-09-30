@@ -35,7 +35,7 @@ public class AdminServiceImpl extends BaseServiceImpl<Admin, Integer, AdminRepos
         Admin admin = mapper.mapToEntity(adminSaveUpdateRequest);
         admin.setPassword(passwordEncoder.encode(adminSaveUpdateRequest.getPassword()));
         admin.setRole(Role.ROLE_ADMIN);
-        admin.setIsEmailVerified(true);
+        admin.setEmailVerified(true);
         admin.setEmail(adminSaveUpdateRequest.getEmail().toLowerCase());
         admin.setRegistrationDate(LocalDateTime.now());
         return save(admin);

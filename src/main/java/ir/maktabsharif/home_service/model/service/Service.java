@@ -8,11 +8,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Getter
-@Setter
+
 @NoArgsConstructor
 @AllArgsConstructor
-public class Service extends BaseEntity {
+public class Service {
+    @Id
+    @SequenceGenerator(name = "my_entity_seq_generator", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "my_entity_seq_generator")
+    private Integer id;
     @Column(unique = true)
     private String name;
 
@@ -21,4 +24,44 @@ public class Service extends BaseEntity {
     private String description;
     @ManyToOne
     private Service parentService;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Double getBasePrice() {
+        return basePrice;
+    }
+
+    public void setBasePrice(Double basePrice) {
+        this.basePrice = basePrice;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Service getParentService() {
+        return parentService;
+    }
+
+    public void setParentService(Service parentService) {
+        this.parentService = parentService;
+    }
 }

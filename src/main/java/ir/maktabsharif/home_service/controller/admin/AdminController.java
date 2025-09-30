@@ -18,13 +18,18 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/admins")
-@RequiredArgsConstructor
 @Tag(name = "Admins controller", description = "Controller class for admins")
 public class AdminController {
 
     private final AdminService adminService;
     private final AdminMapper adminMapper;
     private final JwtUtil jwtUtil;
+
+    public AdminController(AdminService adminService, AdminMapper adminMapper, JwtUtil jwtUtil) {
+        this.adminService = adminService;
+        this.adminMapper = adminMapper;
+        this.jwtUtil = jwtUtil;
+    }
 
     @PostMapping("/save")
     @Operation(summary = "Save admin", description = "Save method for admin")

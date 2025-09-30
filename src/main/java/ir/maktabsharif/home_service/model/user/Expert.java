@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Getter
-@Setter
+
 @NoArgsConstructor
 @AllArgsConstructor
 public class Expert extends User {
@@ -18,4 +17,28 @@ public class Expert extends User {
     private ExpertStatus expertStatus;
     private Double score;
     private byte[] profilePictureData;
+
+    public ExpertStatus getExpertStatus() {
+        return expertStatus;
+    }
+
+    public void setExpertStatus(ExpertStatus expertStatus) {
+        this.expertStatus = expertStatus;
+    }
+
+    public Double getScore() {
+        return score;
+    }
+
+    public void setScore(Double score) {
+        this.score = score;
+    }
+
+    public byte[] getProfilePictureData() {
+        return profilePictureData;
+    }
+
+    public void setProfilePictureData(byte[] profilePictureData) {
+        this.profilePictureData = profilePictureData;
+    }
 }

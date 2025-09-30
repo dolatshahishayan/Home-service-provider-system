@@ -17,4 +17,3 @@ public interface ExpertServiceMapper {
     @Mapping(target = "serviceId", source = "id.serviceId")
     ExpertServiceFindResponse mapToResponse(ExpertService expertService);
 }
-

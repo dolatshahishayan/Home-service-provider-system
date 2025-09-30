@@ -7,8 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
+
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExpertServiceSaveUpdateRequest {
@@ -16,4 +15,20 @@ public class ExpertServiceSaveUpdateRequest {
     private Integer expertId;
     @NotNull(groups = {ValidationGroup.Save.class,ValidationGroup.Update.class})
     private Integer serviceId;
+
+    public @NotNull(groups = {ValidationGroup.Save.class, ValidationGroup.Update.class}) Integer getExpertId() {
+        return expertId;
+    }
+
+    public void setExpertId(@NotNull(groups = {ValidationGroup.Save.class, ValidationGroup.Update.class}) Integer expertId) {
+        this.expertId = expertId;
+    }
+
+    public @NotNull(groups = {ValidationGroup.Save.class, ValidationGroup.Update.class}) Integer getServiceId() {
+        return serviceId;
+    }
+
+    public void setServiceId(@NotNull(groups = {ValidationGroup.Save.class, ValidationGroup.Update.class}) Integer serviceId) {
+        this.serviceId = serviceId;
+    }
 }

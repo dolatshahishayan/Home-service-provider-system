@@ -7,8 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
+
 @NoArgsConstructor
 @AllArgsConstructor
 public class WalletSaveUpdateRequest {
@@ -18,4 +17,28 @@ public class WalletSaveUpdateRequest {
     private Double balance;
     @NotNull(groups = {ValidationGroup.Save.class})
     private Integer userId;
+
+    public @NotNull(groups = {ValidationGroup.Update.class}) Integer getId() {
+        return id;
+    }
+
+    public void setId(@NotNull(groups = {ValidationGroup.Update.class}) Integer id) {
+        this.id = id;
+    }
+
+    public @NotNull(groups = {ValidationGroup.Save.class}) Double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(@NotNull(groups = {ValidationGroup.Save.class}) Double balance) {
+        this.balance = balance;
+    }
+
+    public @NotNull(groups = {ValidationGroup.Save.class}) Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(@NotNull(groups = {ValidationGroup.Save.class}) Integer userId) {
+        this.userId = userId;
+    }
 }

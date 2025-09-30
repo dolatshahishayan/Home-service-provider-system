@@ -88,13 +88,13 @@ public class UserServiceImpl extends BaseServiceImpl<User, Integer, UserReposito
 
     private void checkAndAddExpertToResults(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable, List<UserSearchResponseDTO> results) {
         List<Integer> expertIds = expertServiceService.findExpertIdsByServiceIds(userSearchRequestDTO.getServiceIds());
-        Specification<Expert> expertSpec = (_, _, cb) -> cb.conjunction();
+        Specification<Expert> expertSpec = (ca, cq, cb) -> cb.conjunction();
         if (userSearchRequestDTO.getName() != null && !userSearchRequestDTO.getName().isBlank())
             expertSpec = expertSpec.and(ExpertSpecification.nameContains(userSearchRequestDTO.getName()));
         if (userSearchRequestDTO.getMinScore() != null || userSearchRequestDTO.getMaxScore() != null)
             expertSpec = expertSpec.and(ExpertSpecification.scoreBetween(userSearchRequestDTO.getMinScore(), userSearchRequestDTO.getMaxScore()));
         if (!expertIds.isEmpty())
-            expertSpec = expertSpec.and((root, _, _) -> root.get("id").in(expertIds));
+            expertSpec = expertSpec.and((root, cq, cb) -> root.get("id").in(expertIds));
         Page<Expert> experts = expertService.findAll(expertSpec, pageable);
         experts.getContent().forEach(expert -> results.add(mapper.mapExpertToSearchResponse(expert)));
     }

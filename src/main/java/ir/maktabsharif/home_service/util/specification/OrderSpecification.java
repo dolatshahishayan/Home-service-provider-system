@@ -10,7 +10,7 @@ import java.util.List;
 
 public class OrderSpecification {
     public static Specification<Order> buildSearchSpec(OrderSearchRequest request) {
-        return (root, _, cb) -> {
+        return (root, cq, cb) -> {
             List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
 
             if (request.getFromDate() != null) {

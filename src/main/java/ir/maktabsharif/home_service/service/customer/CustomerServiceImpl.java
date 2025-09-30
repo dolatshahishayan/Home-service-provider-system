@@ -80,7 +80,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
         Customer customer;
         if (byEmail .isPresent()) {
             customer = byEmail.get();
-            if (customer.getIsEmailVerified()) {
+            if (customer.getEmailVerified()) {
                 throw new UserWithSameEmailExistsException();
             }
         } else {
@@ -94,7 +94,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
         customer.setPassword(passwordEncoder.encode(customerSaveUpdateRequest.getPassword()));
         customer.setEmail(customerSaveUpdateRequest.getEmail().toLowerCase());
         customer.setRegistrationDate(LocalDateTime.now());
-        customer.setIsEmailVerified(false);
+        customer.setEmailVerified(false);
     }
 
     private void createWalletForCustomer(Customer customer) {

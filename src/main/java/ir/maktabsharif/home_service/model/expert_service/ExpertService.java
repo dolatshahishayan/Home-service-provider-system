@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 @Entity
 @Table(name = "expert_service")
-@Getter
-@Setter
+
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExpertService{
@@ -25,5 +24,29 @@ public class ExpertService{
     @ManyToOne
     @MapsId("serviceId")
     private Service service;
+
+    public ExpertServiceId getId() {
+        return id;
+    }
+
+    public void setId(ExpertServiceId id) {
+        this.id = id;
+    }
+
+    public Expert getExpert() {
+        return expert;
+    }
+
+    public void setExpert(Expert expert) {
+        this.expert = expert;
+    }
+
+    public Service getService() {
+        return service;
+    }
+
+    public void setService(Service service) {
+        this.service = service;
+    }
 }
 

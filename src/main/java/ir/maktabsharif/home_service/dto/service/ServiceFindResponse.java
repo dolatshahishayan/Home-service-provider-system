@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ServiceFindResponse {
@@ -15,4 +13,44 @@ public class ServiceFindResponse {
     private Double basePrice;
     private String description;
     private Integer parentServiceId;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Double getBasePrice() {
+        return basePrice;
+    }
+
+    public void setBasePrice(Double basePrice) {
+        this.basePrice = basePrice;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Integer getParentServiceId() {
+        return parentServiceId;
+    }
+
+    public void setParentServiceId(Integer parentServiceId) {
+        this.parentServiceId = parentServiceId;
+    }
 }

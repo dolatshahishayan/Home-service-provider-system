@@ -8,8 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-@Getter
-@Setter
+
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdminSaveUpdateRequest {
@@ -24,4 +23,44 @@ public class AdminSaveUpdateRequest {
     private String email;
     @NotBlank(groups = {ValidationGroup.Save.class})
     private String password;
+
+    public @NotNull(groups = {ValidationGroup.Update.class}) Integer getId() {
+        return id;
+    }
+
+    public void setId(@NotNull(groups = {ValidationGroup.Update.class}) Integer id) {
+        this.id = id;
+    }
+
+    public @NotBlank(groups = {ValidationGroup.Save.class}) String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(@NotBlank(groups = {ValidationGroup.Save.class}) String firstName) {
+        this.firstName = firstName;
+    }
+
+    public @NotBlank(groups = {ValidationGroup.Save.class}) String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(@NotBlank(groups = {ValidationGroup.Save.class}) String lastName) {
+        this.lastName = lastName;
+    }
+
+    public @NotBlank(groups = {ValidationGroup.Save.class}) @Email String getEmail() {
+        return email;
+    }
+
+    public void setEmail(@NotBlank(groups = {ValidationGroup.Save.class}) @Email String email) {
+        this.email = email;
+    }
+
+    public @NotBlank(groups = {ValidationGroup.Save.class}) String getPassword() {
+        return password;
+    }
+
+    public void setPassword(@NotBlank(groups = {ValidationGroup.Save.class}) String password) {
+        this.password = password;
+    }
 }

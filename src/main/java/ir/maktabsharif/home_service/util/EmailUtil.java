@@ -83,7 +83,7 @@ public class EmailUtil {
 
     private void setUserEmailToVerified(EmailVerificationToken token) {
         User user = token.getUser();
-        user.setIsEmailVerified(true);
+        user.setEmailVerified(true);
         if (user instanceof Expert e){
             if (e.getProfilePictureData()!=null) {
                 e.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);

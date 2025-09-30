@@ -6,8 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
+
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExpertFindResponse {
@@ -18,4 +17,60 @@ public class ExpertFindResponse {
     private Double score;
     private byte[] profilePictureData;
     private Boolean isEmailVerified;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public ExpertStatus getExpertStatus() {
+        return expertStatus;
+    }
+
+    public void setExpertStatus(ExpertStatus expertStatus) {
+        this.expertStatus = expertStatus;
+    }
+
+    public Double getScore() {
+        return score;
+    }
+
+    public void setScore(Double score) {
+        this.score = score;
+    }
+
+    public byte[] getProfilePictureData() {
+        return profilePictureData;
+    }
+
+    public void setProfilePictureData(byte[] profilePictureData) {
+        this.profilePictureData = profilePictureData;
+    }
+
+    public Boolean getEmailVerified() {
+        return isEmailVerified;
+    }
+
+    public void setEmailVerified(Boolean emailVerified) {
+        isEmailVerified = emailVerified;
+    }
 }

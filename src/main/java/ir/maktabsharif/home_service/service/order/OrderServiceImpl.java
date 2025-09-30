@@ -176,10 +176,10 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     @Override
     public Page<Order> findByCustomerId(OrderStatus status,Pageable pageable,Integer userId) {
         User principal = userService.findById(userId);
-        Specification<Order> spec = (root, _, cb) -> cb.equal(root.get("customer").get("id"), principal.getId());
+        Specification<Order> spec = (root, cq, cb) -> cb.equal(root.get("customer").get("id"), principal.getId());
 
         if (status != null) {
-            spec = spec.and((root, _, cb) -> cb.equal(root.get("orderStatus"), status));
+            spec = spec.and((root, cq, cb) -> cb.equal(root.get("orderStatus"), status));
         }
 
         return repository.findAll(spec, pageable);

@@ -7,8 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
+
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExpertSaveUpdateRequest {
@@ -28,4 +27,54 @@ public class ExpertSaveUpdateRequest {
             message = "Password must be at least 8 characters long and contain both letters and numbers.",groups = {ValidationGroup.Save.class,ValidationGroup.Update.class})
     private String password;
     private Double score;
+
+    public @NotNull(groups = {ValidationGroup.Update.class}) Integer getId() {
+        return id;
+    }
+
+    public void setId(@NotNull(groups = {ValidationGroup.Update.class}) Integer id) {
+        this.id = id;
+    }
+
+    public @NotBlank(groups = {ValidationGroup.Save.class}) @Null(groups = {ValidationGroup.Update.class}) String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(@NotBlank(groups = {ValidationGroup.Save.class}) @Null(groups = {ValidationGroup.Update.class}) String firstName) {
+        this.firstName = firstName;
+    }
+
+    public @NotBlank(groups = {ValidationGroup.Save.class}) @Null(groups = {ValidationGroup.Update.class}) String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(@NotBlank(groups = {ValidationGroup.Save.class}) @Null(groups = {ValidationGroup.Update.class}) String lastName) {
+        this.lastName = lastName;
+    }
+
+    public @NotBlank(groups = {ValidationGroup.Save.class}) @Email String getEmail() {
+        return email;
+    }
+
+    public void setEmail(@NotBlank(groups = {ValidationGroup.Save.class}) @Email String email) {
+        this.email = email;
+    }
+
+    public @NotBlank(groups = {ValidationGroup.Save.class}) @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$",
+            message = "Password must be at least 8 characters long and contain both letters and numbers.", groups = {ValidationGroup.Save.class, ValidationGroup.Update.class}) String getPassword() {
+        return password;
+    }
+
+    public void setPassword(@NotBlank(groups = {ValidationGroup.Save.class}) @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$",
+            message = "Password must be at least 8 characters long and contain both letters and numbers.", groups = {ValidationGroup.Save.class, ValidationGroup.Update.class}) String password) {
+        this.password = password;
+    }
+
+    public Double getScore() {
+        return score;
+    }
+
+    public void setScore(Double score) {
+        this.score = score;
+    }
 }

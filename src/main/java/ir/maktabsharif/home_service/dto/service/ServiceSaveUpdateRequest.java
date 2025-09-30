@@ -8,8 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
+
 @NoArgsConstructor
 @AllArgsConstructor
 public class ServiceSaveUpdateRequest {
@@ -22,4 +21,44 @@ public class ServiceSaveUpdateRequest {
     @NotBlank(groups = {ValidationGroup.Save.class})
     private String description;
     private Integer parentServiceId;
+
+    public @NotNull(groups = {ValidationGroup.Update.class}) Integer getId() {
+        return id;
+    }
+
+    public void setId(@NotNull(groups = {ValidationGroup.Update.class}) Integer id) {
+        this.id = id;
+    }
+
+    public @NotBlank(groups = {ValidationGroup.Save.class}) String getName() {
+        return name;
+    }
+
+    public void setName(@NotBlank(groups = {ValidationGroup.Save.class}) String name) {
+        this.name = name;
+    }
+
+    public @NotNull(groups = {ValidationGroup.Save.class}) Double getBasePrice() {
+        return basePrice;
+    }
+
+    public void setBasePrice(@NotNull(groups = {ValidationGroup.Save.class}) Double basePrice) {
+        this.basePrice = basePrice;
+    }
+
+    public @NotBlank(groups = {ValidationGroup.Save.class}) String getDescription() {
+        return description;
+    }
+
+    public void setDescription(@NotBlank(groups = {ValidationGroup.Save.class}) String description) {
+        this.description = description;
+    }
+
+    public Integer getParentServiceId() {
+        return parentServiceId;
+    }
+
+    public void setParentServiceId(Integer parentServiceId) {
+        this.parentServiceId = parentServiceId;
+    }
 }

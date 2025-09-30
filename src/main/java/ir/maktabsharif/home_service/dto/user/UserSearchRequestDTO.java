@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
-@Getter
-@Setter
+
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserSearchRequestDTO {
@@ -23,4 +22,44 @@ public class UserSearchRequestDTO {
     @Min(1)
     @Max(5)
     private Double maxScore;
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<Integer> getServiceIds() {
+        return serviceIds;
+    }
+
+    public void setServiceIds(List<Integer> serviceIds) {
+        this.serviceIds = serviceIds;
+    }
+
+    public @Min(1) @Max(5) Double getMinScore() {
+        return minScore;
+    }
+
+    public void setMinScore(@Min(1) @Max(5) Double minScore) {
+        this.minScore = minScore;
+    }
+
+    public @Min(1) @Max(5) Double getMaxScore() {
+        return maxScore;
+    }
+
+    public void setMaxScore(@Min(1) @Max(5) Double maxScore) {
+        this.maxScore = maxScore;
+    }
 }
