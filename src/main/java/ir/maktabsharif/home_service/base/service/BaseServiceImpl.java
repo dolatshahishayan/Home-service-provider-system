@@ -1,17 +1,14 @@
 package ir.maktabsharif.home_service.base.service;
 
 import ir.maktabsharif.home_service.exception.NoElementFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-
+@RequiredArgsConstructor
 public class BaseServiceImpl<T,ID, R extends JpaRepository<T, ID>, M> implements BaseService<T,ID> {
     public final R repository;
     public final M mapper;
-    public BaseServiceImpl(R repository, M mapper) {
-        this.repository = repository;
-        this.mapper = mapper;
-    }
 
     @Override
     public T save(T t) {

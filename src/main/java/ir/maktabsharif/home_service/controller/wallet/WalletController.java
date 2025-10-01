@@ -12,6 +12,7 @@ import ir.maktabsharif.home_service.model.wallet.Wallet;
 import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
 import ir.maktabsharif.home_service.util.RecaptchaUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/wallets")
+@RequiredArgsConstructor
 @Tag(name = "Wallets controller", description = "Controller class for wallets")
 public class WalletController {
 
@@ -28,12 +30,6 @@ public class WalletController {
     private final RecaptchaUtil recaptchaUtil;
     private final SecurityContextUtil securityContextUtil;
 
-    public WalletController(WalletService walletService, WalletMapper walletMapper, RecaptchaUtil recaptchaUtil, SecurityContextUtil securityContextUtil) {
-        this.walletService = walletService;
-        this.walletMapper = walletMapper;
-        this.recaptchaUtil = recaptchaUtil;
-        this.securityContextUtil = securityContextUtil;
-    }
 
     @PostMapping("/save")
     @Operation(summary = "Save wallet", description = "Method for saving a wallet")

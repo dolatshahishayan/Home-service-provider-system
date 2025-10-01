@@ -10,6 +10,7 @@ import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.util.JwtUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -19,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/v1/experts")
+@RequiredArgsConstructor
 @Tag(name = "Experts controller", description = "Controller class for experts")
 public class ExpertController {
 
@@ -26,11 +28,6 @@ public class ExpertController {
     private final ExpertMapper expertMapper;
     private final JwtUtil jwtUtil;
 
-    public ExpertController(ExpertService expertService, ExpertMapper expertMapper, JwtUtil jwtUtil) {
-        this.expertService = expertService;
-        this.expertMapper = expertMapper;
-        this.jwtUtil = jwtUtil;
-    }
 
     @PostMapping("/save")
     @Operation(summary = "Save expert", description = "Save method for expert")

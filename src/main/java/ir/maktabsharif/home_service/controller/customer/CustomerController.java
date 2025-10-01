@@ -10,6 +10,7 @@ import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.service.customer.CustomerService;
 import ir.maktabsharif.home_service.util.JwtUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -19,18 +20,13 @@ import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/v1/customers")
+@RequiredArgsConstructor
 @Tag(name = "Customers controller", description = "Controller class for customers")
 public class CustomerController {
 
     private final CustomerService customerService;
     private final CustomerMapper customerMapper;
     private final JwtUtil jwtUtil;
-
-    public CustomerController(CustomerService customerService, CustomerMapper customerMapper, JwtUtil jwtUtil) {
-        this.customerService = customerService;
-        this.customerMapper = customerMapper;
-        this.jwtUtil = jwtUtil;
-    }
 
     @PostMapping("/save")
     @Operation(summary = "Save customer", description = "Save method for customer")

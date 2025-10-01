@@ -68,14 +68,14 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
         Optional<Expert> byEmail=repository.findByEmail(expertSaveUpdateRequest.getEmail());
         if (byEmail.isPresent()) {
             expert=byEmail.get();
-            if (expert.getEmailVerified()){
+            if (expert.getIsEmailVerified()){
                 throw new UserWithSameEmailExistsException();
             }
         }else {
             expert = mapper.mapToEntity(expertSaveUpdateRequest);
         }
         expert.setExpertStatus(ExpertStatus.NEW);
-        expert.setEmailVerified(false);
+        expert.setIsEmailVerified(false);
         if (imagePath != null) {
             return getExpertWithPicture(expertSaveUpdateRequest, imagePath, expert);
         }
@@ -163,7 +163,7 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
             throw new ImageLengthOutOfBoundException("Image size is more than 300kb.");
         }
         expert.setProfilePictureData(bytesForExpert);
-        if (expert.getEmailVerified()) {
+        if (expert.getIsEmailVerified()) {
             expert.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);
         }
     }

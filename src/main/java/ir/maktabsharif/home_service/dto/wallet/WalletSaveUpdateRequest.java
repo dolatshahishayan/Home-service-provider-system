@@ -1,10 +1,18 @@
 package ir.maktabsharif.home_service.dto.wallet;
 
 import ir.maktabsharif.home_service.dto.ValidationGroup;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.validation.constraints.*;
 
 
-
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 
 public class WalletSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.Update.class})
@@ -14,36 +22,4 @@ public class WalletSaveUpdateRequest {
     @NotNull(groups = {ValidationGroup.Save.class})
     private Integer userId;
 
-    public WalletSaveUpdateRequest() {
-    }
-
-    public WalletSaveUpdateRequest(Integer id, Double balance, Integer userId) {
-        this.id = id;
-        this.balance = balance;
-        this.userId = userId;
-    }
-
-    public @NotNull(groups = {ValidationGroup.Update.class}) Integer getId() {
-        return id;
-    }
-
-    public void setId(@NotNull(groups = {ValidationGroup.Update.class}) Integer id) {
-        this.id = id;
-    }
-
-    public @NotNull(groups = {ValidationGroup.Save.class}) Double getBalance() {
-        return balance;
-    }
-
-    public void setBalance(@NotNull(groups = {ValidationGroup.Save.class}) Double balance) {
-        this.balance = balance;
-    }
-
-    public @NotNull(groups = {ValidationGroup.Save.class}) Integer getUserId() {
-        return userId;
-    }
-
-    public void setUserId(@NotNull(groups = {ValidationGroup.Save.class}) Integer userId) {
-        this.userId = userId;
-    }
 }

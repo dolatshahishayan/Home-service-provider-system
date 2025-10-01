@@ -26,7 +26,7 @@ public record UserDetailsImpl(User user) implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.getEmailVerified();
+        return user.getIsEmailVerified();
     }
     @Override
     public boolean isAccountNonExpired() {

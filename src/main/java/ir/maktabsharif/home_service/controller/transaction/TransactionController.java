@@ -7,6 +7,7 @@ import ir.maktabsharif.home_service.dto.transaction.TransactionInitializerDTO;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.transaction.TransactionService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -15,16 +16,12 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/transactions")
+@RequiredArgsConstructor
 @Tag(name = "Transactions controller",description = "Controller class for transactions")
 public class TransactionController {
 
     private final TransactionService transactionService;
     private final SecurityContextUtil securityContextUtil;
-
-    public TransactionController(TransactionService transactionService, SecurityContextUtil securityContextUtil) {
-        this.transactionService = transactionService;
-        this.securityContextUtil = securityContextUtil;
-    }
 
     @PreAuthorize("hasAnyAuthority('ROLE_EXPERT','ROLE_CUSTOMER')")
     @GetMapping("/find-by-user")

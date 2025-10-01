@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.maktabsharif.home_service.dto.user.UserSearchRequestDTO;
 import ir.maktabsharif.home_service.dto.user.UserSearchResponseDTO;
 import ir.maktabsharif.home_service.service.user.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -14,13 +15,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
 @Tag(name = "Users controller", description = "Controller class for users")
 public class UserController {
     private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     @GetMapping("/exists-by-email")
     @Operation(summary = "Exists by email", description = "Checks if a user exists by email")

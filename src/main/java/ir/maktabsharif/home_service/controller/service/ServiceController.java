@@ -8,6 +8,7 @@ import ir.maktabsharif.home_service.dto.service.ServiceSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.service.ServiceMapper;
 import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.service.service.ServiceService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -17,16 +18,12 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/services")
+@RequiredArgsConstructor
 @Tag(name = "Services controller", description = "Controller class for services")
 public class ServiceController {
 
     private final ServiceService serviceService;
     private final ServiceMapper serviceMapper;
-
-    public ServiceController(ServiceService serviceService, ServiceMapper serviceMapper) {
-        this.serviceService = serviceService;
-        this.serviceMapper = serviceMapper;
-    }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping("/save")

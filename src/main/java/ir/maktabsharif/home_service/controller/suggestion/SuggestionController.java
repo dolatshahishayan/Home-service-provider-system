@@ -10,6 +10,7 @@ import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -19,18 +20,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/suggestions")
+@RequiredArgsConstructor
 @Tag(name = "Suggestions controller", description = "Controller class for suggestions")
 public class SuggestionController {
 
     private final SuggestionService suggestionService;
     private final SuggestionMapper suggestionMapper;
     private final SecurityContextUtil securityContextUtil;
-
-    public SuggestionController(SuggestionService suggestionService, SuggestionMapper suggestionMapper, SecurityContextUtil securityContextUtil) {
-        this.suggestionService = suggestionService;
-        this.suggestionMapper = suggestionMapper;
-        this.securityContextUtil = securityContextUtil;
-    }
 
     @PreAuthorize("hasAuthority('ROLE_EXPERT')")
     @PostMapping("/save")

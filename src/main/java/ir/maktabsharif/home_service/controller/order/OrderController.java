@@ -13,6 +13,7 @@ import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.order.OrderService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/orders")
+@RequiredArgsConstructor
 @Tag(name = "Orders controller", description = "Controller class for orders")
 public class OrderController {
 
@@ -32,11 +34,6 @@ public class OrderController {
     private final OrderMapper orderMapper;
     private final SecurityContextUtil securityContextUtil;
 
-    public OrderController(OrderService orderService, OrderMapper orderMapper, SecurityContextUtil securityContextUtil) {
-        this.orderService = orderService;
-        this.orderMapper = orderMapper;
-        this.securityContextUtil = securityContextUtil;
-    }
 
     @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
     @PostMapping("/save")

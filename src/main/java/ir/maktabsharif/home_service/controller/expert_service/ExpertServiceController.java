@@ -6,6 +6,7 @@ import ir.maktabsharif.home_service.dto.expert_service.ExpertServiceFindResponse
 import ir.maktabsharif.home_service.mapper.expert_service.ExpertServiceMapper;
 import ir.maktabsharif.home_service.model.expert_service.ExpertService;
 import ir.maktabsharif.home_service.service.expert_service.ExpertServiceService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -14,16 +15,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/expert-services")
+@RequiredArgsConstructor
 @Tag(name = "Expert-services controller", description = "Controller class for expert-services")
 public class ExpertServiceController {
 
     private final ExpertServiceService expertServiceService;
     private final ExpertServiceMapper expertServiceMapper;
 
-    public ExpertServiceController(ExpertServiceService expertServiceService, ExpertServiceMapper expertServiceMapper) {
-        this.expertServiceService = expertServiceService;
-        this.expertServiceMapper = expertServiceMapper;
-    }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping("/add-expert-to-service")

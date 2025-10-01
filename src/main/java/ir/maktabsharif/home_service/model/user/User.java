@@ -1,6 +1,11 @@
 package ir.maktabsharif.home_service.model.user;
 
 import ir.maktabsharif.home_service.model.enums.Role;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 
 
@@ -8,7 +13,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)
-
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 
 public class User{
     @Id
@@ -24,81 +32,4 @@ public class User{
     private Role role;
     private Boolean isEmailVerified;
 
-    public User() {
-    }
-
-    public User(Integer id, String firstName, String lastName, String email, String password, LocalDateTime registrationDate, Role role, Boolean isEmailVerified) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.password = password;
-        this.registrationDate = registrationDate;
-        this.role = role;
-        this.isEmailVerified = isEmailVerified;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public LocalDateTime getRegistrationDate() {
-        return registrationDate;
-    }
-
-    public void setRegistrationDate(LocalDateTime registrationDate) {
-        this.registrationDate = registrationDate;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public Boolean getEmailVerified() {
-        return isEmailVerified;
-    }
-
-    public void setEmailVerified(Boolean emailVerified) {
-        isEmailVerified = emailVerified;
-    }
 }
