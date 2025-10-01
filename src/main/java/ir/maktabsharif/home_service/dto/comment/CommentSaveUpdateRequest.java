@@ -1,12 +1,11 @@
 package ir.maktabsharif.home_service.dto.comment;
 
 import ir.maktabsharif.home_service.dto.ValidationGroup;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import javax.validation.constraints.*;
 
 @Getter
 @Setter

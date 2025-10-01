@@ -2,9 +2,9 @@ package ir.maktabsharif.home_service.util.specification;
 
 import ir.maktabsharif.home_service.dto.order.OrderSearchRequest;
 import ir.maktabsharif.home_service.model.order.Order;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 

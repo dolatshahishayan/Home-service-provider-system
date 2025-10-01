@@ -1,5 +1,6 @@
 package ir.maktabsharif.home_service.model.transaction;
 
+import ir.maktabsharif.home_service.base.model.BaseEntity;
 import ir.maktabsharif.home_service.model.enums.TransactionStatus;
 import ir.maktabsharif.home_service.model.user.User;
 import lombok.AllArgsConstructor;
@@ -7,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 
 import java.time.LocalDateTime;
@@ -18,11 +19,8 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Transaction {
-    @Id
-    @SequenceGenerator(name = "my_entity_seq_generator", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "my_entity_seq_generator")
-    private Integer id;
+public class Transaction extends BaseEntity {
+
     private Double amount;
     @ManyToOne
     private User sender;

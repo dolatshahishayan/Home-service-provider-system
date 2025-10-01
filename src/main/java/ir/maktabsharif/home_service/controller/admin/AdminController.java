@@ -10,12 +10,11 @@ import ir.maktabsharif.home_service.model.user.Admin;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.service.admin.AdminService;
 import ir.maktabsharif.home_service.util.JwtUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/v1/admins")

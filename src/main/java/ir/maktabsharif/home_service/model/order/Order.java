@@ -1,15 +1,17 @@
 package ir.maktabsharif.home_service.model.order;
 
+import ir.maktabsharif.home_service.base.model.BaseEntity;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.model.user.Expert;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 
 import java.time.LocalDateTime;
@@ -20,11 +22,8 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Order  {
-    @Id
-    @SequenceGenerator(name = "my_entity_seq_generator", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "my_entity_seq_generator")
-    private Integer id;
+public class Order extends BaseEntity {
+
     private String description;
 
     private Double proposedPrice;

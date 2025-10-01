@@ -4,22 +4,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ir.maktabsharif.home_service.dto.user.LoginDTO;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.util.JwtUtil;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
-    public static final AntPathRequestMatcher loginPath = new AntPathRequestMatcher("/api/v1/users/login", "POST");
+    public static final PathPatternRequestMatcher loginPath = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/v1/users/login");
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ir.maktabsharif.home_service.util.JwtUtil jwtUtil;
 
