@@ -1,10 +1,6 @@
 package ir.maktabsharif.home_service.dto.user;
 
 import ir.maktabsharif.home_service.model.enums.Role;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 
 public class UserSearchResponseDTO {

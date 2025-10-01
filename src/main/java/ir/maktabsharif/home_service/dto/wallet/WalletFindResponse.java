@@ -1,12 +1,5 @@
 package ir.maktabsharif.home_service.dto.wallet;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-
-
 public class WalletFindResponse {
     private Integer id;
     private Double balance;

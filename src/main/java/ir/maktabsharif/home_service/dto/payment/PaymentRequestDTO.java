@@ -1,12 +1,5 @@
 package ir.maktabsharif.home_service.dto.payment;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-
-
 public class PaymentRequestDTO {
     private Integer transactionId;
     private Double amount;

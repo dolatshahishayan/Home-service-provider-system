@@ -1,10 +1,6 @@
 package ir.maktabsharif.home_service.dto.expert;
 
 import ir.maktabsharif.home_service.model.enums.ExpertStatus;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 
 

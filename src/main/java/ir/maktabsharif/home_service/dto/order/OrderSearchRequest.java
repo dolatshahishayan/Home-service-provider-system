@@ -1,10 +1,6 @@
 package ir.maktabsharif.home_service.dto.order;
 
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
