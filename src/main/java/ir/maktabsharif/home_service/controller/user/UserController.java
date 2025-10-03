@@ -2,6 +2,7 @@ package ir.maktabsharif.home_service.controller.user;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import ir.maktabsharif.home_service.dto.user.PagedResponse;
 import ir.maktabsharif.home_service.dto.user.UserSearchRequestDTO;
 import ir.maktabsharif.home_service.dto.user.UserSearchResponseDTO;
 import ir.maktabsharif.home_service.service.user.UserService;
@@ -33,9 +34,15 @@ public class UserController {
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @GetMapping("/search-users")
+    @PostMapping("/search-users")
     @Operation(summary = "Search users", description = "Search users by role, first name or last name, service and score interval")
-    public ResponseEntity<Page<UserSearchResponseDTO>> searchUsers(@RequestBody @Validated UserSearchRequestDTO userSearchRequestDTO,  @RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(userService.searchUsers(userSearchRequestDTO, PageRequest.of(page, size)));
+    public ResponseEntity<PagedResponse<UserSearchResponseDTO>> searchUsers(@RequestBody @Validated UserSearchRequestDTO userSearchRequestDTO,  @RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "10") int size) {
+        Page<UserSearchResponseDTO> results = userService.searchUsers(userSearchRequestDTO, PageRequest.of(page, size));
+        return ResponseEntity.ok(new PagedResponse<>(
+                results.getContent(),
+                results.getNumber(),
+                results.getSize(),
+                results.getTotalElements()
+        ));
     }
 }
