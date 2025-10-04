@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.controller.wallet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.payment.PaymentRequestDTO;
 import ir.maktabsharif.home_service.dto.wallet.WalletFindResponse;
 import ir.maktabsharif.home_service.dto.wallet.WalletSaveUpdateRequest;
@@ -30,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(WalletControllerIntegrationTest.MockConfig.class)
+@Import(TestMockConfig.class)
 class WalletControllerIntegrationTest {
 
     @Autowired
@@ -51,27 +52,7 @@ class WalletControllerIntegrationTest {
     @Autowired
     private RecaptchaUtil recaptchaUtil;
 
-    static class MockConfig {
-        @Bean
-        WalletService walletService() {
-            return Mockito.mock(WalletService.class);
-        }
 
-        @Bean
-        WalletMapper walletMapper() {
-            return Mockito.mock(WalletMapper.class);
-        }
-
-        @Bean
-        SecurityContextUtil securityContextUtil() {
-            return Mockito.mock(SecurityContextUtil.class);
-        }
-
-        @Bean
-        RecaptchaUtil recaptchaUtil() {
-            return Mockito.mock(RecaptchaUtil.class);
-        }
-    }
 
     private Wallet wallet;
     private WalletFindResponse walletFindResponse;

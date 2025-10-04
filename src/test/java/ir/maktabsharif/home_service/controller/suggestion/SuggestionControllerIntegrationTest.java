@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.controller.suggestion;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionFindResponse;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.suggestion.SuggestionMapper;
@@ -34,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(SuggestionControllerIntegrationTest.MockConfig.class)
+@Import(TestMockConfig.class)
 class SuggestionControllerIntegrationTest {
 
     @Autowired
@@ -48,22 +49,7 @@ class SuggestionControllerIntegrationTest {
     @Autowired
     private SecurityContextUtil securityContextUtil;
 
-    static class MockConfig {
-        @Bean
-        SuggestionService suggestionService() {
-            return Mockito.mock(SuggestionService.class);
-        }
 
-        @Bean
-        SuggestionMapper suggestionMapper() {
-            return Mockito.mock(SuggestionMapper.class);
-        }
-
-        @Bean
-        SecurityContextUtil securityContextUtil() {
-            return Mockito.mock(SecurityContextUtil.class);
-        }
-    }
 
     @BeforeEach
     void setup() {

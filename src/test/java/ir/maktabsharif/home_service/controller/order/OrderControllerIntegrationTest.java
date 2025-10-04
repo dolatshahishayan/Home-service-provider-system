@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.controller.order;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.order.OrderFindResponse;
 import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.order.OrderSearchRequest;
@@ -42,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(OrderControllerIntegrationTest.MockConfig.class)
+@Import(TestMockConfig.class)
 class OrderControllerIntegrationTest {
 
     @Autowired
@@ -56,22 +57,7 @@ class OrderControllerIntegrationTest {
     @Autowired
     private SecurityContextUtil securityContextUtil;
 
-    static class MockConfig {
-        @Bean
-        OrderService orderService() {
-            return Mockito.mock(OrderService.class);
-        }
 
-        @Bean
-        OrderMapper orderMapper() {
-            return Mockito.mock(OrderMapper.class);
-        }
-
-        @Bean
-        SecurityContextUtil securityContextUtil() {
-            return Mockito.mock(SecurityContextUtil.class);
-        }
-    }
 
     private Order orderEntity;
     private OrderFindResponse orderFindResponse;

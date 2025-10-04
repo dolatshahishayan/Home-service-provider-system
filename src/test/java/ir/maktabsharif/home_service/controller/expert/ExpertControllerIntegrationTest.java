@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.controller.expert;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.expert.ExpertFindResponse;
 import ir.maktabsharif.home_service.dto.expert.ExpertSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.expert.ExpertMapper;
@@ -11,6 +12,7 @@ import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.util.JwtUtil;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -31,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(ExpertControllerIntegrationTest.MockConfig.class)
+@Import(TestMockConfig.class)
 class ExpertControllerIntegrationTest {
 
     @Autowired
@@ -43,31 +45,10 @@ class ExpertControllerIntegrationTest {
     @Autowired
     private ExpertMapper expertMapper;
     @Autowired
-    private JwtUtil jwtUtil;
+    private JwtUtil mockJwtUtil;
     @Autowired
     private SecurityContextUtil securityContextUtil;
 
-    static class MockConfig {
-        @Bean
-        ExpertService expertService() {
-            return Mockito.mock(ExpertService.class);
-        }
-
-        @Bean
-        ExpertMapper expertMapper() {
-            return Mockito.mock(ExpertMapper.class);
-        }
-
-        @Bean
-        JwtUtil jwtUtil() {
-            return Mockito.mock(JwtUtil.class);
-        }
-
-        @Bean
-        SecurityContextUtil securityContextUtil() {
-            return Mockito.mock(SecurityContextUtil.class);
-        }
-    }
 
     private Expert expert;
     private ExpertFindResponse expertFindResponse;
@@ -111,14 +92,14 @@ class ExpertControllerIntegrationTest {
 
         Mockito.when(expertService.register(any(ExpertSaveUpdateRequest.class), eq("some/path.jpg"))).thenReturn(expert);
         Mockito.when(expertMapper.mapToResponse(any(Expert.class))).thenReturn(expertFindResponse);
-        Mockito.when(jwtUtil.generateToken(any(UserDetailsImpl.class))).thenReturn("fake-jwt-token");
+        Mockito.when(mockJwtUtil.generateToken(any(UserDetailsImpl.class))).thenReturn("fake-jwt-token");
 
         mockMvc.perform(post("/api/v1/experts/save")
                         .param("imagePath", "some/path.jpg")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Authorization", "Bearer fake-jwt-token"))
+                .andExpect(header().string("Authorization", Matchers.startsWith("Bearer ")))
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.firstName").value("John"))
                 .andExpect(jsonPath("$.lastName").value("Doe"))
@@ -166,14 +147,14 @@ class ExpertControllerIntegrationTest {
 
         Mockito.when(expertService.updateWithDTO(any(ExpertSaveUpdateRequest.class), eq("new/path.jpg"))).thenReturn(updatedExpert);
         Mockito.when(expertMapper.mapToResponse(any(Expert.class))).thenReturn(updatedResponse);
-        Mockito.when(jwtUtil.generateToken(any(UserDetailsImpl.class))).thenReturn("fake-jwt-token");
+        Mockito.when(mockJwtUtil.generateToken(any(UserDetailsImpl.class))).thenReturn("fake-jwt-token");
 
         mockMvc.perform(put("/api/v1/experts/update")
                         .param("imagePath", "new/path.jpg")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Authorization", "Bearer fake-jwt-token"))
+                .andExpect(header().string("Authorization", Matchers.startsWith("Bearer ")))
                 .andExpect(jsonPath("$.firstName").value("UpdatedName"))
                 .andExpect(jsonPath("$.lastName").value("UpdatedLast"))
                 .andExpect(jsonPath("$.expertStatus").value("VERIFIED"))

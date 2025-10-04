@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.controller.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.service.ServiceFindResponse;
 import ir.maktabsharif.home_service.dto.service.ServiceSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.service.ServiceMapper;
@@ -30,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(ServiceControllerIntegrationTest.MockConfig.class)
+@Import(TestMockConfig.class)
 class ServiceControllerIntegrationTest {
 
     @Autowired
@@ -42,17 +43,7 @@ class ServiceControllerIntegrationTest {
     @Autowired
     private ServiceMapper serviceMapper;
 
-    static class MockConfig {
-        @Bean
-        ServiceService serviceService() {
-            return Mockito.mock(ServiceService.class);
-        }
 
-        @Bean
-        ServiceMapper serviceMapper() {
-            return Mockito.mock(ServiceMapper.class);
-        }
-    }
 
     private Service serviceEntity;
     private ServiceFindResponse serviceFindResponse;

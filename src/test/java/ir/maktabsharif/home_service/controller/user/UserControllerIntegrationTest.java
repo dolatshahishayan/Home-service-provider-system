@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.controller.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.user.UserSearchRequestDTO;
 import ir.maktabsharif.home_service.dto.user.UserSearchResponseDTO;
 import ir.maktabsharif.home_service.model.enums.Role;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(UserControllerIntegrationTest.MockConfig.class)
+@Import(TestMockConfig.class)
 class UserControllerIntegrationTest {
 
     @Autowired
@@ -41,12 +42,6 @@ class UserControllerIntegrationTest {
     @Autowired
     private UserService userService;
 
-    static class MockConfig {
-        @Bean
-        UserService userService() {
-            return Mockito.mock(UserService.class);
-        }
-    }
 
     @Test
     void existsByEmail_ReturnsTrue() throws Exception {

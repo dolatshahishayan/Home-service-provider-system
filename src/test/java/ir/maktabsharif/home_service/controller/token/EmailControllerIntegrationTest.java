@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.controller.token;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.user.VerificationRequest;
 import ir.maktabsharif.home_service.util.EmailUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(EmailControllerIntegrationTest.MockConfig.class)
+@Import(TestMockConfig.class)
 public class EmailControllerIntegrationTest {
 
     @Autowired
@@ -35,12 +36,6 @@ public class EmailControllerIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    static class MockConfig {
-        @Bean
-        EmailUtil emailUtil() {
-            return Mockito.mock(EmailUtil.class);
-        }
-    }
 
     @BeforeEach
     void setup() {

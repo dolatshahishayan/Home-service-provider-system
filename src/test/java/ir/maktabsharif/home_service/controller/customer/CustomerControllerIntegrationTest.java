@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.controller.customer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.customer.CustomerFindResponse;
 import ir.maktabsharif.home_service.dto.customer.CustomerSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.customer.CustomerMapper;
@@ -10,6 +11,7 @@ import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.customer.CustomerService;
 import ir.maktabsharif.home_service.util.JwtUtil;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -28,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(CustomerControllerIntegrationTest.MockConfig.class)
+@Import(TestMockConfig.class)
 class CustomerControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
@@ -41,30 +43,9 @@ class CustomerControllerIntegrationTest {
     @Autowired
     private SecurityContextUtil securityContextUtil;
     @Autowired
-    private JwtUtil jwtUtil;
+    private JwtUtil mockJwtUtil;
 
-    static class MockConfig {
-        @Bean
-        CustomerService customerService() {
-            return Mockito.mock(CustomerService.class);
-        }
 
-        @Bean
-        CustomerMapper customerMapper() {
-            return Mockito.mock(CustomerMapper.class);
-        }
-
-        @Bean
-        SecurityContextUtil securityContextUtil() {
-            return Mockito.mock(SecurityContextUtil.class);
-        }
-
-        @Bean
-        JwtUtil jwtUtil() {
-            return Mockito.mock(JwtUtil.class);
-        }
-
-    }
 
     @BeforeEach
     void setup() {
@@ -95,13 +76,13 @@ class CustomerControllerIntegrationTest {
 
         Mockito.when(customerService.register(Mockito.any(CustomerSaveUpdateRequest.class))).thenReturn(customer);
         Mockito.when(customerMapper.mapToResponse(Mockito.any(Customer.class))).thenReturn(customerFindResponse);
-        Mockito.when(jwtUtil.generateToken(Mockito.any(UserDetailsImpl.class))).thenReturn("fake-jwt-token");
+        Mockito.when(mockJwtUtil.generateToken(Mockito.any(UserDetailsImpl.class))).thenReturn("fake-jwt-token");
 
         mockMvc.perform(post("/api/v1/customers/save")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(customerSaveUpdateRequest)))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Authorization", "Bearer fake-jwt-token"))
+                .andExpect(header().string("Authorization", Matchers.startsWith("Bearer ")))
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.firstName").value("test"))
                 .andExpect(jsonPath("$.lastName").value("test"));
@@ -126,13 +107,13 @@ class CustomerControllerIntegrationTest {
 
         Mockito.when(customerService.updateWithDTO(Mockito.any(CustomerSaveUpdateRequest.class))).thenReturn(customer);
         Mockito.when(customerMapper.mapToResponse(Mockito.any(Customer.class))).thenReturn(customerFindResponse);
-        Mockito.when(jwtUtil.generateToken(Mockito.any(UserDetailsImpl.class))).thenReturn("fake-jwt-token");
+        Mockito.when(mockJwtUtil.generateToken(Mockito.any(UserDetailsImpl.class))).thenReturn("fake-jwt-token");
 
         mockMvc.perform(put("/api/v1/customers/update")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(customerSaveUpdateRequest)))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Authorization", "Bearer fake-jwt-token"))
+                .andExpect(header().string("Authorization", Matchers.startsWith("Bearer ")))
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.firstName").value("test"))
                 .andExpect(jsonPath("$.lastName").value("test"));

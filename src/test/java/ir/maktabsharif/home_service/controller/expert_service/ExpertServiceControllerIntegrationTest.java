@@ -1,5 +1,6 @@
 package ir.maktabsharif.home_service.controller.expert_service;
 
+import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.expert_service.ExpertServiceFindResponse;
 import ir.maktabsharif.home_service.mapper.expert_service.ExpertServiceMapper;
 import ir.maktabsharif.home_service.model.expert_service.ExpertService;
@@ -31,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(ExpertServiceControllerIntegrationTest.MockConfig.class)
+@Import(TestMockConfig.class)
 class ExpertServiceControllerIntegrationTest {
 
     @Autowired
@@ -41,17 +42,7 @@ class ExpertServiceControllerIntegrationTest {
     @Autowired
     private ExpertServiceMapper expertServiceMapper;
 
-    static class MockConfig {
-        @Bean
-        ExpertServiceService expertServiceService() {
-            return Mockito.mock(ExpertServiceService.class);
-        }
 
-        @Bean
-        ExpertServiceMapper expertServiceMapper() {
-            return Mockito.mock(ExpertServiceMapper.class);
-        }
-    }
 
     private ExpertService expertServiceEntity;
     private ExpertServiceFindResponse expertServiceFindResponse;

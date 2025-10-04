@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.controller.comment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.comment.CommentFindResponse;
 import ir.maktabsharif.home_service.dto.comment.CommentSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.comment.CommentMapper;
@@ -29,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(CommentControllerIntegrationTest.MockConfig.class)
+@Import(TestMockConfig.class)
 class CommentControllerIntegrationTest {
 
     @Autowired
@@ -47,22 +48,6 @@ class CommentControllerIntegrationTest {
     @Autowired
     private SecurityContextUtil securityContextUtil;
 
-    static class MockConfig {
-        @Bean
-        CommentService commentService() {
-            return Mockito.mock(CommentService.class);
-        }
-
-        @Bean
-        CommentMapper commentMapper() {
-            return Mockito.mock(CommentMapper.class);
-        }
-
-        @Bean
-        SecurityContextUtil securityContextUtil() {
-            return Mockito.mock(SecurityContextUtil.class);
-        }
-    }
 
     @BeforeEach
     void setup() {

@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.controller.transaction;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.transaction.TransactionFindResponse;
 import ir.maktabsharif.home_service.dto.transaction.TransactionInitializerDTO;
 import ir.maktabsharif.home_service.model.enums.TransactionStatus;
@@ -35,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(TransactionControllerIntegrationTest.MockConfig.class)
+@Import(TestMockConfig.class)
 public class TransactionControllerIntegrationTest {
 
     @Autowired
@@ -50,17 +51,7 @@ public class TransactionControllerIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    static class MockConfig {
-        @Bean
-        TransactionService transactionService() {
-            return Mockito.mock(TransactionService.class);
-        }
 
-        @Bean
-        SecurityContextUtil securityContextUtil() {
-            return Mockito.mock(SecurityContextUtil.class);
-        }
-    }
 
     @BeforeEach
     void setup() {

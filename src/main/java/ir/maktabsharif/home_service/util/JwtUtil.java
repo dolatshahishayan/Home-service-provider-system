@@ -51,15 +51,28 @@ public class JwtUtil {
                 .getSubject();
     }
 
-    public void validateToken(String token, String username, HttpServletRequest request) {
+    /**
+     * اعتبارسنجی توکن و تنظیم Authentication در SecurityContext در صورت موفقیت
+     * @param token توکن JWT دریافتی
+     * @param username نام کاربری استخراج شده از توکن
+     * @param request درخواست HTTP جاری
+     * @return true اگر توکن معتبر بود و Authentication ست شد، در غیر اینصورت false
+     */
+    public boolean validateToken(String token, String username, HttpServletRequest request) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
         boolean valid = username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+
         if (valid) {
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
             SecurityContextHolder.getContext().setAuthentication(authToken);
         }
+
+        return valid;
     }
 
     private boolean isTokenExpired(String token) {
@@ -69,6 +82,7 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody()
                 .getExpiration();
+
         return expiration.before(new Date());
     }
 }
