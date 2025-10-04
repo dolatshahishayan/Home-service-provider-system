@@ -51,13 +51,6 @@ public class JwtUtil {
                 .getSubject();
     }
 
-    /**
-     * اعتبارسنجی توکن و تنظیم Authentication در SecurityContext در صورت موفقیت
-     * @param token توکن JWT دریافتی
-     * @param username نام کاربری استخراج شده از توکن
-     * @param request درخواست HTTP جاری
-     * @return true اگر توکن معتبر بود و Authentication ست شد، در غیر اینصورت false
-     */
     public boolean validateToken(String token, String username, HttpServletRequest request) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
