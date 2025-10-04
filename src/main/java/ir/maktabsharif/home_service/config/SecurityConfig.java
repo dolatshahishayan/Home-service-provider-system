@@ -39,7 +39,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**", "/api/v1/admins/save", "/api/v1/customers/save", "/api/v1/experts/save", "/api/v1/users/login", "/verify-email.html", "/login.html", "/payment.html").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**","/api/v1/auth/**", "/api/v1/admins/save", "/api/v1/customers/save", "/api/v1/experts/save", "/api/v1/users/login", "/verify-email.html", "/login.html", "/payment.html").permitAll()
                         .anyRequest().authenticated()
                 ).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
