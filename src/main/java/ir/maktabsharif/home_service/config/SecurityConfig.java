@@ -1,11 +1,9 @@
 package ir.maktabsharif.home_service.config;
 
-import ir.maktabsharif.home_service.security.JwtAuthenticationFilter;
 import ir.maktabsharif.home_service.security.JwtAuthenticationProvider;
 import ir.maktabsharif.home_service.security.JwtAuthorizationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -25,11 +23,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 @Profile("!test")
 public class SecurityConfig {
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAuthorizationFilter jwtAuthorizationFilter;
 
-    public SecurityConfig(@Lazy JwtAuthenticationFilter jwtAuthenticationFilter, JwtAuthorizationFilter jwtAuthorizationFilter) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    public SecurityConfig(JwtAuthorizationFilter jwtAuthorizationFilter) {
         this.jwtAuthorizationFilter = jwtAuthorizationFilter;
     }
 
@@ -39,10 +35,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**","/api/v1/auth/**", "/api/v1/admins/save", "/api/v1/customers/save", "/api/v1/experts/save", "/api/v1/users/login", "/verify-email.html", "/login.html", "/payment.html").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**","/api/v1/auth/**", "/api/v1/admins/save", "/api/v1/customers/save", "/api/v1/experts/save", "/api/v1/users/login", "/verify-email.html", "/login.html", "/payment.html","/api/v1/auth/login").permitAll()
                         .anyRequest().authenticated()
                 ).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
