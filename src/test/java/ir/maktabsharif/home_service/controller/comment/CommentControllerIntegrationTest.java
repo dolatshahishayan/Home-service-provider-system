@@ -2,42 +2,40 @@ package ir.maktabsharif.home_service.controller.comment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ir.maktabsharif.home_service.TestMockConfig;
-import ir.maktabsharif.home_service.controller.auth.AuthController;
 import ir.maktabsharif.home_service.dto.comment.CommentFindResponse;
 import ir.maktabsharif.home_service.dto.comment.CommentSaveUpdateRequest;
-import ir.maktabsharif.home_service.dto.user.LoginDTO;
 import ir.maktabsharif.home_service.mapper.comment.CommentMapper;
 import ir.maktabsharif.home_service.model.comment.Comment;
+import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.user.User;
-import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
-import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.comment.CommentService;
 import ir.maktabsharif.home_service.service.user.UserService;
-import jakarta.servlet.http.HttpServletResponse;
+import ir.maktabsharif.home_service.util.JwtUtil;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(CommentControllerIntegrationTest.MockConfig.class)
+@Import(TestMockConfig.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CommentControllerIntegrationTest {
 
     @Autowired
@@ -47,7 +45,7 @@ class CommentControllerIntegrationTest {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private AuthController authController;
+    private JwtUtil jwtUtil;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -56,44 +54,41 @@ class CommentControllerIntegrationTest {
     private CommentService commentService;
 
     @Autowired
-    private HttpServletResponse httpServletResponse;
-
-    @Autowired
     private UserService userService;
 
     @Autowired
     private CommentMapper commentMapper;
 
-    @Autowired
-    private SecurityContextUtil securityContextUtil;
-
-    private String token;
-    static class MockConfig{
-        @Bean
-        CommentService commentService() {
-            return Mockito.mock(CommentService.class);
-        }
-
-        @Bean
-        CommentMapper commentMapper() {
-            return Mockito.mock(CommentMapper.class);
-        }
-    }
+    private String customerToken;
+    private String expertToken;
+    private User savedExpert;
 
     @BeforeEach
-
     void setup() {
         userService.deleteAll();
         User user = new User();
         user.setEmail("user@test.com");
         user.setPassword(passwordEncoder.encode("test"));
         user.setIsEmailVerified(true);
+        user.setRole(Role.ROLE_CUSTOMER);
         userService.save(user);
-        ResponseEntity<String> login = authController.login(new LoginDTO(user.getEmail(), "test"), httpServletResponse);
-        token = login.getBody();
+        UserDetails userDetails = userService.loadUserByUsername(user.getEmail());
+        customerToken = jwtUtil.generateToken(userDetails);
+
+        User user2 = new User();
+        user2.setEmail("user2@test.com");
+        user2.setPassword(passwordEncoder.encode("test"));
+        user2.setIsEmailVerified(true);
+        user2.setRole(Role.ROLE_EXPERT);
+        savedExpert=userService.save(user2);
+        UserDetails userDetails2 = userService.loadUserByUsername(user2.getEmail());
+        expertToken = jwtUtil.generateToken(userDetails2);
     }
 
-
+    @AfterAll
+    void deleteUsers() {
+        userService.deleteAll();
+    }
 
     @Test
     void saveComment_shouldReturnSavedComment() throws Exception {
@@ -108,12 +103,13 @@ class CommentControllerIntegrationTest {
         response.setId(10);
         response.setContext("Nice job!");
 
-        Mockito.when(commentService.saveWithDTO(any(), eq(1))).thenReturn(savedComment);
+        Mockito.when(commentService.saveWithDTO(any(), any())).thenReturn(savedComment);
         Mockito.when(commentMapper.mapToResponse(savedComment)).thenReturn(response);
 
         mockMvc.perform(post("/api/v1/comments/save")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "Bearer "+token.trim())                        .content(objectMapper.writeValueAsString(request)))
+                        .header("Authorization", "Bearer " + customerToken)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.context").value("Nice job!"))
                 .andExpect(jsonPath("$.id").value(10));
@@ -124,6 +120,7 @@ class CommentControllerIntegrationTest {
         Mockito.when(commentService.existsByOrder(5)).thenReturn(true);
 
         mockMvc.perform(get("/api/v1/comments/exists-by-order")
+                        .header("Authorization", "Bearer " + customerToken)
                         .param("orderId", "5"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
@@ -143,7 +140,8 @@ class CommentControllerIntegrationTest {
         Mockito.when(commentMapper.mapToResponse(comment)).thenReturn(response);
 
         mockMvc.perform(get("/api/v1/comments/find-by-order")
-                        .param("orderId", "7"))
+                        .param("orderId", "7")
+                .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(20))
                 .andExpect(jsonPath("$.context").value("Great service!"));
@@ -154,16 +152,17 @@ class CommentControllerIntegrationTest {
         Mockito.when(commentService.viewExpertScoreByOrder(3)).thenReturn(4.5);
 
         mockMvc.perform(get("/api/v1/comments/view-expert-score-by-order")
-                        .param("orderId", "3"))
+                        .param("orderId", "3")
+                        .header("Authorization", "Bearer " + expertToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string("4.5"));
     }
 
     @Test
     void viewAverageScore_shouldReturnAverage() throws Exception {
-        Mockito.when(commentService.viewExpertAverageScore(1)).thenReturn(3.7);
-
-        mockMvc.perform(get("/api/v1/comments/view-average-score"))
+        Mockito.when(commentService.viewExpertAverageScore(savedExpert.getId())).thenReturn(3.7);
+        mockMvc.perform(get("/api/v1/comments/view-average-score")
+                        .header("Authorization", "Bearer " + expertToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string("3.7"));
     }

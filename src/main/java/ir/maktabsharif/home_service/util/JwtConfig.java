@@ -14,12 +14,12 @@ public class JwtConfig {
 
     @Bean
     public PrivateKey privateKey() throws Exception {
-        return KeyUtil.getPrivateKey("C:\\Users\\Rayan.DESKTOP-HPS310T\\IdeaProjects\\Home-service-provider-system\\src\\main\\resources\\private_key.pem");
+        return KeyUtil.getPrivateKey("C:\\Users\\Shayan\\IdeaProjects\\Home_Service\\src\\main\\resources\\private_key.pem");
     }
 
     @Bean
     public PublicKey publicKey() throws Exception {
-        return KeyUtil.getPublicKey("C:\\Users\\Rayan.DESKTOP-HPS310T\\IdeaProjects\\Home-service-provider-system\\src\\main\\resources\\public_key.pem");
+        return KeyUtil.getPublicKey("C:\\Users\\Shayan\\IdeaProjects\\Home_Service\\src\\main\\resources\\public_key.pem");
     }
 
     @Bean
