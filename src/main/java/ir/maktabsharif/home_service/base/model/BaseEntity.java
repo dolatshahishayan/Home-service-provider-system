@@ -14,7 +14,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class BaseEntity implements Serializable {
     @Id
-    @SequenceGenerator(name = "my_entity_seq_generator", allocationSize = 1)
+    @SequenceGenerator(name = "my_entity_seq_generator", sequenceName = "my_entity_seq_generator", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "my_entity_seq_generator")
     private Integer id;
 

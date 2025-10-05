@@ -14,7 +14,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-
+@Table(name = "transactions")
 @Getter
 @Setter
 @NoArgsConstructor
