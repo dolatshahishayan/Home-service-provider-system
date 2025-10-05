@@ -14,8 +14,6 @@ public interface UserService extends BaseService<User, Integer> {
 
     boolean existsByEmailAndIdNot(String email, Integer id);
 
-    User findByEmailAndPassword(LoginDTO loginDTO);
-
     Page<UserSearchResponseDTO> searchUsers(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable);
 
     User findByEmail(String email);

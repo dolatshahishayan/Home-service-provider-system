@@ -1,7 +1,5 @@
 package ir.maktabsharif.home_service.util;
 
-import ir.maktabsharif.home_service.util.JwtUtil;
-import ir.maktabsharif.home_service.util.KeyUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.userdetails.UserDetailsService;

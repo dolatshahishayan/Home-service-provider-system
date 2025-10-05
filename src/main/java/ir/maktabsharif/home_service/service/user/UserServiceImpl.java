@@ -55,12 +55,6 @@ public class UserServiceImpl extends BaseServiceImpl<User, Integer, UserReposito
     }
 
     @Override
-    public User findByEmailAndPassword(LoginDTO loginDTO) {
-        return repository.findByEmailAndPassword(loginDTO.getEmail().toLowerCase(), loginDTO.getPassword()).orElseThrow(NoUserFoundWithGivenCredentialsException::new);
-
-    }
-
-    @Override
     public Page<UserSearchResponseDTO> searchUsers(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable) {
         List<UserSearchResponseDTO> results = new ArrayList<>();
         boolean hasExpertFilters = (userSearchRequestDTO.getServiceIds() != null && !userSearchRequestDTO.getServiceIds().isEmpty()) || userSearchRequestDTO.getMinScore() != null || userSearchRequestDTO.getMaxScore() != null;
