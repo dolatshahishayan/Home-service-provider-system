@@ -2,14 +2,18 @@ package ir.maktabsharif.home_service.controller.comment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ir.maktabsharif.home_service.TestMockConfig;
+import ir.maktabsharif.home_service.controller.auth.AuthController;
 import ir.maktabsharif.home_service.dto.comment.CommentFindResponse;
 import ir.maktabsharif.home_service.dto.comment.CommentSaveUpdateRequest;
+import ir.maktabsharif.home_service.dto.user.LoginDTO;
 import ir.maktabsharif.home_service.mapper.comment.CommentMapper;
 import ir.maktabsharif.home_service.model.comment.Comment;
 import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.comment.CommentService;
+import ir.maktabsharif.home_service.service.user.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -18,7 +22,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,11 +37,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(TestMockConfig.class)
+@Import(CommentControllerIntegrationTest.MockConfig.class)
 class CommentControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AuthController authController;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -43,21 +56,43 @@ class CommentControllerIntegrationTest {
     private CommentService commentService;
 
     @Autowired
+    private HttpServletResponse httpServletResponse;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
     private CommentMapper commentMapper;
 
     @Autowired
     private SecurityContextUtil securityContextUtil;
 
+    private String token;
+    static class MockConfig{
+        @Bean
+        CommentService commentService() {
+            return Mockito.mock(CommentService.class);
+        }
+
+        @Bean
+        CommentMapper commentMapper() {
+            return Mockito.mock(CommentMapper.class);
+        }
+    }
 
     @BeforeEach
-    void setup() {
-        User user = new User();
-        user.setId(1);
-        user.setEmail("user@test.com");
-        UserDetailsImpl principal = new UserDetailsImpl(user);
 
-        Mockito.when(securityContextUtil.getCurrentUser()).thenReturn(principal);
+    void setup() {
+        userService.deleteAll();
+        User user = new User();
+        user.setEmail("user@test.com");
+        user.setPassword(passwordEncoder.encode("test"));
+        user.setIsEmailVerified(true);
+        userService.save(user);
+        ResponseEntity<String> login = authController.login(new LoginDTO(user.getEmail(), "test"), httpServletResponse);
+        token = login.getBody();
     }
+
 
 
     @Test
@@ -78,7 +113,7 @@ class CommentControllerIntegrationTest {
 
         mockMvc.perform(post("/api/v1/comments/save")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .header("Authorization", "Bearer "+token.trim())                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.context").value("Nice job!"))
                 .andExpect(jsonPath("$.id").value(10));
@@ -101,7 +136,7 @@ class CommentControllerIntegrationTest {
         comment.setContext("Great service!");
 
         CommentFindResponse response = new CommentFindResponse();
-        response.setId(20); // فرض کن mapper تغییر می‌ده
+        response.setId(20);
         response.setContext("Great service!");
 
         Mockito.when(commentService.findByOrder(7)).thenReturn(comment);

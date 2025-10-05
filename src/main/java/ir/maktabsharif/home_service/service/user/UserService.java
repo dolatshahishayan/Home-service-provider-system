@@ -18,4 +18,6 @@ public interface UserService extends BaseService<User, Integer> {
     Page<UserSearchResponseDTO> searchUsers(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable);
 
     User findByEmail(String email);
+
+    void deleteAll();
 }

@@ -105,6 +105,11 @@ public class UserServiceImpl extends BaseServiceImpl<User, Integer, UserReposito
     }
 
     @Override
+    public void deleteAll() {
+        repository.deleteAll();
+    }
+
+    @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = repository.findByEmail(username).orElseThrow(NoUserFoundWithGivenCredentialsException::new);
         return new UserDetailsImpl(user);

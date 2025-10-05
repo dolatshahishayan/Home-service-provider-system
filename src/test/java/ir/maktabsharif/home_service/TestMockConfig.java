@@ -1,5 +1,7 @@
 package ir.maktabsharif.home_service;
 
+import ch.qos.logback.core.testUtil.MockInitialContext;
+import ir.maktabsharif.home_service.controller.auth.AuthController;
 import ir.maktabsharif.home_service.mapper.comment.CommentMapper;
 import ir.maktabsharif.home_service.mapper.customer.CustomerMapper;
 import ir.maktabsharif.home_service.mapper.expert.ExpertMapper;
@@ -8,6 +10,7 @@ import ir.maktabsharif.home_service.mapper.order.OrderMapper;
 import ir.maktabsharif.home_service.mapper.service.ServiceMapper;
 import ir.maktabsharif.home_service.mapper.suggestion.SuggestionMapper;
 import ir.maktabsharif.home_service.mapper.wallet.WalletMapper;
+import ir.maktabsharif.home_service.security.JwtAuthenticationProvider;
 import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.comment.CommentService;
 import ir.maktabsharif.home_service.service.customer.CustomerService;
@@ -22,9 +25,13 @@ import ir.maktabsharif.home_service.service.wallet.WalletService;
 import ir.maktabsharif.home_service.util.EmailUtil;
 import ir.maktabsharif.home_service.util.JwtUtil;
 import ir.maktabsharif.home_service.util.RecaptchaUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 
 @TestConfiguration
 public class TestMockConfig {
@@ -109,10 +116,7 @@ public class TestMockConfig {
     TransactionService transactionService() {
         return Mockito.mock(TransactionService.class);
     }
-    @Bean
-    UserService userService() {
-        return Mockito.mock(UserService.class);
-    }
+
 
     @Bean
     RecaptchaUtil recaptchaUtil() {
@@ -127,4 +131,10 @@ public class TestMockConfig {
     WalletMapper walletMapper() {
         return Mockito.mock(WalletMapper.class);
     }
+
+    @Bean
+    HttpServletResponse httpServletResponse(){
+        return Mockito.mock(HttpServletResponse.class);
+    }
+
 }
