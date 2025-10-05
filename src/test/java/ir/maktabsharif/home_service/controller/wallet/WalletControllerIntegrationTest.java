@@ -24,6 +24,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
+
 import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -61,7 +63,7 @@ class WalletControllerIntegrationTest {
     void setup() {
         User user = new User();
         user.setId(1);
-        wallet = new Wallet(100.0, user);
+        wallet = new Wallet(BigDecimal.valueOf(100.0), user);
         wallet.setId(1);
         walletFindResponse = new WalletFindResponse(1, 100.0, 1);
 

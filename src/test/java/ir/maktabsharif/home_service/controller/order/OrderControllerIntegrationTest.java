@@ -22,7 +22,6 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -31,6 +30,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -82,7 +82,7 @@ class OrderControllerIntegrationTest {
         orderEntity = new Order();
         orderEntity.setId(1);
         orderEntity.setDescription("Test Order");
-        orderEntity.setProposedPrice(100.0);
+        orderEntity.setProposedPrice(BigDecimal.valueOf(100.0));
         orderEntity.setStartDate(LocalDateTime.now());
         orderEntity.setAddress("Test Address");
         orderEntity.setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION);
@@ -90,7 +90,7 @@ class OrderControllerIntegrationTest {
         orderEntity.setService(service);
         orderEntity.setExpert(expert);
         orderEntity.setCreationDate(LocalDateTime.now());
-        orderEntity.setFinalPrice(120.0);
+        orderEntity.setFinalPrice(BigDecimal.valueOf(120.0));
 
         orderFindResponse = new OrderFindResponse(
                 1,

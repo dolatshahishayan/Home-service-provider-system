@@ -25,6 +25,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -68,7 +70,7 @@ class ExpertControllerIntegrationTest {
         expert.setLastName("Doe");
         expert.setEmail("john.doe@example.com");
         expert.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);
-        expert.setScore(4.7);
+        expert.setScore(BigDecimal.valueOf(4.7));
         expert.setIsEmailVerified(false);
 
         expertFindResponse = new ExpertFindResponse(
@@ -76,8 +78,7 @@ class ExpertControllerIntegrationTest {
                 expert.getFirstName(),
                 expert.getLastName(),
                 expert.getExpertStatus(),
-                expert.getScore(),
-                null,
+                expert.getScore().doubleValue(),
                 expert.getIsEmailVerified()
         );
     }
@@ -90,7 +91,7 @@ class ExpertControllerIntegrationTest {
         request.setEmail("john.doe@example.com");
         request.setPassword("123456");
 
-        Mockito.when(expertService.register(any(ExpertSaveUpdateRequest.class), eq("some/path.jpg"))).thenReturn(expert);
+        Mockito.when(expertService.register(any(ExpertSaveUpdateRequest.class))).thenReturn(expert);
         Mockito.when(expertMapper.mapToResponse(any(Expert.class))).thenReturn(expertFindResponse);
         Mockito.when(mockJwtUtil.generateToken(any(UserDetailsImpl.class))).thenReturn("fake-jwt-token");
 
@@ -132,7 +133,7 @@ class ExpertControllerIntegrationTest {
         updatedExpert.setLastName("UpdatedLast");
         updatedExpert.setEmail("john.doe@example.com");
         updatedExpert.setExpertStatus(ExpertStatus.VERIFIED);
-        updatedExpert.setScore(4.8);
+        updatedExpert.setScore(BigDecimal.valueOf(4.8));
         updatedExpert.setIsEmailVerified(true);
 
         ExpertFindResponse updatedResponse = new ExpertFindResponse(
@@ -140,12 +141,11 @@ class ExpertControllerIntegrationTest {
                 updatedExpert.getFirstName(),
                 updatedExpert.getLastName(),
                 updatedExpert.getExpertStatus(),
-                updatedExpert.getScore(),
-                null,
+                updatedExpert.getScore().doubleValue(),
                 updatedExpert.getIsEmailVerified()
         );
 
-        Mockito.when(expertService.updateWithDTO(any(ExpertSaveUpdateRequest.class), eq("new/path.jpg"))).thenReturn(updatedExpert);
+        Mockito.when(expertService.updateWithDTO(any(ExpertSaveUpdateRequest.class))).thenReturn(updatedExpert);
         Mockito.when(expertMapper.mapToResponse(any(Expert.class))).thenReturn(updatedResponse);
         Mockito.when(mockJwtUtil.generateToken(any(UserDetailsImpl.class))).thenReturn("fake-jwt-token");
 

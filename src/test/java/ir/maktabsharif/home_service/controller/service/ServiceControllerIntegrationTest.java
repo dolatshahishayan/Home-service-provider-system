@@ -22,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -53,7 +54,7 @@ class ServiceControllerIntegrationTest {
         serviceEntity = new Service();
         serviceEntity.setId(1);
         serviceEntity.setName("Test Service");
-        serviceEntity.setBasePrice(100.0);
+        serviceEntity.setBasePrice(BigDecimal.valueOf(100.0));
         serviceEntity.setDescription("Test Description");
 
         serviceFindResponse = new ServiceFindResponse(1, "Test Service", 100.0, "Test Description", null);
@@ -84,7 +85,7 @@ class ServiceControllerIntegrationTest {
         ServiceSaveUpdateRequest request = new ServiceSaveUpdateRequest(1,"Updated Service", 150.0, "Updated Description", null);
 
         serviceEntity.setName("Updated Service");
-        serviceEntity.setBasePrice(150.0);
+        serviceEntity.setBasePrice(BigDecimal.valueOf(150.0));
         serviceEntity.setDescription("Updated Description");
 
         serviceFindResponse.setName("Updated Service");
