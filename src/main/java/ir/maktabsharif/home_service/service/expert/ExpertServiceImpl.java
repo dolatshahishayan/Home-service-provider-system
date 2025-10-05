@@ -63,7 +63,7 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
     }
 
     @Override
-    public Expert register(ExpertSaveUpdateRequest expertSaveUpdateRequest, String imagePath) {
+    public Expert register(ExpertSaveUpdateRequest expertSaveUpdateRequest) {
         Expert expert;
         Optional<Expert> byEmail=repository.findByEmail(expertSaveUpdateRequest.getEmail());
         if (byEmail.isPresent()) {
@@ -76,24 +76,9 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
         }
         expert.setExpertStatus(ExpertStatus.NEW);
         expert.setIsEmailVerified(false);
-        if (imagePath != null) {
-            return getExpertWithPicture(expertSaveUpdateRequest, imagePath, expert);
-        }
         return getExpert(expertSaveUpdateRequest, expert);
     }
 
-    private Expert getExpertWithPicture(ExpertSaveUpdateRequest expertSaveUpdateRequest, String imagePath, Expert expert) {
-        byte[] bytesForExpert;
-        bytesForExpert = imageUtil.getBytesForExpert(imagePath);
-        if (!imagePath.endsWith(".jpg")) {
-            throw new ImageFormatException("Image format should be jpg");
-        }
-        if (bytesForExpert.length > 300000) {
-            throw new ImageLengthOutOfBoundException("Image size is more than 300kb.");
-        }
-        expert.setProfilePictureData(bytesForExpert);
-        return getExpert(expertSaveUpdateRequest, expert);
-    }
 
     private Expert getExpert(ExpertSaveUpdateRequest expertSaveUpdateRequest, Expert expert) {
         expert.setRole(Role.ROLE_EXPERT);
@@ -131,12 +116,12 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
     }
 
     @Override
-    public Expert updateWithDTO(ExpertSaveUpdateRequest expertSaveUpdateRequest, String imagePath) {
+    public Expert updateWithDTO(ExpertSaveUpdateRequest expertSaveUpdateRequest) {
         Expert expert = findById(expertSaveUpdateRequest.getId());
         checkEmailAndOrderStatus(expertSaveUpdateRequest, expert);
-        if (imagePath != null) {
-            getExpertAndCheckEmail(imagePath, expert);
-        }
+
+            getExpertAndCheckEmail(expert);
+
         mapper.updateEntityWithDTO(expertSaveUpdateRequest, expert);
         if (expert.getPassword() != null) {
             expert.setPassword(passwordEncoder.encode(expertSaveUpdateRequest.getPassword()));
@@ -154,15 +139,8 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
         }
     }
 
-    private void getExpertAndCheckEmail(String imagePath, Expert expert) {
-        byte[] bytesForExpert = imageUtil.getBytesForExpert(imagePath);
-        if (!imagePath.endsWith(".jpg")) {
-            throw new ImageFormatException("Image format should be jpg");
-        }
-        if (bytesForExpert.length > 300000) {
-            throw new ImageLengthOutOfBoundException("Image size is more than 300kb.");
-        }
-        expert.setProfilePictureData(bytesForExpert);
+    private void getExpertAndCheckEmail( Expert expert) {
+
         if (expert.getIsEmailVerified()) {
             expert.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);
         }

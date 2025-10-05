@@ -71,7 +71,7 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
         }
 
         order.setService(serviceService.findById(orderSaveUpdateRequest.getServiceId()));
-        if (order.getProposedPrice() < order.getService().getBasePrice()) {
+        if (order.getProposedPrice().doubleValue() < order.getService().getBasePrice().doubleValue()) {
             throw new InvalidRequestException("Proposed price must be greater than the service price");
         }
     }

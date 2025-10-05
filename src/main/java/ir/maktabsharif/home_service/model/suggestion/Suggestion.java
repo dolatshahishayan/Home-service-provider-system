@@ -10,6 +10,7 @@ import lombok.Setter;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -19,7 +20,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Suggestion extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Expert expert;
     @ManyToOne
     private Order order;
@@ -30,9 +31,9 @@ public class Suggestion extends BaseEntity {
 
     private LocalDateTime startDate;
 
-    private Double price;
+    private BigDecimal price;
 
-    private Double workDuration;
+    private BigDecimal workDuration;
 
     private Boolean accepted;
 

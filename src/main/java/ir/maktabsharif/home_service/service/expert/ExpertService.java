@@ -9,8 +9,8 @@ import org.springframework.data.jpa.domain.Specification;
 
 public interface ExpertService extends BaseService<Expert,Integer> {
     void updateStatusToVerified(Integer expertId);
-    Expert updateWithDTO(ExpertSaveUpdateRequest expertSaveUpdateRequest,String imagePath);
-    Expert register(ExpertSaveUpdateRequest expertSaveUpdateRequest,String imagePath);
+    Expert updateWithDTO(ExpertSaveUpdateRequest expertSaveUpdateRequest);
+    Expert register(ExpertSaveUpdateRequest expertSaveUpdateRequest);
     Expert findByEmail(String email);
     Page<Expert> findAll(Specification<Expert> spec, Pageable  pageable);
     void updateStatusToUnverified(Integer expertId);

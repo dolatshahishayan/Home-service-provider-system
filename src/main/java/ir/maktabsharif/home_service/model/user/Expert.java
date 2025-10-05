@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
 
 @Entity
 
@@ -19,8 +21,7 @@ public class Expert extends User {
 
     @Enumerated(EnumType.STRING)
     private ExpertStatus expertStatus;
-    private Double score;
-    private byte[] profilePictureData;
+    private BigDecimal score;
 
 
 }

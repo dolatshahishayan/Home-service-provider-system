@@ -14,8 +14,10 @@ import ir.maktabsharif.home_service.service.user.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Service
@@ -29,6 +31,7 @@ public class TransactionServiceImpl extends BaseServiceImpl<Transaction, Integer
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveTransaction(Transaction transaction) {
         if (transaction.getSender() == null || transaction.getReceiver() == null || transaction.getAmount() == null) {
             throw new InvalidRequestException("Transaction must have sender, receiver, and amount");
@@ -53,7 +56,7 @@ public class TransactionServiceImpl extends BaseServiceImpl<Transaction, Integer
         Transaction transaction = new Transaction();
         transaction.setSender(principal);
         transaction.setReceiver(principal);
-        transaction.setAmount(0D);
+        transaction.setAmount(BigDecimal.ZERO);
         transaction.setStatus(TransactionStatus.PENDING);
         transaction.setTimestamp(LocalDateTime.now());
         transaction.setExpireDate(LocalDateTime.now().plusMinutes(10));

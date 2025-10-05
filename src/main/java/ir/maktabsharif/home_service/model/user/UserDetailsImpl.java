@@ -16,7 +16,7 @@ public record UserDetailsImpl(User user) implements UserDetails {
         if (role == null) {
             return List.of(new SimpleGrantedAuthority("ROLE_USER"));
         }
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));    }
+        return List.of(new SimpleGrantedAuthority(role.name()));    }
 
     @Override
     public String getPassword() {

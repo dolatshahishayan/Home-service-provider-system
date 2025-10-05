@@ -9,6 +9,8 @@ import lombok.Setter;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
 
 @Entity
 @Getter
@@ -17,9 +19,9 @@ import jakarta.persistence.*;
 @AllArgsConstructor
 public class Wallet extends BaseEntity {
 
-    private Double balance;
+    private BigDecimal balance;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     private User user;
 
 }

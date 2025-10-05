@@ -11,6 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 @org.springframework.stereotype.Service
 @Transactional
 public class ServiceServiceImpl extends BaseServiceImpl<Service, Integer, ServiceRepository, ServiceMapper> implements ServiceService {
@@ -55,7 +57,7 @@ public class ServiceServiceImpl extends BaseServiceImpl<Service, Integer, Servic
     @Override
     public void updateBasePrice(Integer id, Double basePrice) {
         Service byId = findById(id);
-        byId.setBasePrice(basePrice);
+        byId.setBasePrice(BigDecimal.valueOf(basePrice));
         save(byId);
     }
 

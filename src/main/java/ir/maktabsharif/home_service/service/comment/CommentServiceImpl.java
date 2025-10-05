@@ -22,6 +22,7 @@ import ir.maktabsharif.home_service.service.user.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Service
@@ -63,7 +64,7 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
         long between = orderService.reduce1ScoreFromExpertPerHour(byOrderId);
         Comment comment = mapper.mapToEntity(commentSaveUpdateRequest);
         Expert expert = order.getExpert();
-        Double commentScore = comment.getExpertScore();
+        Double commentScore = comment.getExpertScore().doubleValue();
         Double finalScore = commentScore - between;
         setExpertScore(expert, finalScore);
         Expert saved = expertService.save(expert);
@@ -72,16 +73,16 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
 
     private static void setExpertScore(Expert expert, Double finalScore) {
         if (expert.getScore() != null) {
-            Double expertScore = expert.getScore();
+            Double expertScore = expert.getScore().doubleValue();
             Double finalExpertScore = (expertScore + finalScore) / 2;
-            expert.setScore(finalExpertScore);
+            expert.setScore(BigDecimal.valueOf(finalExpertScore));
         } else {
-            expert.setScore(finalScore);
+            expert.setScore(BigDecimal.valueOf(finalScore));
         }
     }
 
     private Comment saveComment(Order order, Expert expert, Comment comment) {
-        if (expert.getScore() < 0) {
+        if (expert.getScore().doubleValue() < 0) {
             expertService.updateStatusToUnverified(expert.getId());
         }
         comment.setOrder(order);
@@ -110,7 +111,7 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
                 throw new InvalidRequestException("Expert status must be VERIFIED");
             }
         }
-        return byOrder.getExpertScore();
+        return byOrder.getExpertScore().doubleValue();
     }
 
     @Override
@@ -120,6 +121,6 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
         if (expert.getExpertStatus() != ExpertStatus.VERIFIED) {
             throw new InvalidRequestException("Expert status must be VERIFIED");
         }
-        return expert.getScore();
+        return expert.getScore().doubleValue();
     }
 }

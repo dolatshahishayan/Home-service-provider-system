@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Service
@@ -43,7 +44,7 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
     public Wallet saveWithDTO(WalletSaveUpdateRequest walletSaveUpdateRequest) {
         Wallet wallet = new Wallet();
         wallet.setUser(userService.findById(walletSaveUpdateRequest.getUserId()));
-        wallet.setBalance(0.0);
+        wallet.setBalance(BigDecimal.ZERO);
         return save(wallet);
     }
 
@@ -51,7 +52,7 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
     public void addCreditToWallet(Double credit, Integer transactionId,Integer userId) {
         User principal = userService.findById(userId);
         Wallet wallet = findByUserId(principal.getId());
-        wallet.setBalance(wallet.getBalance() + credit);
+        wallet.setBalance(BigDecimal.valueOf(wallet.getBalance().doubleValue() + credit));
         save(wallet);
         Transaction transaction = transactionService.findById(transactionId);
         if (transaction.getExpireDate().isBefore(LocalDateTime.now())) {
@@ -63,7 +64,7 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
     private void getTransaction(Transaction transaction, User sender, User receiver, Double credit, TransactionStatus completed) {
         transaction.setSender(userService.findById(sender.getId()));
         transaction.setReceiver(userService.findById(receiver.getId()));
-        transaction.setAmount(credit);
+        transaction.setAmount(BigDecimal.valueOf(credit));
         transaction.setStatus(completed);
         transactionService.saveTransaction(transaction);
     }
@@ -72,24 +73,24 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
     public Wallet payFromWallet(Integer orderId) {
         Order order = orderService.findById(orderId);
         Wallet wallet = findByUserId(order.getCustomer().getId());
-        if (wallet.getBalance() < order.getFinalPrice()) {
+        if (wallet.getBalance().doubleValue()< order.getFinalPrice().doubleValue()) {
             Transaction transaction = new Transaction();
-            getTransaction(transaction, order.getCustomer(), order.getExpert(), order.getFinalPrice(), TransactionStatus.FAILED);
-            throw new InsufficientFundsException("Insufficient funds. Please deposit " + (order.getFinalPrice() - wallet.getBalance()) + " to your wallet.");
+            getTransaction(transaction, order.getCustomer(), order.getExpert(), order.getFinalPrice().doubleValue(), TransactionStatus.FAILED);
+            throw new InsufficientFundsException("Insufficient funds. Please deposit " + (order.getFinalPrice().doubleValue() - wallet.getBalance().doubleValue()) + " to your wallet.");
         }
-        double expertShare = (order.getFinalPrice() * 70) / 100;
+        double expertShare = (order.getFinalPrice().doubleValue() * 70) / 100;
         Transaction transaction = new Transaction();
         getTransaction(transaction, order.getCustomer(), order.getExpert(), expertShare, TransactionStatus.COMPLETED);
-        return getExpertAndOrder(wallet, order.getFinalPrice(), order);
+        return getExpertAndOrder(wallet, order.getFinalPrice().doubleValue(), order);
     }
 
     private Wallet getExpertAndOrder(Wallet customerWallet, Double price, Order order) {
-        Double newBalance = customerWallet.getBalance() - price;
-        customerWallet.setBalance(newBalance);
+        Double newBalance = customerWallet.getBalance().doubleValue() - price;
+        customerWallet.setBalance( BigDecimal.valueOf(newBalance));
         Wallet saved = save(customerWallet);
         double expertShare = (price * 70) / 100;
         Wallet expertWallet = findByUserId(order.getExpert().getId());
-        expertWallet.setBalance(expertWallet.getBalance() + expertShare);
+        expertWallet.setBalance(BigDecimal.valueOf(expertWallet.getBalance().doubleValue() + expertShare));
         save(expertWallet);
         order.setOrderStatus(OrderStatus.PAYED);
         orderService.save(order);
@@ -105,6 +106,6 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
     public Double getCurrentBalance(Integer userId) {
         User principal = userService.findById(userId);
         Wallet wallet = findByUserId(principal.getId());
-        return wallet.getBalance();
+        return wallet.getBalance().doubleValue();
     }
 }

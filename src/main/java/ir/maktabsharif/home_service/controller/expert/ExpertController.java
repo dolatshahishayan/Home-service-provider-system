@@ -31,8 +31,8 @@ public class ExpertController {
 
     @PostMapping("/save")
     @Operation(summary = "Save expert", description = "Save method for expert")
-    public ResponseEntity<ExpertFindResponse> saveExpert(@RequestBody @Validated(ValidationGroup.Save.class) ExpertSaveUpdateRequest expert, @RequestParam(required = false) String imagePath, HttpServletResponse response) {
-        Expert register = expertService.register(expert, imagePath);
+    public ResponseEntity<ExpertFindResponse> saveExpert(@RequestBody @Validated(ValidationGroup.Save.class) ExpertSaveUpdateRequest expert, HttpServletResponse response) {
+        Expert register = expertService.register(expert);
         String token = jwtUtil.generateToken(new UserDetailsImpl(register));
         response.addHeader("Authorization", "Bearer " + token);
         return ResponseEntity.ok(expertMapper.mapToResponse(register));
@@ -49,8 +49,8 @@ public class ExpertController {
     @PreAuthorize("hasAuthority('ROLE_EXPERT')")
     @PutMapping("/update")
     @Operation(summary = "Update expert", description = "Update method for expert")
-    public ResponseEntity<ExpertFindResponse> update(@RequestBody @Validated(ValidationGroup.Update.class) ExpertSaveUpdateRequest expertSaveUpdateRequest, @RequestParam(required = false) String imagePath, HttpServletResponse response) {
-        Expert expert = expertService.updateWithDTO(expertSaveUpdateRequest, imagePath);
+    public ResponseEntity<ExpertFindResponse> update(@RequestBody @Validated(ValidationGroup.Update.class) ExpertSaveUpdateRequest expertSaveUpdateRequest, HttpServletResponse response) {
+        Expert expert = expertService.updateWithDTO(expertSaveUpdateRequest);
         String token = jwtUtil.generateToken(new UserDetailsImpl(expert));
         response.addHeader("Authorization", "Bearer " + token);
         return ResponseEntity.ok(expertMapper.mapToResponse(expert));

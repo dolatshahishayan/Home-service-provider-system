@@ -21,7 +21,7 @@ public class ExpertService{
     @EmbeddedId
     private ExpertServiceId id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("expertId")
     private Expert expert;
 

@@ -70,7 +70,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InsufficientFundsException.class)
     public ResponseEntity<String> handleInsufficientFundsException(InsufficientFundsException e) {
-        return new ResponseEntity<>(e.getMessage()+"\n http://localhost:8080/login.html\nYou can pay for your orders with given link.", HttpStatus.CONFLICT);
+        return new ResponseEntity<>(e.getMessage()+"\n https://localhost:8443/login.html\nYou can pay for your orders with given link.", HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

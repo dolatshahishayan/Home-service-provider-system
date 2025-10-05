@@ -63,7 +63,7 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
         if (!(suggestion.getOrder().getOrderStatus().equals(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION) || suggestion.getOrder().getOrderStatus().equals(OrderStatus.WAITING_TO_CHOOSE_EXPERT))) {
             throw new InvalidRequestException("Order is not waiting for any suggestions.");
         }
-        if (suggestion.getPrice() < suggestion.getOrder().getService().getBasePrice()) {
+        if (suggestion.getPrice().doubleValue() < suggestion.getOrder().getService().getBasePrice().doubleValue()) {
             throw new InvalidRequestException("Price must be greater than the base price.");
         }
     }

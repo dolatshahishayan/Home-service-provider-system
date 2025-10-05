@@ -17,7 +17,6 @@ public class ExpertFindResponse {
     private String lastName;
     private ExpertStatus expertStatus;
     private Double score;
-    private byte[] profilePictureData;
     private Boolean isEmailVerified;
 
 

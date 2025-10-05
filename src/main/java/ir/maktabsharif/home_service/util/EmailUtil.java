@@ -85,11 +85,11 @@ public class EmailUtil {
         User user = token.getUser();
         user.setIsEmailVerified(true);
         if (user instanceof Expert e){
-            if (e.getProfilePictureData()!=null) {
+
                 e.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);
                 expertService.save(e);
                 return;
-            }
+
         }
         userService.save(user);
     }

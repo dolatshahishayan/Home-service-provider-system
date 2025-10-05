@@ -11,6 +11,7 @@ import lombok.Setter;
 import jakarta.persistence.*;
 
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -21,7 +22,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Transaction extends BaseEntity {
 
-    private Double amount;
+    private BigDecimal amount;
     @ManyToOne
     private User sender;
     @ManyToOne

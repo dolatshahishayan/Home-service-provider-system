@@ -8,6 +8,8 @@ import lombok.Setter;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Getter
 @Setter
@@ -18,7 +20,7 @@ public class Service extends BaseEntity {
     @Column(unique = true)
     private String name;
 
-    private Double basePrice;
+    private BigDecimal basePrice;
 
     private String description;
     @ManyToOne

@@ -14,6 +14,7 @@ import lombok.Setter;
 import jakarta.persistence.*;
 
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,7 +27,7 @@ public class Order extends BaseEntity {
 
     private String description;
 
-    private Double proposedPrice;
+    private BigDecimal proposedPrice;
 
     private LocalDateTime startDate;
 
@@ -41,12 +42,12 @@ public class Order extends BaseEntity {
     @ManyToOne
     private Service service;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Expert expert;
 
     private LocalDateTime creationDate;
 
-    private Double finalPrice;
+    private BigDecimal finalPrice;
 
 
 }
