@@ -14,4 +14,6 @@ public interface WalletService extends BaseService<Wallet, Integer> {
     Wallet saveWithDTO(WalletSaveUpdateRequest walletSaveUpdateRequest);
 
     Double getCurrentBalance(Integer userId);
+
+    void deleteAll();
 }

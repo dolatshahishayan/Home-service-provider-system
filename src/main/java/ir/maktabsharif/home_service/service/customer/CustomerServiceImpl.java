@@ -63,6 +63,11 @@ public class CustomerServiceImpl extends BaseServiceImpl<Customer, Integer, Cust
         return repository.findAll(spec, pageable);
     }
 
+    @Override
+    public void deleteAll() {
+        repository.deleteAll();
+    }
+
 
     @Override
     public Customer register(CustomerSaveUpdateRequest customerSaveUpdateRequest) {

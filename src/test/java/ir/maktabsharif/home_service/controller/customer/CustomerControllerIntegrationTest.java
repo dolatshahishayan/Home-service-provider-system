@@ -12,12 +12,11 @@ import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.customer.CustomerService;
 import ir.maktabsharif.home_service.service.user.UserService;
+import ir.maktabsharif.home_service.service.wallet.WalletService;
+import ir.maktabsharif.home_service.util.EmailUtil;
 import ir.maktabsharif.home_service.util.JwtUtil;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -37,7 +36,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(TestMockConfig.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CustomerControllerIntegrationTest {
     @Autowired
@@ -53,9 +51,12 @@ class CustomerControllerIntegrationTest {
     @Autowired
     private CustomerService customerService;
     @Autowired
-    private CustomerMapper customerMapper;
+    private WalletService walletService;
+    @Autowired
+    private EmailUtil emailUtil;
 
     private String customerToken;
+    private Customer register;
 
     @BeforeEach
     void setup() {
@@ -68,10 +69,22 @@ class CustomerControllerIntegrationTest {
         userService.save(user);
         UserDetails userDetails = userService.loadUserByUsername(user.getEmail());
         customerToken = jwtUtil.generateToken(userDetails);
+
+        CustomerSaveUpdateRequest customerSaveUpdateRequest = new CustomerSaveUpdateRequest();
+        customerSaveUpdateRequest.setFirstName("test");
+        customerSaveUpdateRequest.setLastName("test");
+        customerSaveUpdateRequest.setEmail("test2@test.com");
+        customerSaveUpdateRequest.setPassword("test");
+        register = customerService.register(customerSaveUpdateRequest);
+        register.setIsEmailVerified(true);
+        customerService.save(register);
     }
 
-    @AfterAll
+    @AfterEach
     void deleteUsers() {
+        emailUtil.deleteAll();
+        walletService.deleteAll();
+        customerService.deleteAll();
         userService.deleteAll();
     }
 
@@ -81,27 +94,15 @@ class CustomerControllerIntegrationTest {
         customerSaveUpdateRequest.setFirstName("test");
         customerSaveUpdateRequest.setLastName("test");
         customerSaveUpdateRequest.setEmail("test@test.com");
+        customerSaveUpdateRequest.setPassword("test");
 
-        Customer customer = new Customer();
-        customer.setId(1);
-        customer.setFirstName("test");
-        customer.setLastName("test");
-
-        CustomerFindResponse customerFindResponse = new CustomerFindResponse();
-        customerFindResponse.setId(1);
-        customerFindResponse.setFirstName("test");
-        customerFindResponse.setLastName("test");
-
-        Mockito.when(customerService.register(Mockito.any(CustomerSaveUpdateRequest.class))).thenReturn(customer);
-        Mockito.when(customerMapper.mapToResponse(Mockito.any(Customer.class))).thenReturn(customerFindResponse);
 
         mockMvc.perform(post("/api/v1/customers/save")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(customerSaveUpdateRequest))
-                .header("Authorization", "Bearer " + customerToken))
+                        .content(objectMapper.writeValueAsString(customerSaveUpdateRequest)))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Authorization", Matchers.startsWith("Bearer ")))
-                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.firstName").value("test"))
                 .andExpect(jsonPath("$.lastName").value("test"));
     }
@@ -111,20 +112,8 @@ class CustomerControllerIntegrationTest {
         CustomerSaveUpdateRequest customerSaveUpdateRequest = new CustomerSaveUpdateRequest();
         customerSaveUpdateRequest.setFirstName("test");
         customerSaveUpdateRequest.setLastName("test");
-        customerSaveUpdateRequest.setEmail("test@test.com");
-
-        Customer customer = new Customer();
-        customer.setId(1);
-        customer.setFirstName("test");
-        customer.setLastName("test");
-
-        CustomerFindResponse customerFindResponse = new CustomerFindResponse();
-        customerFindResponse.setId(1);
-        customerFindResponse.setFirstName("test");
-        customerFindResponse.setLastName("test");
-
-        Mockito.when(customerService.updateWithDTO(Mockito.any(CustomerSaveUpdateRequest.class))).thenReturn(customer);
-        Mockito.when(customerMapper.mapToResponse(Mockito.any(Customer.class))).thenReturn(customerFindResponse);
+        customerSaveUpdateRequest.setEmail("test3@test.com");
+        customerSaveUpdateRequest.setId(register.getId());
 
         mockMvc.perform(put("/api/v1/customers/update")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -132,39 +121,21 @@ class CustomerControllerIntegrationTest {
                         .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Authorization", Matchers.startsWith("Bearer ")))
-                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.id").value(register.getId()))
                 .andExpect(jsonPath("$.firstName").value("test"))
                 .andExpect(jsonPath("$.lastName").value("test"));
     }
 
     @Test
     void findByEmail_ShouldReturnCustomer() throws Exception {
-        String email = "test@test.com";
-
-        Customer customer = new Customer();
-        customer.setId(1);
-        customer.setFirstName("test");
-        customer.setLastName("test");
-        customer.setEmail(email);
-
-        CustomerFindResponse customerFindResponse = new CustomerFindResponse();
-        customerFindResponse.setId(1);
-        customerFindResponse.setFirstName("test");
-        customerFindResponse.setLastName("test");
-        customerFindResponse.setIsEmailVerified(true);
-
-        Mockito.when(customerService.findByEmail(Mockito.eq(email)))
-                .thenReturn(customer);
-
-        Mockito.when(customerMapper.mapToResponse(Mockito.any(Customer.class)))
-                .thenReturn(customerFindResponse);
+        String email = "test2@test.com";
 
         mockMvc.perform(get("/api/v1/customers/find-by-email")
                         .param("email", email)
                         .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer " + customerToken))
+                        .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.id").value(register.getId()))
                 .andExpect(jsonPath("$.firstName").value("test"))
                 .andExpect(jsonPath("$.lastName").value("test"))
                 .andExpect(jsonPath("$.isEmailVerified").value(true));

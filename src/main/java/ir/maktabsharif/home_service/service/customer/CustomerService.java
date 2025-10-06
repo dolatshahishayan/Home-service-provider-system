@@ -12,4 +12,5 @@ public interface CustomerService extends BaseService<Customer,Integer> {
     Customer updateWithDTO(CustomerSaveUpdateRequest customerSaveUpdateRequest);
     Customer findByEmail(String email);
     Page<Customer> findAll(Specification<Customer> spec, Pageable pageable);
+    void deleteAll();
 }

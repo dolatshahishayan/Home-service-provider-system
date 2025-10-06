@@ -63,6 +63,11 @@ public class ExpertServiceImpl extends BaseServiceImpl<Expert, Integer, ExpertRe
     }
 
     @Override
+    public void deleteAll() {
+        repository.deleteAll();
+    }
+
+    @Override
     public Expert register(ExpertSaveUpdateRequest expertSaveUpdateRequest) {
         Expert expert;
         Optional<Expert> byEmail=repository.findByEmail(expertSaveUpdateRequest.getEmail());

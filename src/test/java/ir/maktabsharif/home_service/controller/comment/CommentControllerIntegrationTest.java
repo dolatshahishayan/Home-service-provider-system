@@ -1,33 +1,37 @@
 package ir.maktabsharif.home_service.controller.comment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ir.maktabsharif.home_service.TestMockConfig;
-import ir.maktabsharif.home_service.dto.comment.CommentFindResponse;
 import ir.maktabsharif.home_service.dto.comment.CommentSaveUpdateRequest;
-import ir.maktabsharif.home_service.mapper.comment.CommentMapper;
 import ir.maktabsharif.home_service.model.comment.Comment;
+import ir.maktabsharif.home_service.model.enums.ExpertStatus;
+import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.enums.Role;
-import ir.maktabsharif.home_service.model.user.User;
+import ir.maktabsharif.home_service.model.order.Order;
+import ir.maktabsharif.home_service.model.suggestion.Suggestion;
+import ir.maktabsharif.home_service.model.user.Customer;
+import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.service.comment.CommentService;
+import ir.maktabsharif.home_service.service.customer.CustomerService;
+import ir.maktabsharif.home_service.service.expert.ExpertService;
+import ir.maktabsharif.home_service.service.order.OrderService;
+import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.util.JwtUtil;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.ArgumentMatchers.any;
+import java.time.LocalDateTime;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -35,7 +39,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(TestMockConfig.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CommentControllerIntegrationTest {
 
@@ -55,39 +58,68 @@ class CommentControllerIntegrationTest {
     private CommentService commentService;
 
     @Autowired
+    private OrderService orderService;
+
+    @Autowired
     private UserService userService;
 
     @Autowired
-    private CommentMapper commentMapper;
+    private CustomerService customerService;
+
+    @Autowired
+    private SuggestionService suggestionService;
+
+    @Autowired
+    private ExpertService expertService;
 
     private String customerToken;
     private String expertToken;
-    private User savedExpert;
+    private Customer save;
+    private Order savedOrder;
+    private Suggestion save1;
 
     @BeforeEach
     void setup() {
         userService.deleteAll();
-        User user = new User();
+        Customer user = new Customer();
         user.setEmail("user@test.com");
         user.setPassword(passwordEncoder.encode("test"));
         user.setIsEmailVerified(true);
         user.setRole(Role.ROLE_CUSTOMER);
-        userService.save(user);
+        save = customerService.save(user);
         UserDetails userDetails = userService.loadUserByUsername(user.getEmail());
         customerToken = jwtUtil.generateToken(userDetails);
 
-        User user2 = new User();
+        Expert user2 = new Expert();
         user2.setEmail("user2@test.com");
         user2.setPassword(passwordEncoder.encode("test"));
         user2.setIsEmailVerified(true);
         user2.setRole(Role.ROLE_EXPERT);
-        savedExpert=userService.save(user2);
+        user2.setExpertStatus(ExpertStatus.VERIFIED);
+        Expert savedExpert = expertService.save(user2);
         UserDetails userDetails2 = userService.loadUserByUsername(user2.getEmail());
         expertToken = jwtUtil.generateToken(userDetails2);
+
+        Order order = new Order();
+        order.setDescription("test");
+        order.setOrderStatus(OrderStatus.PAYED);
+        order.setCustomer(save);
+        order.setExpert(savedExpert);
+        savedOrder = orderService.save(order);
+
+        Suggestion suggestion = new Suggestion();
+        suggestion.setStartDate(LocalDateTime.now().minusMinutes(10));
+        suggestion.setOrder(savedOrder);
+        save1 = suggestionService.save(suggestion);
+
     }
 
-    @AfterAll
+    @AfterEach
     void deleteUsers() {
+        commentService.deleteAll();
+        suggestionService.delete(save1);
+        orderService.delete(savedOrder);
+        customerService.delete(save);
         userService.deleteAll();
     }
 
@@ -95,17 +127,8 @@ class CommentControllerIntegrationTest {
     void saveComment_shouldReturnSavedComment() throws Exception {
         CommentSaveUpdateRequest request = new CommentSaveUpdateRequest();
         request.setContext("Nice job!");
-
-        Comment savedComment = new Comment();
-        savedComment.setId(10);
-        savedComment.setContext("Nice job!");
-
-        CommentFindResponse response = new CommentFindResponse();
-        response.setId(10);
-        response.setContext("Nice job!");
-
-        Mockito.when(commentService.saveWithDTO(any(), any())).thenReturn(savedComment);
-        Mockito.when(commentMapper.mapToResponse(savedComment)).thenReturn(response);
+        request.setExpertScore(3D);
+        request.setOrderId(savedOrder.getId());
 
         mockMvc.perform(post("/api/v1/comments/save")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -113,47 +136,57 @@ class CommentControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.context").value("Nice job!"))
-                .andExpect(jsonPath("$.id").value(10));
+                .andExpect(jsonPath("$.id").exists());
     }
 
     @Test
     void existsByOrder_shouldReturnTrue() throws Exception {
-        Mockito.when(commentService.existsByOrder(5)).thenReturn(true);
+        CommentSaveUpdateRequest request = new CommentSaveUpdateRequest();
+        request.setContext("Nice job!");
+        request.setExpertScore(3D);
+        request.setOrderId(savedOrder.getId());
+        commentService.saveWithDTO(request, save.getId());
+        Integer id = savedOrder.getId();
+        String idString = String.valueOf(id);
 
         mockMvc.perform(get("/api/v1/comments/exists-by-order")
                         .header("Authorization", "Bearer " + customerToken)
-                        .param("orderId", "5"))
+                        .param("orderId", idString))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
     }
 
     @Test
     void findByOrder_shouldReturnComment() throws Exception {
-        Comment comment = new Comment();
-        comment.setId(7);
-        comment.setContext("Great service!");
+        CommentSaveUpdateRequest request = new CommentSaveUpdateRequest();
+        request.setContext("Nice job!");
+        request.setExpertScore(3D);
+        request.setOrderId(savedOrder.getId());
+        Comment comment = commentService.saveWithDTO(request, save.getId());
+        Integer id = savedOrder.getId();
+        String idString = String.valueOf(id);
 
-        CommentFindResponse response = new CommentFindResponse();
-        response.setId(20);
-        response.setContext("Great service!");
-
-        Mockito.when(commentService.findByOrder(7)).thenReturn(comment);
-        Mockito.when(commentMapper.mapToResponse(comment)).thenReturn(response);
 
         mockMvc.perform(get("/api/v1/comments/find-by-order")
-                        .param("orderId", "7")
-                .header("Authorization", "Bearer " + customerToken))
+                        .param("orderId", idString)
+                        .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(20))
-                .andExpect(jsonPath("$.context").value("Great service!"));
+                .andExpect(jsonPath("$.id").value(comment.getId()))
+                .andExpect(jsonPath("$.context").value("Nice job!"));
     }
 
     @Test
     void viewExpertScoreByOrder_shouldReturnScore() throws Exception {
-        Mockito.when(commentService.viewExpertScoreByOrder(3)).thenReturn(4.5);
+        CommentSaveUpdateRequest request = new CommentSaveUpdateRequest();
+        request.setContext("Nice job!");
+        request.setExpertScore(4.5D);
+        request.setOrderId(savedOrder.getId());
+        commentService.saveWithDTO(request, save.getId());
+        Integer id = savedOrder.getId();
+        String idString = String.valueOf(id);
 
         mockMvc.perform(get("/api/v1/comments/view-expert-score-by-order")
-                        .param("orderId", "3")
+                        .param("orderId", idString)
                         .header("Authorization", "Bearer " + expertToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string("4.5"));
@@ -161,11 +194,15 @@ class CommentControllerIntegrationTest {
 
     @Test
     void viewAverageScore_shouldReturnAverage() throws Exception {
-        Mockito.when(commentService.viewExpertAverageScore(savedExpert.getId())).thenReturn(3.7);
+        CommentSaveUpdateRequest request = new CommentSaveUpdateRequest();
+        request.setContext("Nice job!");
+        request.setExpertScore(4.5D);
+        request.setOrderId(savedOrder.getId());
+        commentService.saveWithDTO(request, save.getId());
         mockMvc.perform(get("/api/v1/comments/view-average-score")
                         .header("Authorization", "Bearer " + expertToken))
                 .andExpect(status().isOk())
-                .andExpect(content().string("3.7"));
+                .andExpect(content().string("4.5"));
     }
 
 }

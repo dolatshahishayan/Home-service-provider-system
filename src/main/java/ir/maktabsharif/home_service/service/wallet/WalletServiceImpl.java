@@ -108,4 +108,9 @@ public class WalletServiceImpl extends BaseServiceImpl<Wallet, Integer, WalletRe
         Wallet wallet = findByUserId(principal.getId());
         return wallet.getBalance().doubleValue();
     }
+
+    @Override
+    public void deleteAll() {
+        repository.deleteAll();
+    }
 }

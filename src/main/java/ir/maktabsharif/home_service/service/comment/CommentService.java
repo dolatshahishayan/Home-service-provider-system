@@ -10,4 +10,5 @@ public interface CommentService extends BaseService<Comment,Integer> {
     double viewExpertScoreByOrder(Integer orderId);
     Comment saveWithDTO(CommentSaveUpdateRequest commentSaveUpdateRequest,Integer userId);
     double viewExpertAverageScore(Integer userId);
+    void deleteAll();
 }

@@ -9,22 +9,17 @@ import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.model.user.User;
-import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
-import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.service.user.UserService;
+import ir.maktabsharif.home_service.service.wallet.WalletService;
+import ir.maktabsharif.home_service.util.EmailUtil;
 import ir.maktabsharif.home_service.util.JwtUtil;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -42,7 +37,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(TestMockConfig.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ExpertControllerIntegrationTest {
 
@@ -60,10 +54,14 @@ class ExpertControllerIntegrationTest {
     private JwtUtil jwtUtil;
     @Autowired
     private UserService userService;
+    @Autowired
+    private WalletService walletService;
+    @Autowired
+    private EmailUtil emailUtil;
 
     private String expertToken;
     private String adminToken;
-    private Expert expert;
+    private Expert save;
     private ExpertFindResponse expertFindResponse;
 
     @BeforeEach
@@ -88,27 +86,22 @@ class ExpertControllerIntegrationTest {
         UserDetails userDetails2 = userService.loadUserByUsername(user2.getEmail());
         adminToken = jwtUtil.generateToken(userDetails2);
 
-        expert = new Expert();
-        expert.setId(1);
+        Expert expert = new Expert();
         expert.setFirstName("John");
         expert.setLastName("Doe");
-        expert.setEmail("john.doe@example.com");
+        expert.setEmail("john.doe2@example.com");
         expert.setExpertStatus(ExpertStatus.WAITING_FOR_VERIFYING);
         expert.setScore(BigDecimal.valueOf(4.7));
         expert.setIsEmailVerified(false);
+        save = expertService.save(expert);
 
-        expertFindResponse = new ExpertFindResponse(
-                expert.getId(),
-                expert.getFirstName(),
-                expert.getLastName(),
-                expert.getExpertStatus(),
-                expert.getScore().doubleValue(),
-                expert.getIsEmailVerified()
-        );
     }
 
-    @AfterAll
+    @AfterEach
     void deleteUsers() {
+        emailUtil.deleteAll();
+        walletService.deleteAll();
+        expertService.deleteAll();
         userService.deleteAll();
     }
 
@@ -120,31 +113,31 @@ class ExpertControllerIntegrationTest {
         request.setEmail("john.doe@example.com");
         request.setPassword("123456");
 
-        Mockito.when(expertService.register(any(ExpertSaveUpdateRequest.class))).thenReturn(expert);
-        Mockito.when(expertMapper.mapToResponse(any(Expert.class))).thenReturn(expertFindResponse);
-
         mockMvc.perform(post("/api/v1/experts/save")
                         .param("imagePath", "some/path.jpg")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-                .header("Authorization", "Bearer " + expertToken))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Authorization", Matchers.startsWith("Bearer ")))
-                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.firstName").value("John"))
                 .andExpect(jsonPath("$.lastName").value("Doe"))
-                .andExpect(jsonPath("$.expertStatus").value("WAITING_FOR_VERIFYING"))
-                .andExpect(jsonPath("$.score").value(4.7))
+                .andExpect(jsonPath("$.expertStatus").value("NEW"))
                 .andExpect(jsonPath("$.isEmailVerified").value(false));
     }
 
     @Test
     void verifyExpert_ShouldReturnMessage() throws Exception {
-        Mockito.doNothing().when(expertService).updateStatusToVerified(eq(1));
-
+        ExpertSaveUpdateRequest request = new ExpertSaveUpdateRequest();
+        request.setFirstName("John");
+        request.setLastName("Doe");
+        request.setEmail("john.doe@example.com");
+        request.setPassword("123456");
+        Expert register = expertService.register(request);
+        String idString = String.valueOf(register.getId());
         mockMvc.perform(put("/api/v1/experts/verify")
-                        .param("expertId", "1")
-                .header("Authorization", "Bearer " + adminToken))
+                        .param("expertId", idString)
+                        .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string("expert verified"));
     }
@@ -154,57 +147,31 @@ class ExpertControllerIntegrationTest {
         ExpertSaveUpdateRequest request = new ExpertSaveUpdateRequest();
         request.setFirstName("UpdatedName");
         request.setLastName("UpdatedLast");
-        request.setEmail("john.doe@example.com");
+        request.setEmail("john.doe4@example.com");
         request.setPassword("newPassword");
-
-        Expert updatedExpert = new Expert();
-        updatedExpert.setId(1);
-        updatedExpert.setFirstName("UpdatedName");
-        updatedExpert.setLastName("UpdatedLast");
-        updatedExpert.setEmail("john.doe@example.com");
-        updatedExpert.setExpertStatus(ExpertStatus.VERIFIED);
-        updatedExpert.setScore(BigDecimal.valueOf(4.8));
-        updatedExpert.setIsEmailVerified(true);
-
-        ExpertFindResponse updatedResponse = new ExpertFindResponse(
-                updatedExpert.getId(),
-                updatedExpert.getFirstName(),
-                updatedExpert.getLastName(),
-                updatedExpert.getExpertStatus(),
-                updatedExpert.getScore().doubleValue(),
-                updatedExpert.getIsEmailVerified()
-        );
-
-        Mockito.when(expertService.updateWithDTO(any(ExpertSaveUpdateRequest.class))).thenReturn(updatedExpert);
-        Mockito.when(expertMapper.mapToResponse(any(Expert.class))).thenReturn(updatedResponse);
+        request.setId(save.getId());
 
         mockMvc.perform(put("/api/v1/experts/update")
-                        .param("imagePath", "new/path.jpg")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
-                .header("Authorization", "Bearer " + expertToken))
+                        .header("Authorization", "Bearer " + expertToken))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Authorization", Matchers.startsWith("Bearer ")))
                 .andExpect(jsonPath("$.firstName").value("UpdatedName"))
                 .andExpect(jsonPath("$.lastName").value("UpdatedLast"))
-                .andExpect(jsonPath("$.expertStatus").value("VERIFIED"))
-                .andExpect(jsonPath("$.score").value(4.8))
-                .andExpect(jsonPath("$.isEmailVerified").value(true));
+                .andExpect(jsonPath("$.expertStatus").value("WAITING_FOR_VERIFYING"));
     }
 
     @Test
     void findExpertByEmail_ShouldReturnExpert() throws Exception {
-        String email = "john.doe@example.com";
-
-        Mockito.when(expertService.findByEmail(eq(email))).thenReturn(expert);
-        Mockito.when(expertMapper.mapToResponse(any(Expert.class))).thenReturn(expertFindResponse);
+        String email = "john.doe2@example.com";
 
         mockMvc.perform(get("/api/v1/experts/find-by-email")
                         .param("email", email)
                         .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer " + adminToken))
+                        .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.id").value(save.getId()))
                 .andExpect(jsonPath("$.firstName").value("John"))
                 .andExpect(jsonPath("$.lastName").value("Doe"))
                 .andExpect(jsonPath("$.expertStatus").value("WAITING_FOR_VERIFYING"))

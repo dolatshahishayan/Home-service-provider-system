@@ -54,6 +54,10 @@ public class EmailUtil {
         mailSender.send(message);
     }
 
+    public void deleteAll(){
+        emailVerificationTokenRepository.deleteAll();
+    }
+
     public String buildFrontendVerificationLink(EmailVerificationToken token) {
         return frontendUrl + "/verify-email.html?token=" + token.getToken();
     }

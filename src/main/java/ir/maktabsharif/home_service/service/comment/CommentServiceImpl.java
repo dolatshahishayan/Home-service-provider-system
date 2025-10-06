@@ -123,4 +123,9 @@ public class CommentServiceImpl extends BaseServiceImpl<Comment, Integer, Commen
         }
         return expert.getScore().doubleValue();
     }
+
+    @Override
+    public void deleteAll() {
+        repository.deleteAll();
+    }
 }

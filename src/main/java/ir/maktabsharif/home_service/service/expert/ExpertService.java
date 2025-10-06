@@ -14,4 +14,5 @@ public interface ExpertService extends BaseService<Expert,Integer> {
     Expert findByEmail(String email);
     Page<Expert> findAll(Specification<Expert> spec, Pageable  pageable);
     void updateStatusToUnverified(Integer expertId);
+    void deleteAll();
 }
