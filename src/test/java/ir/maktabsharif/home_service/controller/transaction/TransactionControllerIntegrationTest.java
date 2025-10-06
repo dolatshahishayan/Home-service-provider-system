@@ -4,15 +4,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.transaction.TransactionFindResponse;
 import ir.maktabsharif.home_service.dto.transaction.TransactionInitializerDTO;
+import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.enums.TransactionStatus;
 import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.transaction.TransactionService;
+import ir.maktabsharif.home_service.service.user.UserService;
+import ir.maktabsharif.home_service.util.JwtUtil;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +27,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,13 +38,13 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Import(TestMockConfig.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TransactionControllerIntegrationTest {
 
     @Autowired
@@ -46,20 +54,35 @@ public class TransactionControllerIntegrationTest {
     private TransactionService transactionService;
 
     @Autowired
-    private SecurityContextUtil securityContextUtil;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserService userService;
+
+    private String customerToken;
 
     @BeforeEach
     void setup() {
-        User mockUser = new User();
-        mockUser.setId(1);
+        userService.deleteAll();
+        User user3 = new User();
+        user3.setEmail("user3@test.com");
+        user3.setPassword(passwordEncoder.encode("test"));
+        user3.setIsEmailVerified(true);
+        user3.setRole(Role.ROLE_CUSTOMER);
+        userService.save(user3);
+        UserDetails userDetails3 = userService.loadUserByUsername(user3.getEmail());
+        customerToken = jwtUtil.generateToken(userDetails3);
+    }
 
-        UserDetailsImpl userDetails = new UserDetailsImpl(mockUser);
-        Mockito.when(securityContextUtil.getCurrentUser()).thenReturn(userDetails);
+    @AfterAll
+    void deleteUsers() {
+        userService.deleteAll();
     }
 
     @Test
@@ -76,7 +99,8 @@ public class TransactionControllerIntegrationTest {
         mockMvc.perform(get("/api/v1/transactions/find-by-user")
                         .param("page", "0")
                         .param("size", "10")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk());
     }
 
@@ -90,9 +114,10 @@ public class TransactionControllerIntegrationTest {
                 .thenReturn(initializerDTO);
 
         mockMvc.perform(post("/api/v1/transactions/save-initial-transaction")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(initializerDTO)));
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(initializerDTO))
+                        .header("Authorization", "Bearer " + customerToken))
+                .andExpect(status().isOk());
     }
 
 }

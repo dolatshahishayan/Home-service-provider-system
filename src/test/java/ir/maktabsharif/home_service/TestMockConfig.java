@@ -16,6 +16,7 @@ import ir.maktabsharif.home_service.service.order.OrderService;
 import ir.maktabsharif.home_service.service.service.ServiceService;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
 import ir.maktabsharif.home_service.service.transaction.TransactionService;
+import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.service.wallet.WalletService;
 import ir.maktabsharif.home_service.util.EmailUtil;
 import ir.maktabsharif.home_service.util.RecaptchaUtil;
@@ -114,4 +115,5 @@ public class TestMockConfig {
     WalletMapper walletMapper() {
         return Mockito.mock(WalletMapper.class);
     }
+
 }

@@ -5,15 +5,21 @@ import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionFindResponse;
 import ir.maktabsharif.home_service.dto.suggestion.SuggestionSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.suggestion.SuggestionMapper;
+import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
+import ir.maktabsharif.home_service.service.user.UserService;
+import ir.maktabsharif.home_service.util.JwtUtil;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +27,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -36,6 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Import(TestMockConfig.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SuggestionControllerIntegrationTest {
 
     @Autowired
@@ -47,18 +56,41 @@ class SuggestionControllerIntegrationTest {
     @Autowired
     private SuggestionMapper suggestionMapper;
     @Autowired
-    private SecurityContextUtil securityContextUtil;
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
+    private UserService userService;
 
+    private String customerToken;
+    private String expertToken;
 
 
     @BeforeEach
     void setup() {
+        userService.deleteAll();
         User user = new User();
-        user.setId(1);
-        user.setEmail("expert@test.com");
-        UserDetailsImpl principal = new UserDetailsImpl(user);
+        user.setEmail("user@test.com");
+        user.setPassword(passwordEncoder.encode("test"));
+        user.setIsEmailVerified(true);
+        user.setRole(Role.ROLE_EXPERT);
+        userService.save(user);
+        UserDetails userDetails = userService.loadUserByUsername(user.getEmail());
+        expertToken = jwtUtil.generateToken(userDetails);
 
-        Mockito.when(securityContextUtil.getCurrentUser()).thenReturn(principal);
+        User user3 = new User();
+        user3.setEmail("user3@test.com");
+        user3.setPassword(passwordEncoder.encode("test"));
+        user3.setIsEmailVerified(true);
+        user3.setRole(Role.ROLE_CUSTOMER);
+        userService.save(user3);
+        UserDetails userDetails3 = userService.loadUserByUsername(user3.getEmail());
+        customerToken = jwtUtil.generateToken(userDetails3);
+    }
+
+    @AfterAll
+    void deleteUsers() {
+        userService.deleteAll();
     }
 
     @Test
@@ -79,7 +111,8 @@ class SuggestionControllerIntegrationTest {
 
         mockMvc.perform(post("/api/v1/suggestions/save")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("Authorization", "Bearer " + expertToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.description").value("Test Description"));
@@ -103,7 +136,8 @@ class SuggestionControllerIntegrationTest {
 
         mockMvc.perform(put("/api/v1/suggestions/update")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("Authorization", "Bearer " + expertToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.description").value("Updated Description"));
@@ -112,7 +146,8 @@ class SuggestionControllerIntegrationTest {
     @Test
     void confirmSuggestionAcceptance_ShouldReturnSuccessMessage() throws Exception {
         mockMvc.perform(put("/api/v1/suggestions/confirm-suggestion-acceptance")
-                        .param("suggestionId", "1"))
+                        .param("suggestionId", "1")
+                        .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Suggestion's acceptance has been confirmed"));
 
@@ -132,7 +167,8 @@ class SuggestionControllerIntegrationTest {
                         .param("expertId", "1")
                         .param("page", "0")
                         .param("size", "10")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + expertToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value(1))
                 .andExpect(jsonPath("$.content[0].expertId").value(1))
@@ -155,7 +191,8 @@ class SuggestionControllerIntegrationTest {
         mockMvc.perform(get("/api/v1/suggestions/find-all-and-sort-by-price-ascending")
                         .param("orderId", "1")
                         .param("page", "0")
-                        .param("size", "10"))
+                        .param("size", "10")
+                        .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value(1));
     }
@@ -174,7 +211,8 @@ class SuggestionControllerIntegrationTest {
         mockMvc.perform(get("/api/v1/suggestions/find-all-and-sort-by-expert-score-descending")
                         .param("orderId", "1")
                         .param("page", "0")
-                        .param("size", "10"))
+                        .param("size", "10")
+                        .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value(1));
     }

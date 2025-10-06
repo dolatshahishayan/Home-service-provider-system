@@ -5,12 +5,19 @@ import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.service.ServiceFindResponse;
 import ir.maktabsharif.home_service.dto.service.ServiceSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.service.ServiceMapper;
+import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.service.Service;
+import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.service.service.ServiceService;
+import ir.maktabsharif.home_service.service.user.UserService;
+import ir.maktabsharif.home_service.util.JwtUtil;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +26,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -33,6 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Import(TestMockConfig.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServiceControllerIntegrationTest {
 
     @Autowired
@@ -43,14 +53,28 @@ class ServiceControllerIntegrationTest {
     private ServiceService serviceService;
     @Autowired
     private ServiceMapper serviceMapper;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
+    private UserService userService;
 
-
-
+    private String adminToken;
     private Service serviceEntity;
     private ServiceFindResponse serviceFindResponse;
 
     @BeforeEach
     void setup() {
+        userService.deleteAll();
+        User user2 = new User();
+        user2.setEmail("user2@test.com");
+        user2.setPassword(passwordEncoder.encode("test"));
+        user2.setIsEmailVerified(true);
+        user2.setRole(Role.ROLE_ADMIN);
+        userService.save(user2);
+        UserDetails userDetails2 = userService.loadUserByUsername(user2.getEmail());
+        adminToken = jwtUtil.generateToken(userDetails2);
         serviceEntity = new Service();
         serviceEntity.setId(1);
         serviceEntity.setName("Test Service");
@@ -58,6 +82,11 @@ class ServiceControllerIntegrationTest {
         serviceEntity.setDescription("Test Description");
 
         serviceFindResponse = new ServiceFindResponse(1, "Test Service", 100.0, "Test Description", null);
+    }
+
+    @AfterAll
+    void deleteUsers() {
+        userService.deleteAll();
     }
 
     @Test
@@ -72,7 +101,8 @@ class ServiceControllerIntegrationTest {
 
         mockMvc.perform(post("/api/v1/services/save")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Test Service"))
@@ -97,7 +127,8 @@ class ServiceControllerIntegrationTest {
 
         mockMvc.perform(put("/api/v1/services/update")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Updated Service"))
                 .andExpect(jsonPath("$.basePrice").value(150.0))
@@ -110,7 +141,8 @@ class ServiceControllerIntegrationTest {
 
         mockMvc.perform(put("/api/v1/services/update-description")
                         .param("serviceId", "1")
-                        .param("description", "New Description"))
+                        .param("description", "New Description")
+                        .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Description updated"));
     }
@@ -121,7 +153,8 @@ class ServiceControllerIntegrationTest {
 
         mockMvc.perform(put("/api/v1/services/update-base-price")
                         .param("serviceId", "1")
-                        .param("basePrice", "200.0"))
+                        .param("basePrice", "200.0")
+                        .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Base price updated"));
     }
@@ -131,7 +164,8 @@ class ServiceControllerIntegrationTest {
         Mockito.when(serviceService.existsByName("Test Service")).thenReturn(true);
 
         mockMvc.perform(get("/api/v1/services/exists-by-name")
-                        .param("name", "Test Service"))
+                        .param("name", "Test Service")
+                        .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
     }
@@ -145,7 +179,8 @@ class ServiceControllerIntegrationTest {
 
         mockMvc.perform(get("/api/v1/services/find-all-parentServices")
                         .param("page", "0")
-                        .param("size", "10"))
+                        .param("size", "10")
+                        .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].name").value("Test Service"));
     }
@@ -178,7 +213,8 @@ class ServiceControllerIntegrationTest {
                         .param("serviceId", String.valueOf(serviceId))
                         .param("page", "0")
                         .param("size", "10")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content[0].id").value(2))
@@ -190,7 +226,8 @@ class ServiceControllerIntegrationTest {
         Mockito.doNothing().when(serviceService).deleteById(1);
 
         mockMvc.perform(delete("/api/v1/services/delete")
-                        .param("serviceId", "1"))
+                        .param("serviceId", "1")
+                        .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Deleted service"));
     }

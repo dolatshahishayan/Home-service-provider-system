@@ -6,22 +6,29 @@ import ir.maktabsharif.home_service.dto.expert.ExpertFindResponse;
 import ir.maktabsharif.home_service.dto.expert.ExpertSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.expert.ExpertMapper;
 import ir.maktabsharif.home_service.model.enums.ExpertStatus;
+import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.expert.ExpertService;
+import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.util.JwtUtil;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -36,6 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Import(TestMockConfig.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ExpertControllerIntegrationTest {
 
     @Autowired
@@ -47,22 +55,38 @@ class ExpertControllerIntegrationTest {
     @Autowired
     private ExpertMapper expertMapper;
     @Autowired
-    private JwtUtil mockJwtUtil;
+    private PasswordEncoder passwordEncoder;
     @Autowired
-    private SecurityContextUtil securityContextUtil;
+    private JwtUtil jwtUtil;
+    @Autowired
+    private UserService userService;
 
-
+    private String expertToken;
+    private String adminToken;
     private Expert expert;
     private ExpertFindResponse expertFindResponse;
 
     @BeforeEach
     void setup() {
-        User user = new User();
-        user.setId(1);
-        user.setEmail("expert@test.com");
 
-        UserDetailsImpl principal = new UserDetailsImpl(user);
-        Mockito.when(securityContextUtil.getCurrentUser()).thenReturn(principal);
+        userService.deleteAll();
+        User user = new User();
+        user.setEmail("user@test.com");
+        user.setPassword(passwordEncoder.encode("test"));
+        user.setIsEmailVerified(true);
+        user.setRole(Role.ROLE_EXPERT);
+        userService.save(user);
+        UserDetails userDetails = userService.loadUserByUsername(user.getEmail());
+        expertToken = jwtUtil.generateToken(userDetails);
+
+        User user2 = new User();
+        user2.setEmail("user2@test.com");
+        user2.setPassword(passwordEncoder.encode("test"));
+        user2.setIsEmailVerified(true);
+        user2.setRole(Role.ROLE_ADMIN);
+        userService.save(user2);
+        UserDetails userDetails2 = userService.loadUserByUsername(user2.getEmail());
+        adminToken = jwtUtil.generateToken(userDetails2);
 
         expert = new Expert();
         expert.setId(1);
@@ -83,6 +107,11 @@ class ExpertControllerIntegrationTest {
         );
     }
 
+    @AfterAll
+    void deleteUsers() {
+        userService.deleteAll();
+    }
+
     @Test
     void saveExpert_ShouldReturnExpertWithToken() throws Exception {
         ExpertSaveUpdateRequest request = new ExpertSaveUpdateRequest();
@@ -93,12 +122,12 @@ class ExpertControllerIntegrationTest {
 
         Mockito.when(expertService.register(any(ExpertSaveUpdateRequest.class))).thenReturn(expert);
         Mockito.when(expertMapper.mapToResponse(any(Expert.class))).thenReturn(expertFindResponse);
-        Mockito.when(mockJwtUtil.generateToken(any(UserDetailsImpl.class))).thenReturn("fake-jwt-token");
 
         mockMvc.perform(post("/api/v1/experts/save")
                         .param("imagePath", "some/path.jpg")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                .header("Authorization", "Bearer " + expertToken))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Authorization", Matchers.startsWith("Bearer ")))
                 .andExpect(jsonPath("$.id").value(1))
@@ -114,7 +143,8 @@ class ExpertControllerIntegrationTest {
         Mockito.doNothing().when(expertService).updateStatusToVerified(eq(1));
 
         mockMvc.perform(put("/api/v1/experts/verify")
-                        .param("expertId", "1"))
+                        .param("expertId", "1")
+                .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string("expert verified"));
     }
@@ -147,12 +177,12 @@ class ExpertControllerIntegrationTest {
 
         Mockito.when(expertService.updateWithDTO(any(ExpertSaveUpdateRequest.class))).thenReturn(updatedExpert);
         Mockito.when(expertMapper.mapToResponse(any(Expert.class))).thenReturn(updatedResponse);
-        Mockito.when(mockJwtUtil.generateToken(any(UserDetailsImpl.class))).thenReturn("fake-jwt-token");
 
         mockMvc.perform(put("/api/v1/experts/update")
                         .param("imagePath", "new/path.jpg")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                .header("Authorization", "Bearer " + expertToken))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Authorization", Matchers.startsWith("Bearer ")))
                 .andExpect(jsonPath("$.firstName").value("UpdatedName"))
@@ -171,7 +201,8 @@ class ExpertControllerIntegrationTest {
 
         mockMvc.perform(get("/api/v1/experts/find-by-email")
                         .param("email", email)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.firstName").value("John"))

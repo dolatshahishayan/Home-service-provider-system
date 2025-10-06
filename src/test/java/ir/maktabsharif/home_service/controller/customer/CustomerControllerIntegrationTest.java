@@ -5,22 +5,29 @@ import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.customer.CustomerFindResponse;
 import ir.maktabsharif.home_service.dto.customer.CustomerSaveUpdateRequest;
 import ir.maktabsharif.home_service.mapper.customer.CustomerMapper;
+import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.security.SecurityContextUtil;
 import ir.maktabsharif.home_service.service.customer.CustomerService;
+import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.util.JwtUtil;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -31,30 +38,41 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Import(TestMockConfig.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CustomerControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
+    private UserService userService;
+    @Autowired
     private CustomerService customerService;
     @Autowired
     private CustomerMapper customerMapper;
-    @Autowired
-    private SecurityContextUtil securityContextUtil;
-    @Autowired
-    private JwtUtil mockJwtUtil;
 
-
+    private String customerToken;
 
     @BeforeEach
     void setup() {
+        userService.deleteAll();
         User user = new User();
-        user.setId(1);
         user.setEmail("user@test.com");
-        UserDetailsImpl principal = new UserDetailsImpl(user);
+        user.setPassword(passwordEncoder.encode("test"));
+        user.setIsEmailVerified(true);
+        user.setRole(Role.ROLE_CUSTOMER);
+        userService.save(user);
+        UserDetails userDetails = userService.loadUserByUsername(user.getEmail());
+        customerToken = jwtUtil.generateToken(userDetails);
+    }
 
-        Mockito.when(securityContextUtil.getCurrentUser()).thenReturn(principal);
+    @AfterAll
+    void deleteUsers() {
+        userService.deleteAll();
     }
 
     @Test
@@ -76,11 +94,11 @@ class CustomerControllerIntegrationTest {
 
         Mockito.when(customerService.register(Mockito.any(CustomerSaveUpdateRequest.class))).thenReturn(customer);
         Mockito.when(customerMapper.mapToResponse(Mockito.any(Customer.class))).thenReturn(customerFindResponse);
-        Mockito.when(mockJwtUtil.generateToken(Mockito.any(UserDetailsImpl.class))).thenReturn("fake-jwt-token");
 
         mockMvc.perform(post("/api/v1/customers/save")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(customerSaveUpdateRequest)))
+                        .content(objectMapper.writeValueAsString(customerSaveUpdateRequest))
+                .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Authorization", Matchers.startsWith("Bearer ")))
                 .andExpect(jsonPath("$.id").value(1))
@@ -107,11 +125,11 @@ class CustomerControllerIntegrationTest {
 
         Mockito.when(customerService.updateWithDTO(Mockito.any(CustomerSaveUpdateRequest.class))).thenReturn(customer);
         Mockito.when(customerMapper.mapToResponse(Mockito.any(Customer.class))).thenReturn(customerFindResponse);
-        Mockito.when(mockJwtUtil.generateToken(Mockito.any(UserDetailsImpl.class))).thenReturn("fake-jwt-token");
 
         mockMvc.perform(put("/api/v1/customers/update")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(customerSaveUpdateRequest)))
+                        .content(objectMapper.writeValueAsString(customerSaveUpdateRequest))
+                        .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Authorization", Matchers.startsWith("Bearer ")))
                 .andExpect(jsonPath("$.id").value(1))
@@ -143,7 +161,8 @@ class CustomerControllerIntegrationTest {
 
         mockMvc.perform(get("/api/v1/customers/find-by-email")
                         .param("email", email)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.firstName").value("test"))
