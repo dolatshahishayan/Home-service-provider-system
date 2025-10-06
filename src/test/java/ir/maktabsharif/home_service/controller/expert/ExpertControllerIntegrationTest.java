@@ -1,10 +1,7 @@
 package ir.maktabsharif.home_service.controller.expert;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ir.maktabsharif.home_service.TestMockConfig;
-import ir.maktabsharif.home_service.dto.expert.ExpertFindResponse;
 import ir.maktabsharif.home_service.dto.expert.ExpertSaveUpdateRequest;
-import ir.maktabsharif.home_service.mapper.expert.ExpertMapper;
 import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.user.Expert;
@@ -15,12 +12,13 @@ import ir.maktabsharif.home_service.service.wallet.WalletService;
 import ir.maktabsharif.home_service.util.EmailUtil;
 import ir.maktabsharif.home_service.util.JwtUtil;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.*;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,8 +27,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -47,8 +43,6 @@ class ExpertControllerIntegrationTest {
     @Autowired
     private ExpertService expertService;
     @Autowired
-    private ExpertMapper expertMapper;
-    @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
     private JwtUtil jwtUtil;
@@ -62,7 +56,6 @@ class ExpertControllerIntegrationTest {
     private String expertToken;
     private String adminToken;
     private Expert save;
-    private ExpertFindResponse expertFindResponse;
 
     @BeforeEach
     void setup() {
