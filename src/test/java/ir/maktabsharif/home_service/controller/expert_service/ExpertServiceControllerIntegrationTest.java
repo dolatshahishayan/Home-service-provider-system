@@ -1,8 +1,5 @@
 package ir.maktabsharif.home_service.controller.expert_service;
 
-import ir.maktabsharif.home_service.TestMockConfig;
-import ir.maktabsharif.home_service.dto.expert_service.ExpertServiceFindResponse;
-import ir.maktabsharif.home_service.mapper.expert_service.ExpertServiceMapper;
 import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.expert_service.ExpertService;
 import ir.maktabsharif.home_service.model.expert_service.ExpertServiceId;
@@ -10,31 +7,21 @@ import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.service.expert_service.ExpertServiceService;
+import ir.maktabsharif.home_service.service.service.ServiceService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.util.JwtUtil;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -49,17 +36,21 @@ class ExpertServiceControllerIntegrationTest {
     @Autowired
     private ExpertServiceService expertServiceService;
     @Autowired
-    private ExpertServiceMapper expertServiceMapper;
-    @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
     private JwtUtil jwtUtil;
     @Autowired
+    private ir.maktabsharif.home_service.service.expert.ExpertService expertService;
+    @Autowired
+    private ServiceService serviceService;
+    @Autowired
     private UserService userService;
 
     private String adminToken;
-    private ExpertService expertServiceEntity;
-    private ExpertServiceFindResponse expertServiceFindResponse;
+    private Expert expert1;
+    private Expert expertTest2;
+    private Service service1;
+    private Service serviceTest2;
 
     @BeforeEach
     void setup() {
@@ -73,45 +64,53 @@ class ExpertServiceControllerIntegrationTest {
         UserDetails userDetails2 = userService.loadUserByUsername(user2.getEmail());
         adminToken = jwtUtil.generateToken(userDetails2);
         Expert expert = new Expert();
-        expert.setId(1);
-
+        expert.setFirstName("test1");
+        Expert expert2 = new Expert();
+        expert2.setFirstName("test2");
+        expert1 = expertService.save(expert2);
+        expertTest2 = expertService.save(expert);
         Service service = new Service();
-        service.setId(2);
-
-        ExpertServiceId id = new ExpertServiceId(1, 2);
-
-        expertServiceEntity = new ExpertService();
+        service.setName("test3");
+        Service service2 = new Service();
+        service2.setName("test4");
+        service1 = serviceService.save(service2);
+        serviceTest2 = serviceService.save(service);
+        ExpertServiceId id = new ExpertServiceId(expert1.getId(), service1.getId());
+        ExpertService expertServiceEntity = new ExpertService();
         expertServiceEntity.setId(id);
-        expertServiceEntity.setExpert(expert);
-        expertServiceEntity.setService(service);
-
-        expertServiceFindResponse = new ExpertServiceFindResponse(1, 2);
+        expertServiceEntity.setExpert(expert1);
+        expertServiceEntity.setService(service1);
+        expertServiceService.save(expertServiceEntity);
     }
 
-    @AfterAll
+    @AfterEach
     void deleteUsers() {
+        expertServiceService.deleteAll();
+        expertService.deleteAll();
+        serviceService.deleteAll();
         userService.deleteAll();
     }
 
     @Test
     void addExpertToService_ShouldReturnConfirmationMessage() throws Exception {
-        Mockito.doNothing().when(expertServiceService).addExpertToService(1, 2);
-
+        String expertId = String.valueOf(expertTest2.getId());
+        String serviceId = String.valueOf(serviceTest2.getId());
         mockMvc.perform(post("/api/v1/expert-services/add-expert-to-service")
-                        .param("expertId", "1")
-                        .param("serviceId", "2")
-                .header("Authorization", "Bearer " + adminToken))
+                        .param("expertId", expertId)
+                        .param("serviceId", serviceId)
+                        .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string("expert added to service"));
     }
 
     @Test
     void removeExpertFromService_ShouldReturnConfirmationMessage() throws Exception {
-        Mockito.doNothing().when(expertServiceService).removeExpertFromService(1, 2);
+        String expertId = String.valueOf(expert1.getId());
+        String serviceId = String.valueOf(service1.getId());
 
         mockMvc.perform(delete("/api/v1/expert-services/remove-expert-from-service")
-                        .param("expertId", "1")
-                        .param("serviceId", "2")
+                        .param("expertId", expertId)
+                        .param("serviceId", serviceId)
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string("expert removed from service"));
@@ -119,25 +118,25 @@ class ExpertServiceControllerIntegrationTest {
 
     @Test
     void findByExpertIdAndServiceId_ShouldReturnExpertService() throws Exception {
-        Mockito.when(expertServiceService.findByExpertIdAndServiceId(1, 2)).thenReturn(expertServiceEntity);
-        Mockito.when(expertServiceMapper.mapToResponse(any(ExpertService.class))).thenReturn(expertServiceFindResponse);
+        String expertId = String.valueOf(expert1.getId());
+        String serviceId = String.valueOf(service1.getId());
 
         mockMvc.perform(get("/api/v1/expert-services/find-by-expert-id-and-service-id")
-                        .param("expertId", "1")
-                        .param("serviceId", "2")
+                        .param("expertId", expertId)
+                        .param("serviceId", serviceId)
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.expertId").value(1))
-                .andExpect(jsonPath("$.serviceId").value(2));
+                .andExpect(jsonPath("$.expertId").value(expert1.getId()))
+                .andExpect(jsonPath("$.serviceId").value(service1.getId()));
     }
 
     @Test
     void existsByServiceIdAndExpertId_ShouldReturnBoolean() throws Exception {
-        Mockito.when(expertServiceService.existsByExpertIdAndServiceId(1, 2)).thenReturn(true);
-
+        String expertId = String.valueOf(expert1.getId());
+        String serviceId = String.valueOf(service1.getId());
         mockMvc.perform(get("/api/v1/expert-services/exists-by-service-id-and-expert-id")
-                        .param("serviceId", "2")
-                        .param("expertId", "1")
+                        .param("serviceId", serviceId)
+                        .param("expertId", expertId)
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
@@ -145,17 +144,15 @@ class ExpertServiceControllerIntegrationTest {
 
     @Test
     void findByExpertId_ShouldReturnPagedExpertService() throws Exception {
-        Page<ExpertService> page = new PageImpl<>(List.of(expertServiceEntity));
-        Mockito.when(expertServiceService.findByExpertId(eq(1), any(PageRequest.class))).thenReturn(page);
-        Mockito.when(expertServiceMapper.mapToResponse(any(ExpertService.class))).thenReturn(expertServiceFindResponse);
+        String expertId = String.valueOf(expert1.getId());
 
         mockMvc.perform(get("/api/v1/expert-services/find-by-expert-id")
-                        .param("expertId", "1")
+                        .param("expertId", expertId)
                         .param("page", "0")
                         .param("size", "10")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].expertId").value(1))
-                .andExpect(jsonPath("$.content[0].serviceId").value(2));
+                .andExpect(jsonPath("$.content[0].expertId").value(expert1.getId()))
+                .andExpect(jsonPath("$.content[0].serviceId").value(service1.getId()));
     }
 }

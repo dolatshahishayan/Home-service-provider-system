@@ -7,20 +7,23 @@ import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.order.OrderSearchRequest;
 import ir.maktabsharif.home_service.dto.order.OrderSummaryDTO;
 import ir.maktabsharif.home_service.mapper.order.OrderMapper;
+import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.order.Order;
 import ir.maktabsharif.home_service.model.service.Service;
+import ir.maktabsharif.home_service.model.suggestion.Suggestion;
 import ir.maktabsharif.home_service.model.user.Customer;
 import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.model.user.User;
+import ir.maktabsharif.home_service.service.customer.CustomerService;
+import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.service.order.OrderService;
+import ir.maktabsharif.home_service.service.service.ServiceService;
+import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.util.JwtUtil;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -44,12 +47,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(TestMockConfig.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OrderControllerIntegrationTest {
 
@@ -67,22 +70,35 @@ class OrderControllerIntegrationTest {
     private JwtUtil jwtUtil;
     @Autowired
     private UserService userService;
+    @Autowired
+    private CustomerService customerService;
+    @Autowired
+    private ServiceService serviceService;
+    @Autowired
+    private ExpertService expertService;
+    @Autowired
+    private SuggestionService suggestionService;
 
     private String adminToken;
     private String customerToken;
     private String expertToken;
     private Order orderEntity;
     private OrderFindResponse orderFindResponse;
+    private Service serviceTest;
+    private Order save;
+    private Expert expertTest;
+    private Suggestion save1;
 
     @BeforeEach
     void setup() {
         userService.deleteAll();
-        User user = new User();
+        Expert user = new Expert();
         user.setEmail("user@test.com");
         user.setPassword(passwordEncoder.encode("test"));
         user.setIsEmailVerified(true);
         user.setRole(Role.ROLE_EXPERT);
-        userService.save(user);
+        user.setExpertStatus(ExpertStatus.VERIFIED);
+        expertTest = expertService.save(user);
         UserDetails userDetails = userService.loadUserByUsername(user.getEmail());
         expertToken = jwtUtil.generateToken(userDetails);
 
@@ -95,37 +111,36 @@ class OrderControllerIntegrationTest {
         UserDetails userDetails2 = userService.loadUserByUsername(user2.getEmail());
         adminToken = jwtUtil.generateToken(userDetails2);
 
-        User user3 = new User();
+        Customer user3 = new Customer();
         user3.setEmail("user3@test.com");
         user3.setPassword(passwordEncoder.encode("test"));
         user3.setIsEmailVerified(true);
         user3.setRole(Role.ROLE_CUSTOMER);
-        userService.save(user3);
+        customerService.save(user3);
         UserDetails userDetails3 = userService.loadUserByUsername(user3.getEmail());
         customerToken = jwtUtil.generateToken(userDetails3);
 
-        Customer customer = new Customer();
-        customer.setId(1);
-
         Service service = new Service();
-        service.setId(1);
-
-        Expert expert = new Expert();
-        expert.setId(1);
+        service.setBasePrice(BigDecimal.valueOf(200000));
+        serviceTest = serviceService.save(service);
 
         orderEntity = new Order();
-        orderEntity.setId(1);
         orderEntity.setDescription("Test Order");
         orderEntity.setProposedPrice(BigDecimal.valueOf(100.0));
         orderEntity.setStartDate(LocalDateTime.now());
         orderEntity.setAddress("Test Address");
         orderEntity.setOrderStatus(OrderStatus.WAITING_FOR_EXPERT_SUGGESTION);
-        orderEntity.setCustomer(customer);
+        orderEntity.setCustomer(user3);
         orderEntity.setService(service);
-        orderEntity.setExpert(expert);
         orderEntity.setCreationDate(LocalDateTime.now());
         orderEntity.setFinalPrice(BigDecimal.valueOf(120.0));
+        save = orderService.save(orderEntity);
 
+        Suggestion suggestion = new Suggestion();
+        suggestion.setOrder(save);
+        suggestion.setExpert(expertTest);
+        suggestion.setPrice(BigDecimal.valueOf(20000000));
+        save1 = suggestionService.save(suggestion);
         orderFindResponse = new OrderFindResponse(
                 1,
                 "Test Order",
@@ -141,8 +156,12 @@ class OrderControllerIntegrationTest {
         );
     }
 
-    @AfterAll
+    @AfterEach
     void deleteUsers() {
+        suggestionService.deleteAll();
+        orderService.deleteAll();
+        serviceService.deleteAll();
+        customerService.deleteAll();
         userService.deleteAll();
     }
 
@@ -150,18 +169,16 @@ class OrderControllerIntegrationTest {
     void saveOrder_ShouldReturnOrderFindResponse() throws Exception {
         OrderSaveUpdateRequest request = new OrderSaveUpdateRequest();
         request.setDescription("Test Order");
-
-        Mockito.when(orderService.saveWithDTO(any(OrderSaveUpdateRequest.class), any()))
-                .thenReturn(orderEntity);
-        Mockito.when(orderMapper.mapToResponse(any(Order.class)))
-                .thenReturn(orderFindResponse);
+        request.setServiceId(serviceTest.getId());
+        request.setProposedPrice(200000D);
 
         mockMvc.perform(post("/api/v1/orders/save")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                         .header("Authorization", "Bearer " + customerToken))
+                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.description").value("Test Order"));
     }
 
@@ -169,28 +186,24 @@ class OrderControllerIntegrationTest {
     void updateOrder_ShouldReturnOrderFindResponse() throws Exception {
         OrderSaveUpdateRequest request = new OrderSaveUpdateRequest();
         request.setDescription("Updated Order");
-
-        Mockito.when(orderService.updateWithDTO(any(OrderSaveUpdateRequest.class), any()))
-                .thenReturn(orderEntity);
-        Mockito.when(orderMapper.mapToResponse(any(Order.class)))
-                .thenReturn(orderFindResponse);
+        request.setId(save.getId());
 
         mockMvc.perform(put("/api/v1/orders/update")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                         .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.description").value("Test Order"));
+                .andExpect(jsonPath("$.id").value(save.getId()))
+                .andExpect(jsonPath("$.description").value("Updated Order"));
     }
 
     @Test
     void existsByExpertAndOrderStatusIn_ShouldReturnBoolean() throws Exception {
-        Mockito.when(orderService.existsBySpecialistAndOrderStatusIn(eq(1), anyList()))
-                .thenReturn(true);
-
+        String id = String.valueOf(expertTest.getId());
+        orderEntity.setExpert(expertTest);
+        orderService.save(orderEntity);
         mockMvc.perform(get("/api/v1/orders/exists-by-expert-and-order-status-in")
-                        .param("expertId", "1")
+                        .param("expertId", id)
                         .param("orderStatuses", "WAITING_FOR_EXPERT_SUGGESTION")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
@@ -199,25 +212,22 @@ class OrderControllerIntegrationTest {
 
     @Test
     void findByServiceId_ShouldReturnPagedOrders() throws Exception {
-        Page<Order> page = new PageImpl<>(List.of(orderEntity));
-        Mockito.when(orderService.findByServiceId(eq(1), any(PageRequest.class))).thenReturn(page);
-        Mockito.when(orderMapper.mapToResponse(any(Order.class))).thenReturn(orderFindResponse);
+        String id = String.valueOf(serviceTest.getId());
 
         mockMvc.perform(get("/api/v1/orders/find-by-service-id")
-                        .param("serviceId", "1")
+                        .param("serviceId", id)
                         .param("page", "0")
                         .param("size", "10")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].id").value(1));
+                .andExpect(jsonPath("$.content[0].id").value(orderEntity.getId()));
     }
 
     @Test
     void chooseExpert_ShouldReturnConfirmation() throws Exception {
-        Mockito.doNothing().when(orderService).chooseExpert(eq(1));
-
+        String id = String.valueOf(save1.getId());
         mockMvc.perform(put("/api/v1/orders/choose-expert")
-                        .param("suggestionId", "1")
+                        .param("suggestionId", id)
                         .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Expert chosen"));
@@ -225,9 +235,6 @@ class OrderControllerIntegrationTest {
 
     @Test
     void searchOrders_ShouldReturnPagedSummary() throws Exception {
-        Page<OrderSummaryDTO> page = new PageImpl<>(List.of(new OrderSummaryDTO()));
-        Mockito.when(orderService.searchOrders(any(OrderSearchRequest.class), any(PageRequest.class)))
-                .thenReturn(page);
 
         mockMvc.perform(get("/api/v1/orders/search-orders")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -238,9 +245,6 @@ class OrderControllerIntegrationTest {
 
     @Test
     void findAllByExpert_ShouldReturnPagedSummary() throws Exception {
-        Page<OrderSummaryDTO> page = new PageImpl<>(List.of(new OrderSummaryDTO()));
-        Mockito.when(orderService.findAllByExpertId(any(PageRequest.class), eq(1)))
-                .thenReturn(page);
 
         mockMvc.perform(get("/api/v1/orders/find-all-by-expert")
                         .param("page", "0")
@@ -251,75 +255,71 @@ class OrderControllerIntegrationTest {
 
     @Test
     void findOrderWithDetails_ShouldReturnOrderFindResponse() throws Exception {
-        Mockito.when(orderService.existsByOrderIdAndExpertIdAndAcceptedTrue(any(), any())).thenReturn(true);
-        Mockito.when(orderService.findById(eq(1))).thenReturn(orderEntity);
-        Mockito.when(orderMapper.mapToResponse(any(Order.class))).thenReturn(orderFindResponse);
-
+        String id = String.valueOf(orderEntity.getId());
+        orderEntity.setExpert(expertTest);
+        orderService.save(orderEntity);
+        save1.setExpert(expertTest);
+        save1.setAccepted(true);
+        suggestionService.save(save1);
         mockMvc.perform(get("/api/v1/orders/find-order-with-details")
-                        .param("orderId", "1")
+                        .param("orderId", id)
                         .header("Authorization", "Bearer " + expertToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.id").value(orderEntity.getId()));
     }
 
     @Test
     void findOrderWithDetails_ForbiddenIfNotAccepted() throws Exception {
-        Mockito.when(orderService.existsByOrderIdAndExpertIdAndAcceptedTrue(eq(1), eq(1))).thenReturn(false);
+        String id = String.valueOf(orderEntity.getId());
 
         mockMvc.perform(get("/api/v1/orders/find-order-with-details")
-                        .param("orderId", "1")
+                        .param("orderId", id)
                         .header("Authorization", "Bearer " + expertToken))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void findOrderWithDetailsForAdmin_ShouldReturnOrderFindResponse() throws Exception {
-        Mockito.when(orderService.findById(eq(1))).thenReturn(orderEntity);
-        Mockito.when(orderMapper.mapToResponse(any(Order.class))).thenReturn(orderFindResponse);
+        String id = String.valueOf(orderEntity.getId());
 
         mockMvc.perform(get("/api/v1/orders/find-order-with-details-for-admin-and-customer")
-                        .param("orderId", "1")
+                        .param("orderId", id)
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.id").value(orderEntity.getId()));
     }
 
     @Test
     void findAllByCustomer_ShouldReturnPagedOrders() throws Exception {
-        Page<Order> page = new PageImpl<>(List.of(orderEntity));
-        Mockito.when(orderService.findByCustomerId(any(), any(PageRequest.class), any()))
-                .thenReturn(page);
-        Mockito.when(orderMapper.mapToResponse(any(Order.class))).thenReturn(orderFindResponse);
 
         mockMvc.perform(get("/api/v1/orders/find-all-by-customer")
                         .param("page", "0")
                         .param("size", "10")
                         .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].id").value(1));
+                .andExpect(jsonPath("$.content[0].id").value(orderEntity.getId()));
     }
 
     @Test
     void updateStatusToStarted_ShouldReturnOrderFindResponse() throws Exception {
-        Mockito.when(orderService.updateStatusToStarted(any(), any())).thenReturn(orderEntity);
-        Mockito.when(orderMapper.mapToResponse(any(Order.class))).thenReturn(orderFindResponse);
 
+        String id = String.valueOf(orderEntity.getId());
         mockMvc.perform(put("/api/v1/orders/update-status-to-started")
-                        .param("orderId", "1")
+                        .param("orderId", id)
                         .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.id").value(orderEntity.getId()));
     }
 
     @Test
     void updateStatusToDone_ShouldReturnOrderFindResponse() throws Exception {
-        Mockito.when(orderService.updateStatusToDone(any(), any())).thenReturn(orderEntity);
-        Mockito.when(orderMapper.mapToResponse(any(Order.class))).thenReturn(orderFindResponse);
 
+
+        String id = String.valueOf(orderEntity.getId());
         mockMvc.perform(put("/api/v1/orders/update-status-to-done")
-                        .param("orderId", "1")
+                        .param("orderId", id)
                         .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.id").value(orderEntity.getId()));
     }
 }

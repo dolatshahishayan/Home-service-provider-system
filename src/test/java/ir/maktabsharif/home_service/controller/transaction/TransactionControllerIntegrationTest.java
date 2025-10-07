@@ -4,18 +4,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.transaction.TransactionFindResponse;
 import ir.maktabsharif.home_service.dto.transaction.TransactionInitializerDTO;
+import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.enums.TransactionStatus;
+import ir.maktabsharif.home_service.model.transaction.Transaction;
+import ir.maktabsharif.home_service.model.user.Expert;
 import ir.maktabsharif.home_service.model.user.User;
 import ir.maktabsharif.home_service.model.user.UserDetailsImpl;
 import ir.maktabsharif.home_service.security.SecurityContextUtil;
+import ir.maktabsharif.home_service.service.expert.ExpertService;
 import ir.maktabsharif.home_service.service.transaction.TransactionService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.util.JwtUtil;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,6 +33,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -43,7 +45,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(TestMockConfig.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TransactionControllerIntegrationTest {
 
@@ -65,6 +66,9 @@ public class TransactionControllerIntegrationTest {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ExpertService expertService;
+
     private String customerToken;
 
     @BeforeEach
@@ -78,24 +82,29 @@ public class TransactionControllerIntegrationTest {
         userService.save(user3);
         UserDetails userDetails3 = userService.loadUserByUsername(user3.getEmail());
         customerToken = jwtUtil.generateToken(userDetails3);
+        Expert user = new Expert();
+        user.setEmail("user@test.com");
+        user.setPassword(passwordEncoder.encode("test"));
+        user.setIsEmailVerified(true);
+        user.setRole(Role.ROLE_EXPERT);
+        user.setExpertStatus(ExpertStatus.VERIFIED);
+        Expert expertTest = expertService.save(user);
+        Transaction transaction=new Transaction();
+        transaction.setAmount(BigDecimal.valueOf(200000));
+        transaction.setSender(user3);
+        transaction.setReceiver(expertTest);
+        transactionService.save(transaction);
     }
 
-    @AfterAll
+    @AfterEach
     void deleteUsers() {
+        transactionService.deleteAll();
+        expertService.deleteAll();
         userService.deleteAll();
     }
 
     @Test
     void findTransactionsByUser_ShouldReturnPagedTransactions() throws Exception {
-        TransactionFindResponse transactionResponse = new TransactionFindResponse(
-                100.0, 1, 2, LocalDateTime.now(), TransactionStatus.COMPLETED
-        );
-
-        Page<TransactionFindResponse> page = new PageImpl<>(List.of(transactionResponse));
-
-        Mockito.when(transactionService.findByUserId(any(PageRequest.class), eq(1)))
-                .thenReturn(page);
-
         mockMvc.perform(get("/api/v1/transactions/find-by-user")
                         .param("page", "0")
                         .param("size", "10")
@@ -107,11 +116,9 @@ public class TransactionControllerIntegrationTest {
     @Test
     void saveInitialTransaction_ShouldReturnInitializerDTO() throws Exception {
         TransactionInitializerDTO initializerDTO = new TransactionInitializerDTO(
-                1, LocalDateTime.now().plusMinutes(15)
+                null, LocalDateTime.now().plusMinutes(15)
         );
 
-        Mockito.when(transactionService.createPendingTransaction(eq(1)))
-                .thenReturn(initializerDTO);
 
         mockMvc.perform(post("/api/v1/transactions/save-initial-transaction")
                 .contentType(MediaType.APPLICATION_JSON)

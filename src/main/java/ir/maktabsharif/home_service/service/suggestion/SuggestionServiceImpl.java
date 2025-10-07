@@ -115,6 +115,11 @@ public class SuggestionServiceImpl extends BaseServiceImpl<Suggestion, Integer, 
     }
 
     @Override
+    public void deleteAll() {
+        repository.deleteAll();
+    }
+
+    @Override
     public Page<SuggestionFindResponse> findAllByExpertId(Integer expertId,Pageable pageable) {
         Page<Suggestion> allByExpertId = repository.findAllByExpertId(expertId,pageable);
         if (allByExpertId.getContent().isEmpty()) {

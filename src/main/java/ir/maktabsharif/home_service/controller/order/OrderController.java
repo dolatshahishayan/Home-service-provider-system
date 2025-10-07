@@ -41,7 +41,8 @@ public class OrderController {
     public ResponseEntity<OrderFindResponse> save(@RequestBody @Validated(ValidationGroup.Save.class) OrderSaveUpdateRequest order) {
         UserDetailsImpl principal = securityContextUtil.getCurrentUser();
         Order saved = orderService.saveWithDTO(order,principal.user().getId());
-        return ResponseEntity.ok(orderMapper.mapToResponse(saved));
+        OrderFindResponse orderFindResponse = orderMapper.mapToResponse(saved);
+        return ResponseEntity.ok(orderFindResponse);
     }
 
     @PutMapping("/update")

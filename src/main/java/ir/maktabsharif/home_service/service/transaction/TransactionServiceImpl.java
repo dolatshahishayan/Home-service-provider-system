@@ -63,4 +63,9 @@ public class TransactionServiceImpl extends BaseServiceImpl<Transaction, Integer
         Transaction save = save(transaction);
         return new TransactionInitializerDTO(save.getId(),save.getExpireDate());
     }
+
+    @Override
+    public void deleteAll() {
+        repository.deleteAll();
+    }
 }

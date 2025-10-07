@@ -107,7 +107,6 @@ class ExpertControllerIntegrationTest {
         request.setPassword("123456");
 
         mockMvc.perform(post("/api/v1/experts/save")
-                        .param("imagePath", "some/path.jpg")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())

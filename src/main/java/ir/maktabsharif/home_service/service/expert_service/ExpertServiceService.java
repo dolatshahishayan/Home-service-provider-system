@@ -14,4 +14,5 @@ public interface ExpertServiceService extends BaseService<ExpertService,Integer>
     void removeExpertFromService(Integer expertId, Integer serviceId);
     Page<ExpertService> findByExpertId(Integer expertId, Pageable  pageable);
     List<Integer> findExpertIdsByServiceIds(List<Integer> serviceIds);
+    void deleteAll();
 }

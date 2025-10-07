@@ -24,4 +24,6 @@ public interface SuggestionService extends BaseService<Suggestion, Integer> {
     Page<Suggestion> findAllByAndSortByExpertScoreDesc(Integer orderId,Pageable pageable);
 
     boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId, Integer expertId);
+
+    void deleteAll();
 }

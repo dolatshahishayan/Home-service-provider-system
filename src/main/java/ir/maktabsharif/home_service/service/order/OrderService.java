@@ -36,4 +36,6 @@ public interface OrderService extends BaseService<Order, Integer> {
     Page<Order> findByCustomerId(OrderStatus status, Pageable pageable,Integer userId);
 
     boolean existsByOrderIdAndExpertIdAndAcceptedTrue(Integer orderId,Integer userId);
+
+    void deleteAll();
 }

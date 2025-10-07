@@ -121,6 +121,11 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Integer, OrderRepos
     }
 
     @Override
+    public void deleteAll() {
+        repository.deleteAll();
+    }
+
+    @Override
     public Order updateWithDTO(OrderSaveUpdateRequest orderSaveUpdateRequest,Integer userId) {
         User principal = userService.findById(userId);
         Order order = findById(orderSaveUpdateRequest.getId());

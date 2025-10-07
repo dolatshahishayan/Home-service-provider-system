@@ -11,4 +11,5 @@ public interface TransactionService extends BaseService<Transaction, Integer> {
     void saveTransaction(Transaction transaction);
     Page<TransactionFindResponse> findByUserId(Pageable pageable,Integer userId);
     TransactionInitializerDTO createPendingTransaction(Integer userId);
+    void deleteAll();
 }

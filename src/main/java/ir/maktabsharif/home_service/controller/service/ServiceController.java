@@ -83,7 +83,7 @@ public class ServiceController {
     @DeleteMapping("/delete")
     @Operation(summary = "Delete service", description = "Method for deleting a service")
     public ResponseEntity<String> delete(@RequestParam Integer serviceId) {
-        serviceService.deleteById(serviceId);
+        serviceService.deleteByIdAndAllSubServices(serviceId);
         return ResponseEntity.ok("Deleted service");
     }
 }

@@ -8,6 +8,7 @@ import ir.maktabsharif.home_service.mapper.service.ServiceMapper;
 import ir.maktabsharif.home_service.model.service.Service;
 import ir.maktabsharif.home_service.repository.service.ServiceRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,6 +78,25 @@ public class ServiceServiceImpl extends BaseServiceImpl<Service, Integer, Servic
             throw new NoElementFoundException();
         }
         return byParentService;
+    }
+
+    @Override
+    public void deleteAll() {
+        repository.deleteAll();
+    }
+
+    @Override
+    public void deleteByIdAndAllSubServices(Integer serviceId) {
+        Service byId = findById(serviceId);
+        Page<Service> byParentService = repository.findByParentService(byId, PageRequest.of(0, 10));
+        if (!byParentService.getContent().isEmpty()) {
+            for (Service service: byParentService.getContent()) {
+                repository.deleteById(service.getId());
+            }
+            repository.deleteById(serviceId);
+            return;
+        }
+        repository.deleteById(serviceId);
     }
 
     @Override

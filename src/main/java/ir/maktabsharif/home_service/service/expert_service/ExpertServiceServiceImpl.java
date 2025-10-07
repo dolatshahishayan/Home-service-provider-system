@@ -69,6 +69,11 @@ public class ExpertServiceServiceImpl extends BaseServiceImpl<ExpertService, Int
         return expertServiceCriteriaRepository.findExpertIdsByServiceIds(serviceIds);
     }
 
+    @Override
+    public void deleteAll() {
+        repository.deleteAll();
+    }
+
 
     @Override
     public ExpertService findByExpertIdAndServiceId(Integer expertId, Integer serviceId) {

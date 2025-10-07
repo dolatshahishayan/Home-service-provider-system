@@ -14,4 +14,7 @@ public interface ServiceService extends BaseService<Service,Integer> {
     void updateBasePrice(Integer id,Double basePrice);
     Page<Service> findAllAndParentServiceIsNull(Pageable pageable);
     Page<Service> findAllAndParentServiceIsNotNullByParentService(Service parent,Pageable pageable);
+    void deleteAll();
+
+    void deleteByIdAndAllSubServices(Integer serviceId);
 }
