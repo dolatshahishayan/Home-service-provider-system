@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.controller.token;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.user.VerificationRequest;
 import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.token.EmailVerificationToken;
@@ -16,6 +17,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Import(TestMockConfig.class)
 public class EmailControllerIntegrationTest {
 
     @Autowired

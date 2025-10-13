@@ -1,6 +1,7 @@
 package ir.maktabsharif.home_service.controller.customer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ir.maktabsharif.home_service.TestMockConfig;
 import ir.maktabsharif.home_service.dto.customer.CustomerSaveUpdateRequest;
 import ir.maktabsharif.home_service.model.enums.Role;
 import ir.maktabsharif.home_service.model.user.Customer;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Import(TestMockConfig.class)
 class CustomerControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
@@ -91,7 +94,7 @@ class CustomerControllerIntegrationTest {
         customerSaveUpdateRequest.setPassword("test");
 
 
-        mockMvc.perform(post("/api/v1/customers/save")
+        mockMvc.perform(post("/api/v1/customers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(customerSaveUpdateRequest)))
                 .andExpect(status().isOk())
@@ -109,7 +112,7 @@ class CustomerControllerIntegrationTest {
         customerSaveUpdateRequest.setEmail("test3@test.com");
         customerSaveUpdateRequest.setId(register.getId());
 
-        mockMvc.perform(put("/api/v1/customers/update")
+        mockMvc.perform(put("/api/v1/customers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(customerSaveUpdateRequest))
                         .header("Authorization", "Bearer " + customerToken))

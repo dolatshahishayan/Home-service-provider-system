@@ -28,7 +28,7 @@ public class CustomerController {
     private final CustomerMapper customerMapper;
     private final JwtUtil jwtUtil;
 
-    @PostMapping("/save")
+    @PostMapping
     @Operation(summary = "Save customer", description = "Save method for customer")
     public ResponseEntity<CustomerFindResponse> saveCustomer(@RequestBody @Validated(ValidationGroup.Save.class) CustomerSaveUpdateRequest customer, HttpServletResponse response) {
         Customer register = customerService.register(customer);
@@ -38,7 +38,7 @@ public class CustomerController {
     }
 
     @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
-    @PutMapping("/update")
+    @PutMapping
     @Operation(summary = "Update customer", description = "Update method for customer")
     public ResponseEntity<CustomerFindResponse> updateCustomer(@RequestBody @Validated(ValidationGroup.Update.class) CustomerSaveUpdateRequest customer, HttpServletResponse response) {
         Customer updated = customerService.updateWithDTO(customer);

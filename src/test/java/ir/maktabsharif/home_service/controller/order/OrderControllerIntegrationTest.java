@@ -2,11 +2,8 @@ package ir.maktabsharif.home_service.controller.order;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ir.maktabsharif.home_service.TestMockConfig;
-import ir.maktabsharif.home_service.dto.order.OrderFindResponse;
 import ir.maktabsharif.home_service.dto.order.OrderSaveUpdateRequest;
 import ir.maktabsharif.home_service.dto.order.OrderSearchRequest;
-import ir.maktabsharif.home_service.dto.order.OrderSummaryDTO;
-import ir.maktabsharif.home_service.mapper.order.OrderMapper;
 import ir.maktabsharif.home_service.model.enums.ExpertStatus;
 import ir.maktabsharif.home_service.model.enums.OrderStatus;
 import ir.maktabsharif.home_service.model.enums.Role;
@@ -23,16 +20,14 @@ import ir.maktabsharif.home_service.service.service.ServiceService;
 import ir.maktabsharif.home_service.service.suggestion.SuggestionService;
 import ir.maktabsharif.home_service.service.user.UserService;
 import ir.maktabsharif.home_service.util.JwtUtil;
-import org.junit.jupiter.api.*;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,11 +36,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -54,6 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Import(TestMockConfig.class)
 class OrderControllerIntegrationTest {
 
     @Autowired
@@ -62,8 +54,6 @@ class OrderControllerIntegrationTest {
     private ObjectMapper objectMapper;
     @Autowired
     private OrderService orderService;
-    @Autowired
-    private OrderMapper orderMapper;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
@@ -83,7 +73,6 @@ class OrderControllerIntegrationTest {
     private String customerToken;
     private String expertToken;
     private Order orderEntity;
-    private OrderFindResponse orderFindResponse;
     private Service serviceTest;
     private Order save;
     private Expert expertTest;
@@ -141,19 +130,6 @@ class OrderControllerIntegrationTest {
         suggestion.setExpert(expertTest);
         suggestion.setPrice(BigDecimal.valueOf(20000000));
         save1 = suggestionService.save(suggestion);
-        orderFindResponse = new OrderFindResponse(
-                1,
-                "Test Order",
-                100.0,
-                LocalDateTime.now(),
-                "Test Address",
-                OrderStatus.WAITING_FOR_EXPERT_SUGGESTION,
-                1,
-                1,
-                1,
-                LocalDateTime.now(),
-                120.0
-        );
     }
 
     @AfterEach
